@@ -1,0 +1,19 @@
+{
+  "name": "compiler",
+  "version": "1.0.0",
+  "description": "Compilers-432",
+  "main": "./dist/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/compilers"
+  },
+  "author": "Evan Mena",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^9.3.0",
+    "typescript": "^2.6.2"
+  }
+}

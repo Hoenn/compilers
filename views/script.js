@@ -17,3 +17,6 @@ function toggleEditorMode(btn) {
         document.getElementById("modeToggleButton").textContent="Editor Mode: Default";
     }
 }
+
+var testBrowserify = require("../dist/greet");
+console.log(testBrowserify.greeter("Evan!"));

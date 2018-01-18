@@ -1,4 +1,4 @@
-# CMPT 432 - Compilers
+# CMPT 432 - Compilers - Evan Mena
 
 ## Tools
 [TypeScript](https://www.typescriptlang.org/)

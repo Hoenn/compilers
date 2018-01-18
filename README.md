@@ -10,4 +10,4 @@
 [ace](https://ace.c9.io/)
 
 ## Building
-`$ ./comingSoon.sh`
+`$ ./build.sh`

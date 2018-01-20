@@ -4,18 +4,40 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>Editor</title>
+    <script src="../public/jquery-3.2.1.min.js"></script>
+    <script src="../public/bootstrap.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="../public/bootstrap.min.css">
-    <script src="../public/jquery-3.2.1.min.js"></script>
 </head>
 <body>
 <div class="row">
+    <!-- input -->
     <div id="left" class="col-md-4 no-float">
         <button id="mode-toggle-button" onclick="toggleEditorMode()">Editor Mode: Default</button>
         <pre id="editor"></pre>
     </div>
+    <!-- output -->
     <div id="right" class="col-md-8 no-float">
-        Text
+        <!-- Define tabs -->
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a href="#tab-one" data-toggle="tab" class="active">Test</a>
+            </li>
+            <li class="nav-item"><a href="#tab-two" data-toggle="tab">Test2</a></li>
+            <li class="nav-item"><a href="#tab-three" data-toggle="tab">Test3</a></li>
+        </ul>
+        <!-- Tab Content -->
+        <div class="tab-content clearfix">
+            <div class="tab-pane active" id="tab-one">
+                <h1>This is tab one</h1>
+            </div>
+            <div class="tab-pane" id="tab-two">
+                <h2>This is tab two</h2>
+            </div>
+            <div class="tab-pane" id="tab-three">
+                    <h3>This is tab three</h3>
+            </div>
+        </div>
     </div>
 </div>
 <script src="../public/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>

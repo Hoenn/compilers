@@ -19,11 +19,11 @@ window.toggleEditorMode = function (btn) {
     if (editorMode === "default") {
         editor.setKeyboardHandler("ace/keyboard/vim");
         editorMode = "vim";
-        $("#modeToggleButton").text("Editor Mode: Vim");
+        $("#mode-toggle-button").text("Editor Mode: Vim");
     } else {
         editor.setKeyboardHandler("");
         editorMode = "default";
-        $("#modeToggleButton").text("Editor Mode: Default");
+        $("#mode-toggle-button").text("Editor Mode: Default");
     }
 }
 

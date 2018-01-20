@@ -6,7 +6,7 @@ editor.setShowPrintMargin(false);
 
 
 editorMode = "default";
-function toggleEditorMode(btn) {
+window.toggleEditorMode = function (btn) {
     if (editorMode === "default") {
         editor.setKeyboardHandler("ace/keyboard/vim");
         editorMode = "vim";

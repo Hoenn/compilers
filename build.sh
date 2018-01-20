@@ -5,4 +5,4 @@
 tsc
 
 #Browserify the front-end JS that interacts with backend
-browserify views/script.js -o views/index.js
+node_modules/browserify/bin/cmd.js views/script.js -o views/index.js

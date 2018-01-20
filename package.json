@@ -4,6 +4,7 @@
   "description": "Compilers-432",
   "main": "./dist/main.js",
   "scripts": {
+    "build": "tsc && node_modules/browserify/bin/cmd.js views/script.js > views/index.js",
     "test": "mocha -r ts-node/register test/*.spec.ts"
   },
   "repository": {

@@ -11,6 +11,13 @@
 
 ## Building
 
+`$ npm install`
+
 Compile TypeScript in `src/` to JavaScript in `dist/` and `browserify views/script.js` to `views/index.js` for front-end
 
-`$ ./build.sh`
+`$ npm run build`
+
+Run Tests :heavy_check_mark:
+
+`$ npm run test`
+

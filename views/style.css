@@ -1,6 +1,7 @@
 html, body {
     height:100%;
     overflow: hidden;
+    background-color: #282a36 !important;
 }
 
 .row {
@@ -9,6 +10,32 @@ html, body {
 .row .no-float {
     float:none;
 }
+#content {
+    height:90%;
+}
+#header {
+    height:10%;
+}
+#compile-text {
+    color: #f8f8f2;
+    margin-right: 0;
+    display: block;
+    margin-left: 0;
+}
+#compile-button {
+    z-index: 1000;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 52px;
+    height: 62px;
+    opacity: 0.7;
+    filter: alpha(opacity=70);
+    transition: opacity .5s ease-out;
+}
+#compile-button:hover {
+    opacity: 1;
+}
 #editor {
     margin: 0;
     position: absolute;
@@ -16,6 +43,9 @@ html, body {
     bottom: 0;
     left: 0;
     right: 0;
+}
+.ace_scrollbar {
+    display: none !important;
 }
 #mode-toggle-button {
     /*positioning*/
@@ -33,6 +63,7 @@ html, body {
     border: 1px solid;
     border-color: #bd93f9;
 }
+
 #right {
     background-color: #282a36;
     color: #f8f8f2;

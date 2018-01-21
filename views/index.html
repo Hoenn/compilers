@@ -6,13 +6,22 @@
     <title>Editor</title>
     <script src="../public/jquery-3.2.1.min.js"></script>
     <script src="../public/bootstrap.min.js"></script>
+    <script src="../public/raphael-2.1.4.min.js"></script>
+    <script src="../public/justgage.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="../public/bootstrap.min.css">
 </head>
 <body>
-<div class="row">
+<div id="header" class="row">
+    <span id="compile-button">
+        <span id="compile-text">Compile</span>
+        <img id="compile-button" src="../public/glass.png" alt="compile button"/>
+    </span>
+</div>
+
+<div id="content" class="row">
     <!-- input -->
-    <div id="left" class="col-md-4 no-float">
+    <div id="left" class="col-md-4 no-fl444oat">
         <button id="mode-toggle-button" onclick="toggleEditorMode()">Editor Mode: Default</button>
         <pre id="editor"></pre>
     </div>
@@ -21,7 +30,7 @@
         <!-- Define tabs -->
         <ul class="nav nav-pills">
             <li class="nav-item">
-                <a href="#tab-one" data-toggle="tab" class="active">Test</a>
+                <a href="#tab-one" data-toggle="tab" class="active">Machine Code</a>
             </li>
             <li class="nav-item"><a href="#tab-two" data-toggle="tab">Test2</a></li>
             <li class="nav-item"><a href="#tab-three" data-toggle="tab">Test3</a></li>
@@ -29,7 +38,8 @@
         <!-- Tab Content -->
         <div class="tab-content clearfix">
             <div class="tab-pane active" id="tab-one">
-                <h1>This is tab one</h1>
+                <h1>Machine Code Goes here</h1>
+                <div id="memory-gauge" class="180x160px"></div>
             </div>
             <div class="tab-pane" id="tab-two">
                 <h2>This is tab two</h2>

@@ -26,10 +26,12 @@ var gauge = new JustGage({
     min: 0,
     max: 256, //Replace with real max byte
     gaugeColor: "#44475a",
-    levelColors: ["#bd93f9"],
+    levelColors: ["#bd93f9", "#ff5555"],
     title:"Bytes used",
     titleFontColor: "#f8f8f2",
-    valueFontColor: "#f8f8f2"
+    titleFontFamily: 'monospace',
+    valueFontColor: "#f8f8f2",
+    valueFontFamily: 'monospace'
 });
 //Just for testing
 setInterval(function() { gauge.refresh(getRandomInt(0,256))}, 2000);

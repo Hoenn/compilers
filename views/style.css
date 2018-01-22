@@ -4,7 +4,6 @@ html, body {
     background-color: #282a36 !important;
     font-family: "Lucida Console", Monaco, monospace !important;
 }
-
 .row {
     height: 100%;
 }
@@ -76,4 +75,27 @@ html, body {
     border-bottom-width: 3px;
     border-bottom-style: solid;
     border-bottom-color: #6272a4;
+}
+.tab-content {
+    height: calc(100% - 30px);
+}
+#tab-two {
+    height: 100%;
+    overflow-y: scroll;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background-color: #44475a;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #6272a4;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #bd93f9;
+}
+::-webkit-scrollbar-corner {
+    background-color: #44475a;
 }

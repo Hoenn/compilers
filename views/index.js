@@ -36,4 +36,24 @@ var gauge = new JustGage({
 });
 //Just for testing
 setInterval(function() { gauge.refresh(getRandomInt(0,256))}, 2000);
+
+for(var i = 0; i <4530; i++) {
+    $("#ast-text").append("<div>abc"+i+"</div>");
+}
+////D3 for AST, Might not be worth the extra work
+//var svg = d3.select("#ast-graph")
+//    .append("svg")
+//    .attr("width", "100%")
+//    .attr("height", "100%")
+//    .call(d3.zoom().on("zoom", function() {
+//        svg.attr("transform",d3.event.transform) 
+//    }))
+//    .append("g");
+//
+//    svg.append("circle")
+//        .attr("cx", 100)
+//        .attr("cy", $("#ast-graph").height())
+//        .attr("r", 20)
+//        .style("fill", "#b9d334");
+//console.log($("#ast-graph").width());
 },{}]},{},[1]);

@@ -4,7 +4,6 @@ var editor = ace.edit("editor");
 editor.setTheme("ace/theme/dracula");
 editor.getSession().setMode("ace/mode/javascript");
 editor.getSession().setUseWorker(false);
-editor.setShowPrintMargin(false);
 
 //Vim Mode toggling
 editorMode = "default";

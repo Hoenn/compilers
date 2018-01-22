@@ -38,9 +38,7 @@ html, body {
     left: 0;
     right: 0;
 }
-.ace_scrollbar {
-    display: none !important;
-}
+
 #mode-toggle-button {
     /*positioning*/
     z-index: 1000;

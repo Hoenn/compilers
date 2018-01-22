@@ -4,6 +4,7 @@ var editor = ace.edit("editor");
 editor.setTheme("ace/theme/dracula");
 editor.getSession().setMode("ace/mode/javascript");
 editor.getSession().setUseWorker(false);
+editor.setShowPrintMargin(false);
 
 //Vim Mode toggling
 editorMode = "default";
@@ -36,9 +37,7 @@ var gauge = new JustGage({
 //Just for testing
 setInterval(function() { gauge.refresh(getRandomInt(0,256))}, 2000);
 
-for(var i = 0; i <4530; i++) {
-    $("#ast-text").append("<div>abc"+i+"</div>");
-}
+
 ////D3 for AST, Might not be worth the extra work
 //var svg = d3.select("#ast-graph")
 //    .append("svg")

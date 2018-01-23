@@ -61,6 +61,9 @@ html, body {
     color: #f8f8f2;
     border-left: 1px solid #6272a4;
 }
+#log-text {
+    color: #f8f8f2;
+}
 .nav-pills > li > a {
     color: #bd93f9;
     padding-left: 8px;

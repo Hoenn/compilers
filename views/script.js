@@ -21,7 +21,7 @@ window.toggleEditorMode = function (btn) {
 
 var Lexer = require('../dist/Lexer.js').Lexer;
 window.compileCode = function() {
-    console.log(Lexer.lex(editor.getValue()));
+    $('#log-text').append(Lexer.lex(editor.getValue())+"\n");
 }
 
 //Setup Memory gauge for machine code

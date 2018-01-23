@@ -9,7 +9,12 @@ var Lexer = /** @class */ (function () {
         ////Ordered List of Tokens
         /////Which Token Where Summary
         ///List of Warnings and Errors
-        return "LEXER: { on Line 1 \n\n        LEXER: int on Line 1 \n\n        LEXER: x on Line 1 \n\n        LEXER: = on Line 1 \n\n        LEXER: 5 on Line 1 \n\n        LEXER: } on Line 2 \n\n        Lexer: $ on Line 3 \n";
+        //Example output
+        //{
+        // int x = 5
+        //}
+        //$
+        return "LEXER: { on Line 1 \n\n        LEXER: int on Line 2 \n\n        LEXER: x on Line 3 \n\n        LEXER: = on Line 2 \n\n        LEXER: 5 on Line 2 \n\n        LEXER: } on Line 3 \n\n        Lexer: $ on Line 4 \n";
     };
     return Lexer;
 }());

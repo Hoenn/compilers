@@ -19,6 +19,11 @@ window.toggleEditorMode = function (btn) {
     }
 }
 
+var Lexer = require('../dist/Lexer.js').Lexer;
+window.compileCode = function() {
+    console.log(Lexer.lex(editor.getValue()));
+}
+
 //Setup Memory gauge for machine code
 var gauge = new JustGage({
     id: "memory-gauge",

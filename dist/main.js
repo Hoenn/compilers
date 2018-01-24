@@ -1,4 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var greet_1 = require("./greet");
-console.log(greet_1.greeter("TypeScript+Node"));
+var fs = require("fs");
+function main(sourceArg, filePath) {
+    var sourceProgram;
+    //If the sourceArg is a filepath, parse it into a string
+    if (filePath) {
+        sourceProgram = fs.readFileSync(sourceArg, 'utf8');
+    }
+    else {
+        sourceProgram = sourceArg;
+    }
+    return sourceProgram;
+}
+exports.main = main;

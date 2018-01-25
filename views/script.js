@@ -19,9 +19,10 @@ window.toggleEditorMode = function (btn) {
     }
 }
 
-var Lexer = require('../dist/Lexer.js').Lexer;
+const LexerModule = require('../dist/Lexer.js');
 window.compileCode = function() {
-    $('#log-text').append(Lexer.lex(editor.getValue())+"\n");
+    const lexer = new LexerModule.Lexer();
+    $('#log-text').append(lexer.lex(editor.getValue())+"\n");
 }
 
 //Setup Memory gauge for machine code

@@ -1,10 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token = /** @class */ (function () {
-    function Token(kind, value, lineNum) {
+    function Token(kind, value, lineNum, colNum) {
         this.kind = kind;
         this.value = value;
         this.lineNum = lineNum;
+        //Adjust the colnum to the beginning of the lexeme
+        this.colNum = colNum - exports.TokenLexeme[kind].length;
     }
     return Token;
 }());
@@ -31,7 +33,16 @@ var TokenType;
     TokenType["Assign"] = "Assign";
     TokenType["Addition"] = "Addition";
 })(TokenType = exports.TokenType || (exports.TokenType = {}));
+exports.TokenLexeme = {
+    "EOP": "$",
+    "While": "while",
+    "If": "if",
+    "Print": "print",
+    "Id": ""
+};
 exports.TokenRegex = {
+    //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
+    Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")(\/\*.*\*\/)(=|==|!=|\$|{|}|\+|\n)/g),
     WhiteSpace: new RegExp(/\s/),
     EOP: new RegExp(/(^|\s)[$]($|\s)/),
     While: new RegExp(/(^|\s)while($|\s)/),
@@ -41,7 +52,7 @@ exports.TokenRegex = {
     StringType: new RegExp(/(^|\s)string($|\s)/),
     BoolType: new RegExp(/(^|\s)boolean($|\s)/),
     BoolLiteral: new RegExp(/(^|\s)(true|false)($|\s)/),
-    Id: new RegExp(/[a-z]/),
+    Id: new RegExp(/^[a-z]$/),
     Char: new RegExp(/[a-z]/),
     CharList: new RegExp(/[a-z][a-z\s]+/),
     Integer: new RegExp(/[0-9]/),

@@ -5,7 +5,6 @@ export class Lexer {
         //Break text into blobs to perform longest match on
         //filter out undefined blobs
         let tokenBlob = src.split(TokenRegex.Split).filter((defined) => defined);
-        console.log(tokenBlob);       
         let lineNum = 0;
         let tokens: Token[] = [];
         for(let blob of tokenBlob) {

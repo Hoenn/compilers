@@ -28,8 +28,8 @@ export enum TokenType {
     NotEquals="NotEquals",
     LParen="LParen",
     RParen="RParen",
-    LBracket="{",
-    RBracket="}",
+    LBracket="LBracket",
+    RBracket="RBracket",
     Assign="Assign",
     Addition="Addition"
 }

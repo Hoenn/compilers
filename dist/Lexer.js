@@ -8,7 +8,6 @@ var Lexer = /** @class */ (function () {
         //Break text into blobs to perform longest match on
         //filter out undefined blobs
         var tokenBlob = src.split(Token_1.TokenRegex.Split).filter(function (defined) { return defined; });
-        console.log(tokenBlob);
         var lineNum = 0;
         var tokens = [];
         for (var _i = 0, tokenBlob_1 = tokenBlob; _i < tokenBlob_1.length; _i++) {

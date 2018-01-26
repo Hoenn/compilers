@@ -33,7 +33,9 @@ var TokenType;
     TokenType["Assign"] = "Assign";
     TokenType["Addition"] = "Addition";
 })(TokenType = exports.TokenType || (exports.TokenType = {}));
-exports.TokenLexeme = {
+//Used  to calculate starting colNum of a token
+//Not used right now, leaving just in case
+exports.TokenGlyphs = {
     "EOP": "$",
     "While": "while",
     "If": "if",

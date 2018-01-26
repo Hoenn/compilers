@@ -33,8 +33,9 @@ export enum TokenType {
     Assign="Assign",
     Addition="Addition"
 }
-
-export const TokenLexeme:{[key:string]:string}= {
+//Used  to calculate starting colNum of a token
+//Not used right now, leaving just in case
+export const TokenGlyphs:{[key:string]:string}= {
     "EOP": "$",
     "While": "while",
     "If": "if",

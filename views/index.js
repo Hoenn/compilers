@@ -14,6 +14,8 @@ var Lexer = /** @class */ (function () {
         var tokens = [];
         for (var _i = 0, tokenBlob_1 = tokenBlob; _i < tokenBlob_1.length; _i++) {
             var blob = tokenBlob_1[_i];
+            //If newline is found increment lineNum but skip
+            //If a comment or whitespace just skip
             if (blob.match("\n")) {
                 lineNum += 1;
                 continue;
@@ -93,7 +95,9 @@ var TokenType;
     TokenType["Assign"] = "Assign";
     TokenType["Addition"] = "Addition";
 })(TokenType = exports.TokenType || (exports.TokenType = {}));
-exports.TokenLexeme = {
+//Used  to calculate starting colNum of a token
+//Not used right now, leaving just in case
+exports.TokenGlyphs = {
     "EOP": "$",
     "While": "while",
     "If": "if",

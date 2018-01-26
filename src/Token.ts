@@ -2,14 +2,11 @@ export class Token {
     kind: TokenType;
     value: string;
     lineNum: number;
-    colNum: number;
 
-    constructor(kind: TokenType, value: string, lineNum: number, colNum: number) {
+    constructor(kind: TokenType, value: string, lineNum: number) {
         this.kind = kind;
         this.value = value;
         this.lineNum = lineNum;
-        //Adjust the colnum to the beginning of the lexeme
-        this.colNum = colNum-TokenLexeme[kind].length;
     }
 
 }

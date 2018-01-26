@@ -1,27 +1,108 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var Token_1 = require("./Token");
 var Lexer = /** @class */ (function () {
     function Lexer() {
     }
     Lexer.prototype.lex = function (src) {
+        src = this.removeComments(src);
+        var lineNum = 0;
+        var colNum = 0;
+        var tokens = [];
+        var currTok = "";
         for (var _i = 0, src_1 = src; _i < src_1.length; _i++) {
             var char = src_1[_i];
+            currTok += char;
+            colNum = 0;
+            //If currTok matches whitespace
+            if (Token_1.TokenRegex.WhiteSpace.test(currTok)) {
+                if (currTok.match("\n")) {
+                    lineNum++;
+                }
+                currTok = "";
+            }
+            else if (Token_1.TokenRegex.While.test(currTok)) {
+                tokens.push(new Token_1.Token(Token_1.TokenType.While, "", lineNum));
+                currTok = "";
+            }
         }
-        return ["asd"];
+        return tokens;
     };
     Lexer.prototype.removeWhiteSpace = function (s) {
         return s.replace(/\s/g, "");
     };
     Lexer.prototype.removeComments = function (s) {
         //Remove comments, won't work for multi line yet
-        return s.replace("/\*.*\*/", "");
+        s = s.replace(/\/\*.*\*\//g, this.withWhiteSpace);
+        console.log(s);
+        return s;
+    };
+    Lexer.prototype.withWhiteSpace = function (match) {
+        var spaces = new Array(match.length + 1).join(' ');
+        return spaces;
     };
     return Lexer;
 }());
 exports.Lexer = Lexer;
 
-},{}],2:[function(require,module,exports){
+},{"./Token":2}],2:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Token = /** @class */ (function () {
+    function Token(kind, value, lineNum) {
+        this.kind = kind;
+        this.value = value;
+        this.lineNum = lineNum;
+    }
+    return Token;
+}());
+exports.Token = Token;
+//Master list of available token types
+var TokenType;
+(function (TokenType) {
+    TokenType["EOP"] = "EOP";
+    TokenType["While"] = "While";
+    TokenType["If"] = "If";
+    TokenType["Print"] = "Print";
+    TokenType["IntType"] = "IntType";
+    TokenType["StringType"] = "StringType";
+    TokenType["BoolType"] = "BoolType";
+    TokenType["BoolLiteral"] = "BoolLiteral";
+    TokenType["Id"] = "Id";
+    TokenType["Char"] = "Char";
+    TokenType["CharList"] = "CharList";
+    TokenType["Integer"] = "Integer";
+    TokenType["Equals"] = "Equals";
+    TokenType["NotEquals"] = "NotEquals";
+    TokenType["LParen"] = "LParen";
+    TokenType["RParen"] = "RParen";
+    TokenType["Assign"] = "Assign";
+    TokenType["Addition"] = "Addition";
+})(TokenType = exports.TokenType || (exports.TokenType = {}));
+exports.TokenRegex = {
+    WhiteSpace: new RegExp(/\s/),
+    EOP: new RegExp(/(^|\s)[$]($|\s)/),
+    While: new RegExp(/(^|\s)while($|\s)/),
+    If: new RegExp(/(^|\s)if($|\s)/),
+    Print: new RegExp(/(^|\s)print($|\s)/),
+    IntType: new RegExp(/(^|\s)int($|\s)/),
+    StringType: new RegExp(/(^|\s)string($|\s)/),
+    BoolType: new RegExp(/(^|\s)boolean($|\s)/),
+    BoolLiteral: new RegExp(/(^|\s)(true|false)($|\s)/),
+    Id: new RegExp(/[a-z]/),
+    Char: new RegExp(/[a-z]/),
+    CharList: new RegExp(/[a-z][a-z\s]+/),
+    Integer: new RegExp(/[0-9]/),
+    Equals: new RegExp(/[==]/),
+    NotEquals: new RegExp(/[!=]/),
+    LParen: new RegExp(/[(]/),
+    RParen: new RegExp(/[)]/),
+    Assign: new RegExp(/[=]/),
+    Addition: new RegExp(/[+]/)
+};
+
+},{}],3:[function(require,module,exports){
 //Setup Ace editor
 var editor = ace.edit("editor");
 editor.setTheme("ace/theme/dracula");
@@ -84,4 +165,4 @@ setInterval(function() { gauge.refresh(getRandomInt(0,256))}, 2000);
 //        .style("fill", "#b9d334");
 //console.log($("#ast-graph").width());
 
-},{"../dist/Lexer.js":1}]},{},[2]);
+},{"../dist/Lexer.js":1}]},{},[3]);

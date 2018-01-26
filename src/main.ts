@@ -8,6 +8,9 @@ export function main(sourceArg: string, filePath?: boolean) {
     } else {
         sourceProgram = sourceArg;
     }
+    var l = new Lexer();
+    var result = l.removeComments(sourceProgram);
     return sourceProgram;
 
 }
+main("./test/codesamples/lexTest1", true);

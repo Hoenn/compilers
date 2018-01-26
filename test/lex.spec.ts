@@ -58,6 +58,17 @@ const tests = [
             new Token(TokenType.RBracket, "}", 0),
             new Token(TokenType.EOP, "$", 0)
         ]
+    },
+    {
+        "test": "{}${}$",
+        "result": [
+            new Token(TokenType.LBracket, "{", 0),
+            new Token(TokenType.RBracket, "}", 0),
+            new Token(TokenType.EOP, "$", 0),
+            new Token(TokenType.LBracket, "{", 0),
+            new Token(TokenType.RBracket, "}", 0),
+            new Token(TokenType.EOP, "$", 0),
+        ]
     }
 
 ]
@@ -88,3 +99,9 @@ describe('Lex: '+tests[2].test, () => {
 //         expect(result).to.deep.equal(tests[3].result);
 //     });
 // });
+describe('Lex: '+tests[4].test, () => {
+    it('should have '+tests[4].test+' as separate tokens', () => {
+        const result = L.lex(tests[4].test)
+        expect(result).to.deep.equal(tests[4].result);
+    });
+});

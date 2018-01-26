@@ -6,41 +6,52 @@ var Lexer = /** @class */ (function () {
     function Lexer() {
     }
     Lexer.prototype.lex = function (src) {
-        src = this.removeComments(src);
+        //Break text into blobs to perform longest match on
+        //filter out undefined blobs
+        var tokenBlob = src.split(Token_1.TokenRegex.Split).filter(function (defined) { return defined; });
+        console.log(tokenBlob);
         var lineNum = 0;
-        var colNum = 0;
         var tokens = [];
-        var currTok = "";
-        for (var _i = 0, src_1 = src; _i < src_1.length; _i++) {
-            var char = src_1[_i];
-            currTok += char;
-            colNum = 0;
-            //If currTok matches whitespace
-            if (Token_1.TokenRegex.WhiteSpace.test(currTok)) {
-                if (currTok.match("\n")) {
-                    lineNum++;
-                }
-                currTok = "";
+        for (var _i = 0, tokenBlob_1 = tokenBlob; _i < tokenBlob_1.length; _i++) {
+            var blob = tokenBlob_1[_i];
+            if (blob.match("\n")) {
+                lineNum += 1;
+                continue;
             }
-            else if (Token_1.TokenRegex.While.test(currTok)) {
-                tokens.push(new Token_1.Token(Token_1.TokenType.While, "", lineNum));
-                currTok = "";
+            else if (blob.match(Token_1.TokenRegex.Comment) || blob.match(Token_1.TokenRegex.WhiteSpace)) {
+                continue;
+            }
+            var result = this.longestMatch(blob);
+            if (result) {
+                tokens.push(new Token_1.Token(result, blob, lineNum));
+            }
+            else {
+                console.log('Invalid lexeme: "' + blob + '" on line: ' + lineNum);
             }
         }
+        console.log(tokens);
         return tokens;
     };
-    Lexer.prototype.removeWhiteSpace = function (s) {
-        return s.replace(/\s/g, "");
-    };
-    Lexer.prototype.removeComments = function (s) {
-        //Remove comments, won't work for multi line yet
-        s = s.replace(/\/\*.*\*\//g, this.withWhiteSpace);
-        console.log(s);
-        return s;
-    };
-    Lexer.prototype.withWhiteSpace = function (match) {
-        var spaces = new Array(match.length + 1).join(' ');
-        return spaces;
+    Lexer.prototype.longestMatch = function (blob) {
+        if (Token_1.TokenRegex.While.test(blob)) {
+            return Token_1.TokenType.While;
+        }
+        else if (Token_1.TokenRegex.Print.test(blob)) {
+            return Token_1.TokenType.Print;
+        }
+        else if (Token_1.TokenRegex.EOP.test(blob)) {
+            return Token_1.TokenType.EOP;
+        }
+        else if (Token_1.TokenRegex.LBracket.test(blob)) {
+            return Token_1.TokenType.LBracket;
+        }
+        else if (Token_1.TokenRegex.RBracket.test(blob)) {
+            return Token_1.TokenType.RBracket;
+        }
+        else if (Token_1.TokenRegex.Id.test(blob)) {
+            return Token_1.TokenType.Id;
+        }
+        return null;
     };
     return Lexer;
 }());
@@ -77,11 +88,23 @@ var TokenType;
     TokenType["NotEquals"] = "NotEquals";
     TokenType["LParen"] = "LParen";
     TokenType["RParen"] = "RParen";
+    TokenType["LBracket"] = "{";
+    TokenType["RBracket"] = "}";
     TokenType["Assign"] = "Assign";
     TokenType["Addition"] = "Addition";
 })(TokenType = exports.TokenType || (exports.TokenType = {}));
+exports.TokenLexeme = {
+    "EOP": "$",
+    "While": "while",
+    "If": "if",
+    "Print": "print",
+    "Id": ""
+};
 exports.TokenRegex = {
-    WhiteSpace: new RegExp(/\s/),
+    //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
+    Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\+|\n)/g),
+    WhiteSpace: new RegExp(/\s/g),
+    Comment: new RegExp(/\/\*.*\*\//),
     EOP: new RegExp(/(^|\s)[$]($|\s)/),
     While: new RegExp(/(^|\s)while($|\s)/),
     If: new RegExp(/(^|\s)if($|\s)/),
@@ -90,7 +113,7 @@ exports.TokenRegex = {
     StringType: new RegExp(/(^|\s)string($|\s)/),
     BoolType: new RegExp(/(^|\s)boolean($|\s)/),
     BoolLiteral: new RegExp(/(^|\s)(true|false)($|\s)/),
-    Id: new RegExp(/[a-z]/),
+    Id: new RegExp(/^[a-z]$/),
     Char: new RegExp(/[a-z]/),
     CharList: new RegExp(/[a-z][a-z\s]+/),
     Integer: new RegExp(/[0-9]/),
@@ -98,6 +121,8 @@ exports.TokenRegex = {
     NotEquals: new RegExp(/[!=]/),
     LParen: new RegExp(/[(]/),
     RParen: new RegExp(/[)]/),
+    LBracket: new RegExp(/[{]/),
+    RBracket: new RegExp(/[}]/),
     Assign: new RegExp(/[=]/),
     Addition: new RegExp(/[+]/)
 };

@@ -12,7 +12,7 @@ function main(sourceArg, filePath) {
         sourceProgram = sourceArg;
     }
     var l = new Lexer_1.Lexer();
-    var result = l.removeComments(sourceProgram);
+    var tokens = l.lex(sourceProgram);
     return sourceProgram;
 }
 exports.main = main;

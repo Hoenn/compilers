@@ -1,12 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token = /** @class */ (function () {
-    function Token(kind, value, lineNum, colNum) {
+    function Token(kind, value, lineNum) {
         this.kind = kind;
         this.value = value;
         this.lineNum = lineNum;
-        //Adjust the colnum to the beginning of the lexeme
-        this.colNum = colNum - exports.TokenLexeme[kind].length;
     }
     return Token;
 }());
@@ -30,6 +28,8 @@ var TokenType;
     TokenType["NotEquals"] = "NotEquals";
     TokenType["LParen"] = "LParen";
     TokenType["RParen"] = "RParen";
+    TokenType["LBracket"] = "{";
+    TokenType["RBracket"] = "}";
     TokenType["Assign"] = "Assign";
     TokenType["Addition"] = "Addition";
 })(TokenType = exports.TokenType || (exports.TokenType = {}));
@@ -42,8 +42,9 @@ exports.TokenLexeme = {
 };
 exports.TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
-    Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")(\/\*.*\*\/)(=|==|!=|\$|{|}|\+|\n)/g),
-    WhiteSpace: new RegExp(/\s/),
+    Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\+|\n)/g),
+    WhiteSpace: new RegExp(/\s/g),
+    Comment: new RegExp(/\/\*.*\*\//),
     EOP: new RegExp(/(^|\s)[$]($|\s)/),
     While: new RegExp(/(^|\s)while($|\s)/),
     If: new RegExp(/(^|\s)if($|\s)/),
@@ -60,6 +61,8 @@ exports.TokenRegex = {
     NotEquals: new RegExp(/[!=]/),
     LParen: new RegExp(/[(]/),
     RParen: new RegExp(/[)]/),
+    LBracket: new RegExp(/[{]/),
+    RBracket: new RegExp(/[}]/),
     Assign: new RegExp(/[=]/),
     Addition: new RegExp(/[+]/)
 };

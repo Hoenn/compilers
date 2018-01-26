@@ -28,6 +28,8 @@ export enum TokenType {
     NotEquals="NotEquals",
     LParen="LParen",
     RParen="RParen",
+    LBracket="{",
+    RBracket="}",
     Assign="Assign",
     Addition="Addition"
 }
@@ -41,8 +43,9 @@ export const TokenLexeme:{[key:string]:string}= {
 }
 export const TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
-    Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")(\/\*.*\*\/)(=|==|!=|\$|{|}|\+|\n)/g),
-    WhiteSpace: new RegExp(/\s/),
+    Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\+|\n)/g),
+    WhiteSpace: new RegExp(/\s/g),
+    Comment: new RegExp(/\/\*.*\*\//),
     EOP: new RegExp(/(^|\s)[$]($|\s)/),
     While: new RegExp(/(^|\s)while($|\s)/),
     If: new RegExp(/(^|\s)if($|\s)/),
@@ -59,6 +62,8 @@ export const TokenRegex = {
     NotEquals: new RegExp(/[!=]/),
     LParen: new RegExp(/[(]/),
     RParen: new RegExp(/[)]/),
+    LBracket: new RegExp(/[{]/),
+    RBracket: new RegExp(/[}]/),
     Assign: new RegExp(/[=]/),
     Addition: new RegExp(/[+]/)
 

@@ -66,7 +66,7 @@ export class Lexer {
             return {t:[new Token(TokenType.LBracket, blob, lineNum)], e:null};
         } else if (TokenRegex.RBracket.test(blob)) {
             return {t:[new Token(TokenType.RBracket, blob, lineNum)], e:null};
-        } 
+        } //Handle the case of no match by breaking on keywords
 
         return {t: null, e:"errormsg"}
         

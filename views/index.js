@@ -9,7 +9,7 @@ var Lexer = /** @class */ (function () {
         //Break text into blobs to perform longest match on
         //filter out undefined blobs
         var tokenBlob = src.split(Token_1.TokenRegex.Split).filter(function (defined) { return defined; });
-        var lineNum = 0;
+        var lineNum = 1;
         var tokens = [];
         for (var _i = 0, tokenBlob_1 = tokenBlob; _i < tokenBlob_1.length; _i++) {
             var blob = tokenBlob_1[_i];
@@ -31,7 +31,6 @@ var Lexer = /** @class */ (function () {
             }
             if (result.e) {
                 console.log(result.e);
-                console.log('Invalid lexeme: "' + blob + '" on line: ' + lineNum);
                 break;
             }
         }
@@ -84,7 +83,7 @@ var Lexer = /** @class */ (function () {
         }
         else if (Token_1.TokenRegex.RBracket.test(blob)) {
             return { t: [new Token_1.Token(Token_1.TokenType.RBracket, blob, lineNum)], e: null };
-        }
+        } //Handle the case of no match by breaking on keywords
         return { t: null, e: "errormsg" };
     };
     return Lexer;

@@ -8,66 +8,66 @@ const tests = [
     { 
         "test": "{}$",
         "result": [
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.EOP, "$", 0)
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.EOP, "$", 1)
         ]
     },
     {
         "test": "{{{{{}}}}}}$",
         "result": [
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.EOP, "$", 0)
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.EOP, "$", 1)
         ]
     },
     {
         "test": "{{{{{{}}} /* comments are ignored */ }}}}$",
         "result": [
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.EOP, "$", 0)
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.EOP, "$", 1)
         ]
     },
     {
         "test": "{ /*comments are still ignored */ int @}$",
         "result": [
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.IntType, "int", 0),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.VarType, "int", 1),
             //Error on the @ symbol
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.EOP, "$", 0)
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.EOP, "$", 1)
         ]
     },
     {
         "test": "{}${}$",
         "result": [
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.EOP, "$", 0),
-            new Token(TokenType.LBracket, "{", 0),
-            new Token(TokenType.RBracket, "}", 0),
-            new Token(TokenType.EOP, "$", 0),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.EOP, "$", 1),
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.EOP, "$", 1),
         ]
     }
 

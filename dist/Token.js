@@ -16,9 +16,7 @@ var TokenType;
     TokenType["While"] = "While";
     TokenType["If"] = "If";
     TokenType["Print"] = "Print";
-    TokenType["IntType"] = "IntType";
-    TokenType["StringType"] = "StringType";
-    TokenType["BoolType"] = "BoolType";
+    TokenType["VarType"] = "VarType";
     TokenType["BoolLiteral"] = "BoolLiteral";
     TokenType["Id"] = "Id";
     TokenType["Char"] = "Char";
@@ -28,6 +26,7 @@ var TokenType;
     TokenType["NotEquals"] = "NotEquals";
     TokenType["LParen"] = "LParen";
     TokenType["RParen"] = "RParen";
+    TokenType["Quote"] = "Quote";
     TokenType["LBracket"] = "LBracket";
     TokenType["RBracket"] = "RBracket";
     TokenType["Assign"] = "Assign";
@@ -51,11 +50,10 @@ exports.TokenRegex = {
     While: new RegExp(/(^|\s)while($|\s)/),
     If: new RegExp(/(^|\s)if($|\s)/),
     Print: new RegExp(/(^|\s)print($|\s)/),
-    IntType: new RegExp(/(^|\s)int($|\s)/),
-    StringType: new RegExp(/(^|\s)string($|\s)/),
-    BoolType: new RegExp(/(^|\s)boolean($|\s)/),
+    VarType: new RegExp(/(^|\s)(int|boolean|string)($|\s)/),
     BoolLiteral: new RegExp(/(^|\s)(true|false)($|\s)/),
     Id: new RegExp(/^[a-z]$/),
+    Quote: new RegExp(/(".*)/g),
     Char: new RegExp(/[a-z]/),
     CharList: new RegExp(/[a-z][a-z\s]+/),
     Integer: new RegExp(/[0-9]/),

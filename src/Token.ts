@@ -16,9 +16,7 @@ export enum TokenType {
     While ="While",
     If ="If",
     Print="Print",
-    IntType="IntType",
-    StringType="StringType",
-    BoolType="BoolType",
+    VarType="VarType",
     BoolLiteral="BoolLiteral",
     Id ="Id",
     Char="Char",
@@ -28,6 +26,7 @@ export enum TokenType {
     NotEquals="NotEquals",
     LParen="LParen",
     RParen="RParen",
+    Quote ="Quote",
     LBracket="LBracket",
     RBracket="RBracket",
     Assign="Assign",
@@ -42,7 +41,7 @@ export const TokenGlyphs:{[key:string]:string}= {
     "Print": "print",
     "Id": ""
 }
-export const TokenRegex = {
+export const TokenRegex:{[key:string]:RegExp } = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
     Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\+|\n)/g),
     WhiteSpace: new RegExp(/\s/g),
@@ -51,11 +50,10 @@ export const TokenRegex = {
     While: new RegExp(/(^|\s)while($|\s)/),
     If: new RegExp(/(^|\s)if($|\s)/),
     Print: new RegExp(/(^|\s)print($|\s)/),
-    IntType: new RegExp(/(^|\s)int($|\s)/),
-    StringType: new RegExp(/(^|\s)string($|\s)/),
-    BoolType: new RegExp(/(^|\s)boolean($|\s)/),
+    VarType: new RegExp(/(^|\s)(int|boolean|string)($|\s)/),
     BoolLiteral: new RegExp(/(^|\s)(true|false)($|\s)/),
     Id: new RegExp(/^[a-z]$/),
+    Quote : new RegExp(/(".*)/g),
     Char: new RegExp(/[a-z]/),
     CharList: new RegExp(/[a-z][a-z\s]+/),
     Integer: new RegExp(/[0-9]/),

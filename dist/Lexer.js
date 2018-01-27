@@ -21,37 +21,70 @@ var Lexer = /** @class */ (function () {
             else if (blob.match(Token_1.TokenRegex.Comment) || blob.match(Token_1.TokenRegex.WhiteSpace)) {
                 continue;
             }
-            var result = this.longestMatch(blob);
-            if (result) {
-                tokens.push(new Token_1.Token(result, blob, lineNum));
+            var result = this.longestMatch(blob, lineNum);
+            if (result.t) {
+                for (var _a = 0, _b = result.t; _a < _b.length; _a++) {
+                    var t = _b[_a];
+                    tokens.push(t);
+                }
             }
-            else {
+            if (result.e) {
+                console.log(result.e);
                 console.log('Invalid lexeme: "' + blob + '" on line: ' + lineNum);
+                break;
             }
         }
         console.log(tokens);
         return tokens;
     };
-    Lexer.prototype.longestMatch = function (blob) {
+    Lexer.prototype.longestMatch = function (blob, lineNum) {
         if (Token_1.TokenRegex.While.test(blob)) {
-            return Token_1.TokenType.While;
+            return { t: [new Token_1.Token(Token_1.TokenType.While, blob, lineNum)], e: null };
         }
         else if (Token_1.TokenRegex.Print.test(blob)) {
-            return Token_1.TokenType.Print;
+            return { t: [new Token_1.Token(Token_1.TokenType.Print, blob, lineNum)], e: null };
         }
         else if (Token_1.TokenRegex.EOP.test(blob)) {
-            return Token_1.TokenType.EOP;
+            return { t: [new Token_1.Token(Token_1.TokenType.EOP, blob, lineNum)], e: null };
         }
-        else if (Token_1.TokenRegex.LBracket.test(blob)) {
-            return Token_1.TokenType.LBracket;
+        else if (Token_1.TokenRegex.VarType.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.VarType, blob, lineNum)], e: null };
         }
-        else if (Token_1.TokenRegex.RBracket.test(blob)) {
-            return Token_1.TokenType.RBracket;
+        else if (Token_1.TokenRegex.If.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.If, blob, lineNum)], e: null };
+        }
+        else if (Token_1.TokenRegex.BoolLiteral.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.BoolLiteral, blob, lineNum)], e: null };
         }
         else if (Token_1.TokenRegex.Id.test(blob)) {
-            return Token_1.TokenType.Id;
+            return { t: [new Token_1.Token(Token_1.TokenType.Id, blob, lineNum)], e: null };
         }
-        return null;
+        else if (Token_1.TokenRegex.Quote.test(blob)) {
+            var splitQuote = blob.split("");
+            console.log(blob);
+            console.log(splitQuote);
+            var tokenArray = [];
+            for (var _i = 0, splitQuote_1 = splitQuote; _i < splitQuote_1.length; _i++) {
+                var char = splitQuote_1[_i];
+                if (char === "\"") {
+                    tokenArray.push(new Token_1.Token(Token_1.TokenType.Quote, char, lineNum));
+                }
+                else if (char.match(/[a-z]/g)) {
+                    tokenArray.push(new Token_1.Token(Token_1.TokenType.Char, char, lineNum));
+                }
+                else {
+                    return { t: tokenArray, e: "Unknown lexeme " + char + " on " + lineNum };
+                }
+            }
+            return { t: tokenArray, e: null };
+        }
+        else if (Token_1.TokenRegex.LBracket.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.LBracket, blob, lineNum)], e: null };
+        }
+        else if (Token_1.TokenRegex.RBracket.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.RBracket, blob, lineNum)], e: null };
+        }
+        return { t: null, e: "errormsg" };
     };
     return Lexer;
 }());

@@ -31,6 +31,7 @@ var Lexer = /** @class */ (function () {
                     tokens.push(t);
                 }
             }
+            //It's possible to have valid tokens returned along with an error
             if (result.e) {
                 console.log(result.e);
                 break;
@@ -40,6 +41,7 @@ var Lexer = /** @class */ (function () {
         return { t: tokens, e: result.e };
     };
     Lexer.prototype.longestMatch = function (blob, lineNum) {
+        //Test the blob for each allowed token
         if (Token_1.TokenRegex.While.test(blob)) {
             return { t: [new Token_1.Token(Token_1.TokenType.While, blob, lineNum)], e: null };
         }
@@ -62,17 +64,21 @@ var Lexer = /** @class */ (function () {
             return { t: [new Token_1.Token(Token_1.TokenType.Id, blob, lineNum)], e: null };
         }
         else if (Token_1.TokenRegex.Quote.test(blob)) {
+            //Break "quoted" blob into characters
             var splitQuote = blob.split("");
             var tokenArray = [];
             for (var _i = 0, splitQuote_1 = splitQuote; _i < splitQuote_1.length; _i++) {
                 var char = splitQuote_1[_i];
+                //If it's a quote simply add that token
                 if (char === "\"") {
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Quote, char, lineNum));
                 }
-                else if (char.match(/[a-z]/g)) {
+                else if (char.match(/[a-z]/g) || char.match(Token_1.TokenRegex.whitespace)) {
+                    //If it's a letter add that token
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Char, char, lineNum));
                 }
                 else {
+                    //"quoted" may only contain valid lexemes (chars)
                     return { t: tokenArray, e: this.lexErrorMessage(char, lineNum) };
                 }
             }
@@ -97,17 +103,21 @@ var Lexer = /** @class */ (function () {
             return { t: [new Token_1.Token(Token_1.TokenType.RBracket, blob, lineNum)], e: null };
         }
         else {
+            //Blob did not match any valid tokens, but may contain valid tokens
+            //ex: intx -> [int, x]
             //Check match for keywords
+            console.log(blob);
             if (blob.match(Token_1.TokenRegex.Keywords)) {
-                //If there are keywords, split string by them and longest match
-                //the result
-                var splitBlob = blob.split(Token_1.TokenRegex.Keywords).filter(function (def) { return def; });
+                //If there are keywords, split string by them and longest match the result
+                var splitBlob = blob.split(Token_1.TokenRegex.Keywords)
+                    .filter(function (def) { return def; });
                 var tokenArray = [];
                 var errorMsg = null;
                 for (var _a = 0, splitBlob_1 = splitBlob; _a < splitBlob_1.length; _a++) {
                     var b = splitBlob_1[_a];
                     //Longest match on new string
                     var result = this.longestMatch(b, lineNum);
+                    //If there is no error, keep this token and proceed
                     if (result.e == null && result.t) {
                         for (var _b = 0, _c = result.t; _b < _c.length; _b++) {
                             var t = _c[_b];
@@ -122,6 +132,7 @@ var Lexer = /** @class */ (function () {
                 return { t: tokenArray, e: errorMsg };
             }
             else {
+                //If the blob doesn't contain any keywords and reached here it must not be valid
                 return { t: null, e: this.lexErrorMessage(blob, lineNum) };
             }
         }
@@ -179,7 +190,7 @@ exports.TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
     Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\n)/g),
     WhiteSpace: new RegExp(/^(\s)$/g),
-    Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false)/g),
+    Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false|[a-z])/g),
     Comment: new RegExp(/(^|\s)\/\*.*\*\/($|\s)/),
     EOP: new RegExp(/(^|\s)[$]($|\s)/),
     While: new RegExp(/(^|\s)while($|\s)/),

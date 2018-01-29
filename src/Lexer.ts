@@ -59,7 +59,7 @@ export class Lexer {
                 //If it's a quote simply add that token
                 if(char === "\""){
                     tokenArray.push(new Token(TokenType.Quote, char, lineNum));
-                } else if (char.match(/[a-z]/g)) {
+                } else if (char.match(/[a-z]/g)||char.match(TokenRegex.whitespace)) {
                     //If it's a letter add that token
                     tokenArray.push(new Token(TokenType.Char, char, lineNum));
                 } else {
@@ -86,7 +86,9 @@ export class Lexer {
             //Check match for keywords
             if (blob.match(TokenRegex.Keywords)) {
                 //If there are keywords, split string by them and longest match the result
-                let splitBlob = blob.split(TokenRegex.Keywords).filter((def)=>def);
+                let splitBlob = blob.split(TokenRegex.Keywords)
+                    .filter((def)=>def);
+
                 let tokenArray = [];
                 let errorMsg:string|null = null;
 

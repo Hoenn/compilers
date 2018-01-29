@@ -11,7 +11,8 @@ const tests = [
             new Token(TokenType.LBracket, "{", 1),
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
-        ]
+        ],
+        "error": null
     },
     {
         "test": "{{{{{}}}}}}$",
@@ -28,7 +29,9 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
-        ]
+        ],
+        "error": null
+
     },
     {
         "test": "{{{{{{}}} /* comments are ignored */ }}}}$",
@@ -47,17 +50,17 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
-        ]
+        ],
+        "error": null
+
     },
     {
         "test": "{ /*comments are still ignored */ int @}$",
         "result": [
             new Token(TokenType.LBracket, "{", 1),
             new Token(TokenType.VarType, "int", 1),
-            //Error on the @ symbol
-            new Token(TokenType.RBracket, "}", 1),
-            new Token(TokenType.EOP, "$", 1)
-        ]
+        ],
+        "error": L.lexErrorMessage("@", 1)
     },
     {
         "test": "{}${}$",
@@ -68,9 +71,12 @@ const tests = [
             new Token(TokenType.LBracket, "{", 1),
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1),
-        ]
+        ],
+        "error": null
+
     },
-    {   "test": "{\n\"abc\"\n}",
+    {   
+        "test": "{\n\"abc\"\n}",
         "result": [
             new Token(TokenType.LBracket, "{", 1),
             new Token(TokenType.Quote, "\"", 2),
@@ -79,47 +85,68 @@ const tests = [
             new Token(TokenType.Char, "c", 2),
             new Token(TokenType.Quote, "\"", 2),
             new Token(TokenType.RBracket, "}", 3)
-        ]
+        ],
+        "error": null
 
+    },
+    {
+        "test": "{intx}",
+        "result": [
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.VarType, "int", 1),
+            new Token(TokenType.Id, "x", 1),
+            new Token(TokenType.RBracket, "}", 1)
+        ],
+        "error": null
     }
 
 ]
 describe('Lex: '+tests[0].test, () => {
     it('should have '+tests[0].test+' as separate tokens', () => {
-        const result = L.lex(tests[0].test)
+        const result = L.lex(tests[0].test).t
         expect(result).to.deep.equal(tests[0].result);
     });
 });
 describe('Lex: '+tests[1].test, () => {
     it('should have '+tests[1].test+' as separate tokens', () => {
-        const result = L.lex(tests[1].test)
+        const result = L.lex(tests[1].test).t
         expect(result).to.deep.equal(tests[1].result);
     });
 });
 describe('Lex: '+tests[2].test, () => {
     it('should have '+tests[2].test+' as separate tokens', () => {
-        const result = L.lex(tests[2].test)
+        const result = L.lex(tests[2].test).t
         expect(result).to.deep.equal(tests[2].result);
     });
 });
-// describe('Lex: '+tests[3].test, () => {
-//     it('should have '+tests[3].test+' as separate tokens', () => {
-//         //Result should be a pair with an error
-//         const result = L.lex(tests[3].test)
-//         //result should be equal but the error containing "Error: Unrecognized Token:@" 
-//         //should also be in the val,-error-
-//         expect(result).to.deep.equal(tests[3].result);
-//     });
-// });
+describe('Lex: '+tests[3].test, () => {
+
+    const tokensWithError = L.lex(tests[3].test)
+    it('should have '+tests[3].test+' as separate tokens', () => {
+        const result = tokensWithError.t;
+
+        expect(result).to.deep.equal(tests[3].result);
+    })
+    it('should report '+tests[3].error, () => {
+        const error = tokensWithError.e;
+        expect(error).to.equal(tests[3].error);
+    })
+});
 describe('Lex: '+tests[4].test, () => {
     it('should have '+tests[4].test+' as separate tokens', () => {
-        const result = L.lex(tests[4].test)
+        const result = L.lex(tests[4].test).t
         expect(result).to.deep.equal(tests[4].result);
     });
 });
 describe('Lex: '+tests[5].test, () => {
     it('should have '+tests[5].test+' as separate tokens', () => {
-        const result = L.lex(tests[5].test)
+        const result = L.lex(tests[5].test).t
         expect(result).to.deep.equal(tests[5].result);
+    });
+});
+describe('Lex: '+tests[6].test, () => {
+    it('should have '+tests[6].test+' as separate tokens', () => {
+        const result = L.lex(tests[6].test).t
+        expect(result).to.deep.equal(tests[6].result);
     });
 });

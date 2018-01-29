@@ -2,13 +2,15 @@ import {Token, TokenRegex, TokenType} from './Token';
 import { join } from 'path';
 export class Lexer {
 
-    lex(src: string): Token[] {
+    lex(src: string): {t:Token[]|null, e:string|null} {
         //Break text into blobs to perform longest match on
         //filter out undefined blobs
-        let tokenBlob = src.split(TokenRegex.Split).filter((defined) => defined);
+        let tokenBlobs = src.split(TokenRegex.Split).filter((defined) => defined);
         let lineNum = 1;
+        console.log(tokenBlobs);
         let tokens: Token[] = [];
-        for(let blob of tokenBlob) {
+        let result: {t:Token[]|null, e: string|null} = {t:null, e:null}
+        for(let blob of tokenBlobs) {
             //If newline is found increment lineNum but skip
             //If a comment or whitespace just skip
             if(blob.match("\n")) {
@@ -17,7 +19,7 @@ export class Lexer {
             } else if (blob.match(TokenRegex.Comment) || blob.match(TokenRegex.WhiteSpace)){
                 continue;
             }
-            var result = this.longestMatch(blob, lineNum);
+            result = this.longestMatch(blob, lineNum);
             if(result.t) { //is not null
                 for(let t of result.t){
                     tokens.push(t);
@@ -29,7 +31,7 @@ export class Lexer {
             }
         }
         console.log(tokens);
-        return tokens; 
+        return {t:tokens, e:result.e}; 
     }
     longestMatch(blob: string, lineNum: number): {t: Token[]|null, e:string|null} {
 
@@ -49,8 +51,6 @@ export class Lexer {
             return {t:[new Token(TokenType.Id, blob, lineNum)], e:null};
         } else if (TokenRegex.Quote.test(blob)) {
             let splitQuote = blob.split("")
-            console.log(blob);
-            console.log(splitQuote);
             let tokenArray = [];
             for(let char of splitQuote) {
                 if(char === "\""){
@@ -58,18 +58,52 @@ export class Lexer {
                 } else if (char.match(/[a-z]/g)) {
                     tokenArray.push(new Token(TokenType.Char, char, lineNum));
                 } else {
-                    return {t:tokenArray, e:"Unknown lexeme "+char+" on "+lineNum};
+                    return {t:tokenArray, e:this.lexErrorMessage(char, lineNum)};
                 }
             }
             return {t:tokenArray, e:null};
+        } else if (TokenRegex.Integer.test(blob)){
+            return {t:[new Token(TokenType.Integer, blob, lineNum)], e:null};
+        } else if (TokenRegex.BoolOp.test(blob)) {
+            return {t:[new Token(TokenType.BoolOp, blob, lineNum)], e:null};
+        } else if (TokenRegex.LParen.test(blob)) {
+            return {t:[new Token(TokenType.LParen, blob, lineNum)], e:null};
+        } else if (TokenRegex.RParen.test(blob)) {
+            return {t:[new Token(TokenType.RParen, blob, lineNum)], e:null};
         } else if (TokenRegex.LBracket.test(blob)) {
             return {t:[new Token(TokenType.LBracket, blob, lineNum)], e:null};
         } else if (TokenRegex.RBracket.test(blob)) {
             return {t:[new Token(TokenType.RBracket, blob, lineNum)], e:null};
-        } //Handle the case of no match by breaking on keywords
+        } else {
+            //Check match for keywords
+            if (blob.match(TokenRegex.Keywords)) {
+                //If there are keywords, split string by them and longest match
+                //the result
+                let splitBlob = blob.split(TokenRegex.Keywords).filter((def)=>def);
 
-        return {t: null, e:"errormsg"}
+                let tokenArray = [];
+                let errorMsg:string|null = null;
+                for(let b of splitBlob) {
+                    //Longest match on new string
+                    let result = this.longestMatch(b, lineNum);
+                    if(result.e == null && result.t) {
+                        for(let t of result.t) {
+                            tokenArray.push(t);
+                        }
+                    } else {
+                        errorMsg = result.e;
+                        break;
+                    }
+                }
+                return {t:tokenArray, e: errorMsg};
+            } else {
+                return {t: null, e: this.lexErrorMessage(blob, lineNum)};
+            }
+        }
         
+    }
+    lexErrorMessage(blob: string, lineNum: number):string {
+        return "Unknown token "+blob.trim()+" on line "+lineNum;
     }
 
 }

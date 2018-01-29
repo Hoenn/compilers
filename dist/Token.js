@@ -20,17 +20,15 @@ var TokenType;
     TokenType["BoolLiteral"] = "BoolLiteral";
     TokenType["Id"] = "Id";
     TokenType["Char"] = "Char";
-    TokenType["CharList"] = "CharList";
     TokenType["Integer"] = "Integer";
-    TokenType["Equals"] = "Equals";
-    TokenType["NotEquals"] = "NotEquals";
     TokenType["LParen"] = "LParen";
     TokenType["RParen"] = "RParen";
     TokenType["Quote"] = "Quote";
     TokenType["LBracket"] = "LBracket";
     TokenType["RBracket"] = "RBracket";
     TokenType["Assign"] = "Assign";
-    TokenType["Addition"] = "Addition";
+    TokenType["BoolOp"] = "BoolOp";
+    TokenType["IntOp"] = "IntOp";
 })(TokenType = exports.TokenType || (exports.TokenType = {}));
 //Used  to calculate starting colNum of a token
 //Not used right now, leaving just in case
@@ -43,9 +41,10 @@ exports.TokenGlyphs = {
 };
 exports.TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
-    Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\+|\n)/g),
-    WhiteSpace: new RegExp(/\s/g),
-    Comment: new RegExp(/\/\*.*\*\//),
+    Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\n)/g),
+    WhiteSpace: new RegExp(/^(\s)$/g),
+    Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false)/g),
+    Comment: new RegExp(/(^|\s)\/\*.*\*\/($|\s)/),
     EOP: new RegExp(/(^|\s)[$]($|\s)/),
     While: new RegExp(/(^|\s)while($|\s)/),
     If: new RegExp(/(^|\s)if($|\s)/),
@@ -55,14 +54,12 @@ exports.TokenRegex = {
     Id: new RegExp(/^[a-z]$/),
     Quote: new RegExp(/(".*)/g),
     Char: new RegExp(/[a-z]/),
-    CharList: new RegExp(/[a-z][a-z\s]+/),
-    Integer: new RegExp(/[0-9]/),
-    Equals: new RegExp(/[==]/),
-    NotEquals: new RegExp(/[!=]/),
-    LParen: new RegExp(/[(]/),
-    RParen: new RegExp(/[)]/),
-    LBracket: new RegExp(/[{]/),
-    RBracket: new RegExp(/[}]/),
-    Assign: new RegExp(/[=]/),
-    Addition: new RegExp(/[+]/)
+    Integer: new RegExp(/^[0-9]$/),
+    LParen: new RegExp(/(\()/),
+    RParen: new RegExp(/(\))/),
+    LBracket: new RegExp(/({)/),
+    RBracket: new RegExp(/(})/),
+    Assign: new RegExp(/(=)/),
+    BoolOp: new RegExp(/(==)|(!=)/),
+    IntOp: new RegExp(/(\+)/)
 };

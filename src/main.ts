@@ -13,4 +13,4 @@ export function main(sourceArg: string, filePath?: boolean) {
     return sourceProgram;
 
 }
-main("./test/codesamples/lexTest1", true);
+main(process.argv[1], true);

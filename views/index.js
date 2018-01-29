@@ -67,13 +67,14 @@ var Lexer = /** @class */ (function () {
             //Break "quoted" blob into characters
             var splitQuote = blob.split("");
             var tokenArray = [];
+            console.log(splitQuote);
             for (var _i = 0, splitQuote_1 = splitQuote; _i < splitQuote_1.length; _i++) {
                 var char = splitQuote_1[_i];
                 //If it's a quote simply add that token
                 if (char === "\"") {
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Quote, char, lineNum));
                 }
-                else if (char.match(/[a-z]/g) || char.match(Token_1.TokenRegex.whitespace)) {
+                else if (char.match(/[a-z]/) || char.match(/\s/)) {
                     //If it's a letter add that token
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Char, char, lineNum));
                 }
@@ -106,7 +107,6 @@ var Lexer = /** @class */ (function () {
             //Blob did not match any valid tokens, but may contain valid tokens
             //ex: intx -> [int, x]
             //Check match for keywords
-            console.log(blob);
             if (blob.match(Token_1.TokenRegex.Keywords)) {
                 //If there are keywords, split string by them and longest match the result
                 var splitBlob = blob.split(Token_1.TokenRegex.Keywords)
@@ -189,7 +189,8 @@ exports.TokenGlyphs = {
 exports.TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
     Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\n)/g),
-    WhiteSpace: new RegExp(/^(\s)$/g),
+    WhiteSpace: new RegExp(/^(\s)$/),
+    //Match any keyword first, then valid ids after
     Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false|[a-z])/g),
     Comment: new RegExp(/(^|\s)\/\*.*\*\/($|\s)/),
     EOP: new RegExp(/(^|\s)[$]($|\s)/),

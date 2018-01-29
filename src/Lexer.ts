@@ -55,12 +55,13 @@ export class Lexer {
             //Break "quoted" blob into characters
             let splitQuote = blob.split("")
             let tokenArray = [];
+            console.log(splitQuote);
             for(let char of splitQuote) {
                 //If it's a quote simply add that token
                 if(char === "\""){
                     tokenArray.push(new Token(TokenType.Quote, char, lineNum));
-                } else if (char.match(/[a-z]/g)||char.match(TokenRegex.whitespace)) {
-                    //If it's a letter add that token
+                } else if (char.match(/[a-z]/) || char.match(/\s/)) {
+                    //If it's a letter or space add that token
                     tokenArray.push(new Token(TokenType.Char, char, lineNum));
                 } else {
                     //"quoted" may only contain valid lexemes (chars)

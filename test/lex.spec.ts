@@ -98,6 +98,15 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1)
         ],
         "error": null
+    },
+    {
+        "test": '"ab!c"',
+        "result": [
+            new Token(TokenType.Quote, '"', 1),
+            new Token(TokenType.Char, "a", 1),
+            new Token(TokenType.Char, "b", 1),
+        ],
+        "error": L.lexErrorMessage("!", 1)
     }
 
 ]
@@ -148,5 +157,11 @@ describe('Lex: '+tests[6].test, () => {
     it('should have '+tests[6].test+' as separate tokens', () => {
         const result = L.lex(tests[6].test).t
         expect(result).to.deep.equal(tests[6].result);
+    });
+});
+describe('Lex: '+tests[7].test, () => {
+    it('should have '+tests[7].test+' as separate tokens', () => {
+        const result = L.lex(tests[7].test).t
+        expect(result).to.deep.equal(tests[7].result);
     });
 });

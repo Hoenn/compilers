@@ -13,8 +13,9 @@ export function main(sourceArg: string, filePath?: boolean) {
     return sourceProgram;
 
 }
-if(process.argv[2] == 'r'||process.argv[2]=='raw'){
-    main(process.argv[1], false);
+console.log(process.argv);
+if(process.argv[3] == 'r'||process.argv[3]=='raw'){
+    main(process.argv[2], false);
 } else {
-    main(process.argv[1], true);
+    main(process.argv[2], true);
 }

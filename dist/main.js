@@ -16,4 +16,10 @@ function main(sourceArg, filePath) {
     return sourceProgram;
 }
 exports.main = main;
-main("./test/codesamples/lexTest1", true);
+console.log(process.argv);
+if (process.argv[3] == 'r' || process.argv[3] == 'raw') {
+    main(process.argv[2], false);
+}
+else {
+    main(process.argv[2], true);
+}

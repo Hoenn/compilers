@@ -64,7 +64,8 @@ var Lexer = /** @class */ (function () {
         }
         else if (Token_1.TokenRegex.Quote.test(blob)) {
             //Break "quoted" blob into characters
-            var splitQuote = blob.split("");
+            var noComment = blob.replace(/\/\*.*\*\//g, "");
+            var splitQuote = noComment.split("");
             var tokenArray = [];
             console.log(splitQuote);
             for (var _i = 0, splitQuote_1 = splitQuote; _i < splitQuote_1.length; _i++) {
@@ -74,7 +75,7 @@ var Lexer = /** @class */ (function () {
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Quote, char, lineNum));
                 }
                 else if (char.match(/[a-z]/) || char.match(/\s/)) {
-                    //If it's a letter add that token
+                    //If it's a letter or space add that token
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Char, char, lineNum));
                 }
                 else {
@@ -86,6 +87,9 @@ var Lexer = /** @class */ (function () {
         }
         else if (Token_1.TokenRegex.Integer.test(blob)) {
             return { t: [new Token_1.Token(Token_1.TokenType.Integer, blob, lineNum)], e: null };
+        }
+        else if (Token_1.TokenRegex.Assign.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.Assign, blob, lineNum)], e: null };
         }
         else if (Token_1.TokenRegex.BoolOp.test(blob)) {
             return { t: [new Token_1.Token(Token_1.TokenType.BoolOp, blob, lineNum)], e: null };

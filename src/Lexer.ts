@@ -53,7 +53,8 @@ export class Lexer {
             return {t:[new Token(TokenType.Id, blob, lineNum)], e:null};
         } else if (TokenRegex.Quote.test(blob)) {
             //Break "quoted" blob into characters
-            let splitQuote = blob.split("")
+            let noComment = blob.replace(/\/\*.*\*\//g, "");
+            let splitQuote = noComment.split("");
             let tokenArray = [];
             console.log(splitQuote);
             for(let char of splitQuote) {
@@ -71,6 +72,8 @@ export class Lexer {
             return {t:tokenArray, e:null};
         } else if (TokenRegex.Integer.test(blob)){
             return {t:[new Token(TokenType.Integer, blob, lineNum)], e:null};
+        } else if (TokenRegex.Assign.test(blob)) {
+            return {t:[new Token(TokenType.Assign, blob, lineNum)], e:null};
         } else if (TokenRegex.BoolOp.test(blob)) {
             return {t:[new Token(TokenType.BoolOp, blob, lineNum)], e:null};
         } else if (TokenRegex.LParen.test(blob)) {

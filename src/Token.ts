@@ -20,7 +20,7 @@ export enum TokenType {
     BoolLiteral="BoolLiteral",
     Id ="Id",
     Char="Char",
-    Integer="Integer",
+    Digit="Digit",
     LParen="LParen",
     RParen="RParen",
     Quote ="Quote",
@@ -41,7 +41,7 @@ export const TokenGlyphs:{[key:string]:string}= {
 }
 export const TokenRegex:{[key:string]:RegExp } = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
-    Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\n)/g),
+    Split: new RegExp(/([a-z]+)|([0-9])|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\n)/g),
     WhiteSpace: new RegExp(/^(\s)$/),
     //Match any keyword first, then valid ids after
     Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false|[a-z])/g),
@@ -55,7 +55,7 @@ export const TokenRegex:{[key:string]:RegExp } = {
     Id: new RegExp(/^[a-z]$/),
     Quote : new RegExp(/(".*)/g),
     Char: new RegExp(/[a-z]/),
-    Integer: new RegExp(/^[0-9]$/),
+    Digit: new RegExp(/^[0-9]$/),
     LParen: new RegExp(/(\()/),
     RParen: new RegExp(/(\))/),
     LBracket: new RegExp(/({)/),

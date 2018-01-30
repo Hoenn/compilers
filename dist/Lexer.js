@@ -85,8 +85,8 @@ var Lexer = /** @class */ (function () {
             }
             return { t: tokenArray, e: null };
         }
-        else if (Token_1.TokenRegex.Integer.test(blob)) {
-            return { t: [new Token_1.Token(Token_1.TokenType.Integer, blob, lineNum)], e: null };
+        else if (Token_1.TokenRegex.Digit.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.Digit, blob, lineNum)], e: null };
         }
         else if (Token_1.TokenRegex.Assign.test(blob)) {
             return { t: [new Token_1.Token(Token_1.TokenType.Assign, blob, lineNum)], e: null };

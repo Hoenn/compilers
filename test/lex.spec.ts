@@ -75,7 +75,7 @@ const tests = [
         "error": null
 
     },
-    {   
+    {
         "test": "{\n\"abc\"\n}",
         "result": [
             new Token(TokenType.LBracket, "{", 1),
@@ -114,10 +114,21 @@ const tests = [
             new Token(TokenType.Quote, '"', 1),
             new Token(TokenType.Char, "a", 1),
             new Token(TokenType.Char, "c", 1),
-            new Token(TokenType.Quote, '"', 1)
+        new Token(TokenType.Quote, '"', 1)
         ],
         "error": null
 
+    },
+    {
+        "test": "1a23b",
+        "result": [
+            new Token(TokenType.Digit, "1", 1),
+            new Token(TokenType.Id, "a", 1),
+            new Token(TokenType.Digit, "2", 1),
+            new Token(TokenType.Digit, "3", 1),
+            new Token(TokenType.Id, "b", 1)
+        ],
+        "error": null
     }
 
 ]
@@ -180,5 +191,11 @@ describe('Lex: '+tests[8].test, () => {
     it('should have '+tests[8].test+' as separate tokens', () => {
         const result = L.lex(tests[8].test).t
         expect(result).to.deep.equal(tests[8].result);
+    });
+});
+describe('Lex: '+tests[9].test, () => {
+    it('should have '+tests[9].test+' as separate tokens', () => {
+        const result = L.lex(tests[9].test).t
+        expect(result).to.deep.equal(tests[9].result);
     });
 });

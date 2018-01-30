@@ -70,8 +70,8 @@ export class Lexer {
                 }
             }
             return {t:tokenArray, e:null};
-        } else if (TokenRegex.Integer.test(blob)){
-            return {t:[new Token(TokenType.Integer, blob, lineNum)], e:null};
+        } else if (TokenRegex.Digit.test(blob)){
+            return {t:[new Token(TokenType.Digit, blob, lineNum)], e:null};
         } else if (TokenRegex.Assign.test(blob)) {
             return {t:[new Token(TokenType.Assign, blob, lineNum)], e:null};
         } else if (TokenRegex.BoolOp.test(blob)) {

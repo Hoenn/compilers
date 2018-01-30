@@ -86,8 +86,8 @@ var Lexer = /** @class */ (function () {
             }
             return { t: tokenArray, e: null };
         }
-        else if (Token_1.TokenRegex.Integer.test(blob)) {
-            return { t: [new Token_1.Token(Token_1.TokenType.Integer, blob, lineNum)], e: null };
+        else if (Token_1.TokenRegex.Digit.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.Digit, blob, lineNum)], e: null };
         }
         else if (Token_1.TokenRegex.Assign.test(blob)) {
             return { t: [new Token_1.Token(Token_1.TokenType.Assign, blob, lineNum)], e: null };
@@ -171,7 +171,7 @@ var TokenType;
     TokenType["BoolLiteral"] = "BoolLiteral";
     TokenType["Id"] = "Id";
     TokenType["Char"] = "Char";
-    TokenType["Integer"] = "Integer";
+    TokenType["Digit"] = "Digit";
     TokenType["LParen"] = "LParen";
     TokenType["RParen"] = "RParen";
     TokenType["Quote"] = "Quote";
@@ -192,7 +192,7 @@ exports.TokenGlyphs = {
 };
 exports.TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
-    Split: new RegExp(/([a-z]+)|([0-9]+)|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\n)/g),
+    Split: new RegExp(/([a-z]+)|([0-9])|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\n)/g),
     WhiteSpace: new RegExp(/^(\s)$/),
     //Match any keyword first, then valid ids after
     Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false|[a-z])/g),
@@ -206,7 +206,7 @@ exports.TokenRegex = {
     Id: new RegExp(/^[a-z]$/),
     Quote: new RegExp(/(".*)/g),
     Char: new RegExp(/[a-z]/),
-    Integer: new RegExp(/^[0-9]$/),
+    Digit: new RegExp(/^[0-9]$/),
     LParen: new RegExp(/(\()/),
     RParen: new RegExp(/(\))/),
     LBracket: new RegExp(/({)/),

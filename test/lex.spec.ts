@@ -152,80 +152,30 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
         ],
-        "error": "Warning: End of Program missing. Added $ symbol"
+        "error": "Warning: End of Program missing. Added $ symbol."
     }
 
 ]
-describe('Lex: '+tests[0].test, () => {
-    it(tests[0].describe, () => {
-        const result = L.lex(tests[0].test).t
-        expect(result).to.deep.equal(tests[0].result);
-    });
-});
-describe('Lex: '+tests[1].test, () => {
-    it(tests[1].describe, () => {
-        const result = L.lex(tests[1].test).t
-        expect(result).to.deep.equal(tests[1].result);
-    });
-});
-describe('Lex: '+tests[2].test, () => {
-    it(tests[2].describe, () => {
-        const result = L.lex(tests[2].test).t
-        expect(result).to.deep.equal(tests[2].result);
-    });
-});
-describe('Lex: '+tests[3].test, () => {
 
-    const tokensWithError = L.lex(tests[3].test)
-    it(tests[3].describe, () => {
-        const result = tokensWithError.t;
-
-        expect(result).to.deep.equal(tests[3].result);
-    })
-    it('should report '+tests[3].error, () => {
-        const error = tokensWithError.e;
-        expect(error).to.equal(tests[3].error);
-    })
-});
-describe('Lex: '+tests[4].test, () => {
-    it(tests[4].describe, () => {
-        const result = L.lex(tests[4].test).t
-        expect(result).to.deep.equal(tests[4].result);
-    });
-});
-describe('Lex: '+tests[5].test, () => {
-    it(tests[5].describe, () => {
-        const result = L.lex(tests[5].test).t
-        expect(result).to.deep.equal(tests[5].result);
-    });
-});
-describe('Lex: '+tests[6].test, () => {
-    it(tests[6].describe, () => {
-        const result = L.lex(tests[6].test).t
-        expect(result).to.deep.equal(tests[6].result);
-    });
-});
-describe('Lex: '+tests[7].test, () => {
-    it(tests[7].describe, () => {
-        const result = L.lex(tests[7].test).t
-        expect(result).to.deep.equal(tests[7].result);
-    });
-});
-describe('Lex: '+tests[8].test, () => {
-    it(tests[8].describe, () => {
-        const result = L.lex(tests[8].test).t
-        expect(result).to.deep.equal(tests[8].result);
-    });
-});
-describe('Lex: '+tests[9].test, () => {
-    it(tests[9].describe, () => {
-        const result = L.lex(tests[9].test).t
-        expect(result).to.deep.equal(tests[9].result);
-    });
-});
-describe('Lex: '+tests[10].test, () => {
-    it(tests[10].describe, () => {
-        const result = L.lex(tests[10].test).t
-        expect(result).to.deep.equal(tests[10].result);
+describe('Running Tests', () => {
+    //Dummy test needed before we can loop tests
+    it('Tests Complete', function(done){
+        tests.forEach(function(test) {
+            describe('Lex '+test.test, () => {
+                const result = L.lex(test.test);
+                //Test Token output
+                it(test.describe, ()=> {
+                    expect(result.t).to.deep.equal(test.result);
+                });
+                //Optional Error test
+                if(test.error){
+                    it('should report '+test.error, () => {
+                        expect(result.e).to.deep.equal(test.error);
+                    });
+                }
+            });
+        });
+        //Required for async testing loop
+        done();
     });
 });

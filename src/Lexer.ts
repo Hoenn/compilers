@@ -31,6 +31,13 @@ export class Lexer {
                 break;
             }
         }
+        //If we have no errors, check if EOP is missing. No need if there are other lex errors
+        if(result.e === null) {
+            if(tokens[tokens.length-1].kind != TokenType.EOP) {
+                tokens.push(new Token(TokenType.EOP, "$", lineNum));
+                result.e = "Warning: End of Program missing. Added $ symbol."
+            }
+        }
         console.log(tokens);
         return {t:tokens, e:result.e}; 
     }
@@ -52,7 +59,7 @@ export class Lexer {
         } else if (TokenRegex.Id.test(blob)) {
             return {t:[new Token(TokenType.Id, blob, lineNum)], e:null};
         } else if (TokenRegex.Quote.test(blob)) {
-            //Break "quoted" blob into characters
+            //Break "quoted" blob into characters after removing comments
             let noComment = blob.replace(/\/\*.*\*\//g, "");
             let splitQuote = noComment.split("");
             let tokenArray = [];

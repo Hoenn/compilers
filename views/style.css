@@ -31,10 +31,10 @@ html, body {
     opacity: 1;
 }
 .compile-warning {
-    color: rgb(243, 119, 33);
+    color: rgb(243, 119, 33) !important;
 }
 .compile-error {
-    color:  #bd93f9;
+    color:  #FF5555 !important;
 }
 #editor {
     margin: 0;
@@ -67,7 +67,7 @@ html, body {
     color: #f8f8f2;
     border-left: 1px solid #6272a4;
 }
-#log-text {
+.log {
     color: #f8f8f2;
 }
 .nav-pills > li > a {

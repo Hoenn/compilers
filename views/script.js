@@ -41,6 +41,11 @@ window.onload = function() {
 
     const LexerModule = require('../dist/Lexer.js');
     window.compileCode = function() {
+        //Don't run if editor is empty
+        if(editor.getValue().trim() == ""){
+            return;
+        } 
+        clearTabsAndErrors();
         $("#log-text").html("Starting Lexer...\n");
         //Safe way to track time, supported on newer browsers
         let start =  window.performance.now();
@@ -52,23 +57,41 @@ window.onload = function() {
 
         let time = window.performance.now()-start;
 
-        const tokens = result.t;
+        //Clear Lex tab
 
+        const tokens = result.t;
         //Append messages for whatever tokens are available
         for(var i = 0; i < tokens.length; i++) {
-            $("#log-text").append("[LEXER] => "+tokens[i].kind+" on line: "+tokens[i].lineNum+"\n");
+            let text = "[LEXER] => "+tokens[i].kind+" on line: "+tokens[i].lineNum+"\n"
+            logOutput("lexer",text);
         }
         //If there was an error report it and color it based on level
         if (result.e) {
             let errorMsg = $("<span></span>").append("[LEXER] => "+result.e.lvl+": "+result.e.msg+"\n")
                 .addClass('compile-'+result.e.lvl);
-            
-            $("#log-text").append(errorMsg);
+            logError("lexer", errorMsg);
+            $("#tab-head-two").addClass('compile-'+result.e.lvl);
         } 
-        $("#log-text").append("[LEXER] => Completed in: "+time.toFixed(2)+" ms");
+        logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms");
     }
 }
-
+logOutput = function (target, text) {
+    let element = "#"+target+"-text";
+    $(element).append(text);
+    $("#log-text").append(text);
+}
+logError = function (target, obj) {
+    let element = "#"+target+"-text";
+    $(element).append(obj);
+    $("#log-text").append(obj.clone());
+}
+clearTabsAndErrors = function(){
+    //Lexer
+    $("#lexer-text").html("");
+    $("#tab-head-two").removeClass( function(index, className) {
+        return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
+    });
+}
 
 ////D3 for AST, Might not be worth the extra work
 //var svg = d3.select("#ast-graph")

@@ -30,7 +30,10 @@ window.compileCode = function() {
         $("#log-text").append("[LEXER] => "+tokens[i].kind+" on line: "+tokens[i].lineNum+"\n");
     }
     if (result.e) {
-        $("#log-text").append("<span class='compileError'>[LEXER] => "+result.e+"</span>");
+        let errorMsg = $("<span></span>").append("[LEXER] => "+result.e.lvl+": "+result.e.msg)
+            .addClass('compile-'+result.e.lvl);
+           
+        $("#log-text").append(errorMsg);
     }
 }
 

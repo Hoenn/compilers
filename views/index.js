@@ -41,7 +41,7 @@ var Lexer = /** @class */ (function () {
         if (result.e === null) {
             if (tokens[tokens.length - 1].kind != Token_1.TokenType.EOP) {
                 tokens.push(new Token_1.Token(Token_1.TokenType.EOP, "$", lineNum));
-                result.e = "Warning: End of Program missing. Added $ symbol.";
+                result.e = this.warning("End of Program missing. Added $ symbol.");
             }
         }
         console.log(tokens);
@@ -88,7 +88,7 @@ var Lexer = /** @class */ (function () {
                 }
                 else {
                     //"quoted" may only contain valid lexemes (chars)
-                    return { t: tokenArray, e: this.lexErrorMessage(char, lineNum) };
+                    return { t: tokenArray, e: this.error(char, lineNum) };
                 }
             }
             return { t: tokenArray, e: null };
@@ -123,34 +123,36 @@ var Lexer = /** @class */ (function () {
                 var splitBlob = blob.split(Token_1.TokenRegex.Keywords)
                     .filter(function (def) { return def; });
                 var tokenArray = [];
-                var errorMsg = null;
+                var result = { t: null, e: null };
                 for (var _a = 0, splitBlob_1 = splitBlob; _a < splitBlob_1.length; _a++) {
                     var b = splitBlob_1[_a];
                     //Longest match on new string
-                    var result = this.longestMatch(b, lineNum);
+                    var result_1 = this.longestMatch(b, lineNum);
                     //If there is no error, keep this token and proceed
-                    if (result.e == null && result.t) {
-                        for (var _b = 0, _c = result.t; _b < _c.length; _b++) {
+                    if (result_1.t) {
+                        for (var _b = 0, _c = result_1.t; _b < _c.length; _b++) {
                             var t = _c[_b];
                             tokenArray.push(t);
                         }
                     }
                     else {
-                        errorMsg = result.e;
                         break;
                     }
                 }
-                return { t: tokenArray, e: errorMsg };
+                return { t: tokenArray, e: result.e };
             }
             else {
                 console.log(blob);
                 //If the blob doesn't contain any keywords and reached here it must not be valid
-                return { t: null, e: this.lexErrorMessage(blob, lineNum) };
+                return { t: null, e: this.error(blob, lineNum) };
             }
         }
     };
-    Lexer.prototype.lexErrorMessage = function (blob, lineNum) {
-        return "Unknown token " + blob.trim() + " on line " + lineNum;
+    Lexer.prototype.error = function (blob, lineNum) {
+        return { lvl: "error", msg: "Unknown token " + blob.trim() + " on line " + lineNum };
+    };
+    Lexer.prototype.warning = function (m) {
+        return { lvl: "warning", msg: m };
     };
     return Lexer;
 }());
@@ -257,7 +259,10 @@ window.compileCode = function() {
         $("#log-text").append("[LEXER] => "+tokens[i].kind+" on line: "+tokens[i].lineNum+"\n");
     }
     if (result.e) {
-        $("#log-text").append("<span class='compileError'>[LEXER] => "+result.e+"</span>");
+        let errorMsg = $("<span></span>").append("[LEXER] => "+result.e.lvl+": "+result.e.msg)
+            .addClass('compile-'+result.e.lvl);
+           
+        $("#log-text").append(errorMsg);
     }
 }
 

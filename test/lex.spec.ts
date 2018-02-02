@@ -13,7 +13,7 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
         ],
-        "error": null
+        "error": {lvl:null, msg:null}
     },
     {
         "test": "{{{{{}}}}}}$",
@@ -32,7 +32,7 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
         ],
-        "error": null
+        "error": {lvl:null, msg:null}
 
     },
     {
@@ -54,7 +54,7 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
         ],
-        "error": null
+        "error": {lvl:null, msg:null}
 
     },
     {
@@ -64,7 +64,7 @@ const tests = [
             new Token(TokenType.LBracket, "{", 1),
             new Token(TokenType.VarType, "int", 1),
         ],
-        "error": L.lexErrorMessage("@", 1)
+        "error": L.error("@", 1)
     },
     {
         "test": "{}${}$",
@@ -77,8 +77,7 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1),
         ],
-        "error": null
-
+        "error": {lvl:null, msg:null}
     },
     {
         "test": "{\n\"abc\"\n}$",
@@ -93,8 +92,7 @@ const tests = [
             new Token(TokenType.RBracket, "}", 3),
             new Token(TokenType.EOP, "$", 3)
         ],
-        "error": null
-
+        "error": {lvl:null, msg:null}
     },
     {
         "test": "{intx}$",
@@ -106,7 +104,7 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
         ],
-        "error": null
+        "error": {lvl:null, msg:null}
     },
     {
         "test": '"ab!c"$',
@@ -116,7 +114,7 @@ const tests = [
             new Token(TokenType.Char, "a", 1),
             new Token(TokenType.Char, "b", 1),
         ],
-        "error": L.lexErrorMessage("!", 1)
+        "error": L.error("!", 1)
     },
     {
         "test": '"a/*b*/c"$',
@@ -128,7 +126,7 @@ const tests = [
             new Token(TokenType.Quote, '"', 1),
             new Token(TokenType.EOP, "$", 1)
         ],
-        "error": null
+        "error": {lvl:null, msg:null}
 
     },
     {
@@ -142,7 +140,7 @@ const tests = [
             new Token(TokenType.Id, "b", 1),
             new Token(TokenType.EOP, "$", 1)
         ],
-        "error": null
+        "error": {lvl:null, msg:null}
     },
     {
         "test": "{}",
@@ -152,7 +150,7 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
         ],
-        "error": "Warning: End of Program missing. Added $ symbol."
+        "error": L.warning("End of Program missing. Added $ symbol.")
     },
     {
         "test": "{\t x\t \r \f \t }$",
@@ -163,7 +161,7 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
         ],
-        "error": null
+        "error": {lvl:null, msg:null}
     }
 
 ]
@@ -179,7 +177,7 @@ describe('Running Tests', () => {
                     expect(result.t).to.deep.equal(test.result);
                 });
                 //Optional Error test
-                if(test.error){
+                if(test.error.lvl || test.error.msg){
                     it('should report '+test.error, () => {
                         expect(result.e).to.deep.equal(test.error);
                     });

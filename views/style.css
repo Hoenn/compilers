@@ -30,6 +30,9 @@ html, body {
 #compile-button-span:hover {
     opacity: 1;
 }
+.compileError {
+    color: rgb(243, 119, 33);
+}
 #editor {
     margin: 0;
     position: absolute;

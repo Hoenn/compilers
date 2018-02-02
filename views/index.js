@@ -246,18 +246,18 @@ window.toggleEditorMode = function (btn) {
         $("#mode-toggle-button").text("Editor Mode: Default");
     }
 }
-console.log("???");
 const LexerModule = require('../dist/Lexer.js');
 window.compileCode = function() {
+    $("#log-text").html("Starting Lexer...\n");
     const lexer = new LexerModule.Lexer();
     const result = lexer.lex(editor.getValue());
     const tokens = result.t;
 
     for(var i = 0; i < tokens.length; i++) {
-        $("#log-text").append("[LEXER] => "+tokens[i].kind+" on "+tokens[i].lineNum+"\n");
+        $("#log-text").append("[LEXER] => "+tokens[i].kind+" on line: "+tokens[i].lineNum+"\n");
     }
     if (result.e) {
-        $("#log-text").append("[LEXER] => "+result.e);
+        $("#log-text").append("<span class='compileError'>[LEXER] => "+result.e+"</span>");
     }
 }
 

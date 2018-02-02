@@ -270,6 +270,7 @@ window.onload = function() {
 
     const LexerModule = require('../dist/Lexer.js');
     window.compileCode = function() {
+        //Don't run if editor is empty
         if(editor.getValue().trim() == ""){
             return;
         } 
@@ -301,6 +302,9 @@ window.onload = function() {
             $("#tab-head-two").addClass('compile-'+result.e.lvl);
         } 
         logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms");
+
+        //Go back to editor when complete
+        editor.focus();
     }
 }
 logOutput = function (target, text) {

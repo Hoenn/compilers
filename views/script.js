@@ -73,6 +73,9 @@ window.onload = function() {
             $("#tab-head-two").addClass('compile-'+result.e.lvl);
         } 
         logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms");
+
+        //Go back to editor when complete
+        editor.focus();
     }
 }
 logOutput = function (target, text) {

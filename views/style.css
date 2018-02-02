@@ -21,13 +21,16 @@ html, body {
     opacity: 0.7;
     transition: all .2s ease-in-out;
 }
+#compile-text {
+    transition: all .2s ease-in-out;
+}
 #compile-img {
     transition: all .2s ease-in-out;
 }
 #compile-button-span:hover {
     opacity: 1;
 }
-#compile-button-span:hover > #compile-img {
+#compile-button-span:hover > *{
     -webkit-filter:drop-shadow(0px -2px 3px #ffb86a);
     filter:drop-shadow(0px -2px 3px #ffb86a);
 }
@@ -82,6 +85,7 @@ html, body {
     padding-right: 8px;
     border-bottom: none;
     text-decoration: none;
+    transition: all 0.2s ease-in-out;
 }
 .nav-pills > li > a:hover,
 .nav-pills > li > a.active {

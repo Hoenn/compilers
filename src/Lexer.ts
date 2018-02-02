@@ -99,10 +99,8 @@ export class Lexer {
                 //If there are keywords, split string by them and longest match the result
                 let splitBlob = blob.split(TokenRegex.Keywords)
                     .filter((def)=>def);
-
                 let tokenArray = [];
                 let errorMsg:string|null = null;
-
                 for(let b of splitBlob) {
                     //Longest match on new string
                     let result = this.longestMatch(b, lineNum);
@@ -118,6 +116,7 @@ export class Lexer {
                 }
                 return {t:tokenArray, e: errorMsg};
             } else {
+				console.log(blob);
                 //If the blob doesn't contain any keywords and reached here it must not be valid
                 return {t: null, e: this.lexErrorMessage(blob, lineNum)};
             }

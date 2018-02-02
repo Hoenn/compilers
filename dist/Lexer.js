@@ -142,6 +142,7 @@ var Lexer = /** @class */ (function () {
                 return { t: tokenArray, e: errorMsg };
             }
             else {
+                console.log(blob);
                 //If the blob doesn't contain any keywords and reached here it must not be valid
                 return { t: null, e: this.lexErrorMessage(blob, lineNum) };
             }

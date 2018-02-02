@@ -143,6 +143,7 @@ var Lexer = /** @class */ (function () {
                 return { t: tokenArray, e: errorMsg };
             }
             else {
+                console.log(blob);
                 //If the blob doesn't contain any keywords and reached here it must not be valid
                 return { t: null, e: this.lexErrorMessage(blob, lineNum) };
             }
@@ -199,8 +200,8 @@ exports.TokenGlyphs = {
 };
 exports.TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
-    Split: new RegExp(/([a-z]+)|([0-9])|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\n)/g),
-    WhiteSpace: new RegExp(/^(\s)$/),
+    Split: new RegExp(/([a-z]+)|([0-9])|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\s)/g),
+    WhiteSpace: new RegExp(/\s/g),
     //Match any keyword first, then valid ids after
     Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false|[a-z])/g),
     Comment: new RegExp(/(^|\s)\/\*.*\*\/($|\s)/),
@@ -228,6 +229,7 @@ exports.TokenRegex = {
 var editor = ace.edit("editor");
 editor.setTheme("ace/theme/dracula");
 editor.getSession().setMode("ace/mode/javascript");
+editor.getSession().setOptions({useSoftTabs: true});
 editor.getSession().setUseWorker(false);
 editor.setShowPrintMargin(false);
 
@@ -244,11 +246,19 @@ window.toggleEditorMode = function (btn) {
         $("#mode-toggle-button").text("Editor Mode: Default");
     }
 }
-
+console.log("???");
 const LexerModule = require('../dist/Lexer.js');
 window.compileCode = function() {
     const lexer = new LexerModule.Lexer();
-    $('#log-text').append(lexer.lex(editor.getValue())+"\n");
+    const result = lexer.lex(editor.getValue());
+    const tokens = result.t;
+
+    for(var i = 0; i < tokens.length; i++) {
+        $("#log-text").append("[LEXER] => "+tokens[i].kind+" on "+tokens[i].lineNum+"\n");
+    }
+    if (result.e) {
+        $("#log-text").append("[LEXER] => "+result.e);
+    }
 }
 
 //Setup Memory gauge for machine code

@@ -2,6 +2,7 @@
 var editor = ace.edit("editor");
 editor.setTheme("ace/theme/dracula");
 editor.getSession().setMode("ace/mode/javascript");
+editor.getSession().setOptions({useSoftTabs: true});
 editor.getSession().setUseWorker(false);
 editor.setShowPrintMargin(false);
 
@@ -18,11 +19,19 @@ window.toggleEditorMode = function (btn) {
         $("#mode-toggle-button").text("Editor Mode: Default");
     }
 }
-
+console.log("???");
 const LexerModule = require('../dist/Lexer.js');
 window.compileCode = function() {
     const lexer = new LexerModule.Lexer();
-    $('#log-text').append(lexer.lex(editor.getValue())+"\n");
+    const result = lexer.lex(editor.getValue());
+    const tokens = result.t;
+
+    for(var i = 0; i < tokens.length; i++) {
+        $("#log-text").append("[LEXER] => "+tokens[i].kind+" on "+tokens[i].lineNum+"\n");
+    }
+    if (result.e) {
+        $("#log-text").append("[LEXER] => "+result.e);
+    }
 }
 
 //Setup Memory gauge for machine code

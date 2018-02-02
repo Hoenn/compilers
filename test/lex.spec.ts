@@ -153,6 +153,17 @@ const tests = [
             new Token(TokenType.EOP, "$", 1)
         ],
         "error": "Warning: End of Program missing. Added $ symbol."
+    },
+    {
+        "test": "{\t x\t \r \f \t }$",
+        "describe": "Ignore mixed whitespace characters",
+        "result": [
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.Id, "x", 1),
+            new Token(TokenType.RBracket, "}", 1),
+            new Token(TokenType.EOP, "$", 1)
+        ],
+        "error": null
     }
 
 ]

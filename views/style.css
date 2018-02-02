@@ -92,7 +92,7 @@ html, body {
 .tab-content {
     height: calc(100% - 30px);
 }
-#tab-one {
+#tab-one, #tab-two {
     height: 100%;
     overflow-y: scroll;
 }

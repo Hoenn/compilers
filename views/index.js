@@ -292,7 +292,7 @@ window.onload = function() {
         //Append messages for whatever tokens are available
         for(var i = 0; i < tokens.length; i++) {
             let text = "[LEXER] => "+tokens[i].kind+" on line: "+tokens[i].lineNum+"\n"
-            logOutput("lexer",text);
+            tabOutput("lexer",text);
         }
         //If there was an error report it and color it based on level
         if (result.e) {
@@ -306,6 +306,10 @@ window.onload = function() {
         //Go back to editor when complete
         editor.focus();
     }
+}
+tabOutput = function (target, text) {
+    let element = "#"+target+"-text";
+    $(element).append(text);
 }
 logOutput = function (target, text) {
     let element = "#"+target+"-text";

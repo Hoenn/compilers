@@ -98,6 +98,9 @@ var Lexer = /** @class */ (function () {
         else if (Token_1.TokenRegex.Assign.test(blob)) {
             return { t: [new Token_1.Token(Token_1.TokenType.Assign, blob, lineNum)], e: null };
         }
+        else if (Token_1.TokenRegex.IntOp.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.IntOp, blob, lineNum)], e: null };
+        }
         else if (Token_1.TokenRegex.BoolOp.test(blob)) {
             return { t: [new Token_1.Token(Token_1.TokenType.BoolOp, blob, lineNum)], e: null };
         }

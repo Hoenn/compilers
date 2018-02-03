@@ -84,6 +84,8 @@ export class Lexer {
             return {t:[new Token(TokenType.Digit, blob, lineNum)], e:null};
         } else if (TokenRegex.Assign.test(blob)) {
             return {t:[new Token(TokenType.Assign, blob, lineNum)], e:null};
+        } else if (TokenRegex.IntOp.test(blob)) {
+            return {t:[new Token(TokenType.IntOp, blob, lineNum)], e:null};
         } else if (TokenRegex.BoolOp.test(blob)) {
             return {t:[new Token(TokenType.BoolOp, blob, lineNum)], e:null};
         } else if (TokenRegex.LParen.test(blob)) {

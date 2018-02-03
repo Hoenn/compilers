@@ -162,6 +162,20 @@ const tests = [
             new Token(TokenType.EOP, "$", 1)
         ],
         "error": {lvl:null, msg:null}
+    },
+    {
+        "test": "a = 1+ c$",
+        "describe": "Lex addition",
+        "result": [
+            new Token(TokenType.Id, "a", 1),
+            new Token(TokenType.Assign, "=", 1),
+            new Token(TokenType.Digit, "1", 1),
+            new Token(TokenType.IntOp, "+", 1),
+            new Token(TokenType.Id, "c", 1),
+            new Token(TokenType.EOP, "$", 1)
+        ],
+        "error": {lvl: null, msg:null}
+
     }
 
 ]

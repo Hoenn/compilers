@@ -184,7 +184,7 @@ describe('Running Tests', () => {
     //Dummy test needed before we can loop tests
     it('Tests Complete', function(done){
         tests.forEach(function(test) {
-            describe('Lex '+test.test, () => {
+            describe('Lex: '+test.test, () => {
                 const result = L.lex(test.test);
                 //Test Token output
                 it(test.describe, ()=> {

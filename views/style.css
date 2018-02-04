@@ -39,12 +39,7 @@ html, body {
     width: 52px;
     height: 62px;
 }
-.compile-warning {
-    color: rgb(243, 119, 33) !important;
-}
-.compile-error {
-    color:  #FF5555 !important;
-}
+
 #editor {
     margin: 0;
     position: absolute;
@@ -53,22 +48,71 @@ html, body {
     left: 0;
     right: 0;
 }
-
+#left {
+    padding-right: 0 !important;
+}
+#overlay {
+    display: grid;
+    grid-template-columns: auto auto auto auto 25%;
+}
 #mode-toggle-button {
+    opacity: 0.5;
     /*positioning*/
     z-index: 1000;
+    grid-row: 1;
+    grid-column: 5;
     position: relative;
     top:0;
     float:right;
     /*style*/
     background-color: transparent;
     border: 1px solid transparent;
+    border-radius: 3px;
     color:white;
+    cursor: pointer;
     font-size: 12px;
 }
 #mode-toggle-button:hover {
     border: 1px solid;
     border-color: #bd93f9;
+}
+#dropdown {
+    z-index: 1000;
+    opacity: .5;
+    grid-column: 5;
+    grid-row: 2;
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: white;
+    font-size: 12px;
+}
+.scrollable-menu {
+    height: auto;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#dropdown-menu-button, .dropdown-item, .dropdown-menu {
+    background-color: transparent !important;
+    border: 1px solid transparent;
+    color: white !important;
+    font-size: 12px !important;
+}
+#dropdown-menu-button:hover, .dropdown-item:hover {
+    border: 1px solid !important;
+    border-color: #bd93f9 !important;
+}
+.dropdown-menu {
+    background-color: rgba(0,0,0,1) !important;
+    min-width: 100% !important;
+    max-width: 200% !important;
+
+}
+.dropdown-item {
+    opacity: 1;
+    border: 1px solid transparent !important;
+    position: relative;
+    cursor: pointer;
 }
 
 #right {
@@ -103,6 +147,7 @@ html, body {
 
 ::-webkit-scrollbar {
     width: 10px;
+    height: 10px;
 }
 ::-webkit-scrollbar-track {
     background-color: #44475a;
@@ -115,4 +160,10 @@ html, body {
 }
 ::-webkit-scrollbar-corner {
     background-color: #44475a;
+}
+.compile-warning {
+    color: rgb(243, 119, 33) !important;
+}
+.compile-error {
+    color:  #FF5555 !important;
 }

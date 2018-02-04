@@ -23,8 +23,17 @@
 
 <div id="content" class="row">
     <!-- input -->
-    <div id="left" class="col-md-4 no-fl444oat">
-        <button id="mode-toggle-button" onclick="toggleEditorMode()">Editor Mode: Default</button>
+    <div id="left" class="col-md-4 no-float">
+        <div id="overlay">
+            <button id="mode-toggle-button" onclick="toggleEditorMode()">Editor Mode: Default</button>
+            <div class="dropdown" id="dropdown">
+                <button class="btn btn-block btn-secondary dropdown-toggle" type="button" id="dropdown-menu-button"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Programs
+                </button>
+                <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdown-menu-button">
+                </div>
+            </div>
+        </div>
         <pre id="editor"></pre>
     </div>
     <!-- output -->

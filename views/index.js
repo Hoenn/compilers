@@ -231,14 +231,17 @@ exports.TokenRegex = {
 
 },{}],3:[function(require,module,exports){
 
+var editor;
 window.onload = function() {
     //Setup Ace editor
-    var editor = ace.edit("editor");
+    editor = ace.edit("editor");
+    editor.setFontSize(16);
     editor.setTheme("ace/theme/dracula");
     editor.getSession().setMode("ace/mode/javascript");
     editor.getSession().setOptions({useSoftTabs: true});
     editor.getSession().setUseWorker(false);
     editor.setShowPrintMargin(false);
+    editor.$blockScrolling = Infinity;
     //Vim Mode toggling
     editorMode = "default";
     window.toggleEditorMode = function (btn) {
@@ -251,6 +254,7 @@ window.onload = function() {
             editorMode = "default";
             $("#mode-toggle-button").text("Editor Mode: Default");
         }
+        editor.focus();
     }
     //Setup Memory gauge for machine code
     var gauge = new JustGage({
@@ -268,9 +272,23 @@ window.onload = function() {
         valueFontColor: "#f8f8f2",
         valueFontFamily: 'monospace'
     });
-    //Just for testing
+    //Just for testing gauge
     setInterval(function() { gauge.refresh(getRandomInt(0,256))}, 2000);
 
+    //Setup clickable Example Program List
+    programs.forEach(element => {
+        let item = $("<span class='dropdown-item'></span")
+            .html(element.name)
+            .css("cursor", "pointer")
+            .on('click', function() {editor.setValue(""+element.source, 1)});
+        if(element.type != null) {
+            console.log(statusColor(element.type));
+            item.addClass(statusColor(element.type))
+        }
+        $(".dropdown-menu").append(item);
+    });
+
+    //Compile Code
     const LexerModule = require('../dist/Lexer.js');
     window.compileCode = function() {
         //Don't run if editor is empty
@@ -300,9 +318,9 @@ window.onload = function() {
         //If there was an error report it and color it based on level
         if (result.e) {
             let errorMsg = $("<span></span>").append("[LEXER] => "+result.e.lvl+": "+result.e.msg+"\n")
-                .addClass('compile-'+result.e.lvl);
+                .addClass(statusColor(result.e.lvl));
             logError("lexer", errorMsg);
-            $("#tab-head-two").addClass('compile-'+result.e.lvl);
+            $("#tab-head-two").addClass(statusColor(result.e.lvl));
         } 
         logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms");
 
@@ -324,6 +342,9 @@ logError = function (target, obj) {
     $(element).append(obj);
     $("#log-text").append(obj.clone());
 }
+statusColor = function (type) {
+    return 'compile-'+type;
+}
 clearTabsAndErrors = function(){
     //Lexer
     $("#lexer-text").html("");
@@ -332,21 +353,77 @@ clearTabsAndErrors = function(){
     });
 }
 
-////D3 for AST, Might not be worth the extra work
-//var svg = d3.select("#ast-graph")
-//    .append("svg")
-//    .attr("width", "100%")
-//    .attr("height", "100%")
-//    .call(d3.zoom().on("zoom", function() {
-//        svg.attr("transform",d3.event.transform) 
-//    }))
-//    .append("g");
-//
-//    svg.append("circle")
-//        .attr("cx", 100)
-//        .attr("cy", $("#ast-graph").height())
-//        .attr("r", 20)
-//        .style("fill", "#b9d334");
-//console.log($("#ast-graph").width());
+loadProgram = function(index) {
+    editor.setValue(""+programs[index].source,1);
+}
 
+var programs = [
+{
+    "name": "Example",
+    "source": 
+`/*Full Grammar*/
+{
+    int x
+    x =0
+    int y
+    y= 5
+
+    while(x != y) {
+        print(x)
+        x = x + 1
+        if(x == 3) {
+            print("fizz")
+        }
+        if (x==5) {
+            print("buzz")
+        }
+
+    }
+}$
+`,
+    "type":null
+,
+    "type":null
+},
+{
+    "name": "EOP Warning",
+    "source":
+`/*Missing EOP Warning*/
+{
+    int x
+}
+`,
+    "type": "warning"
+},
+{
+    "name": "Invalid Token",
+    "source": 
+`/*Invalid Token Error*/
+{
+    int y
+    y = 3
+    print(y * 2)
+} $
+`,
+    "type": "error"
+},
+{
+    "name":"abc"
+},
+{
+    "name":"abc"
+},
+{
+    "name":"abc"
+},
+{
+    "name":"abc"
+},
+{
+    "name":"abc"
+},
+{
+    "name":"abc"
+}
+];
 },{"../dist/Lexer.js":1}]},{},[3]);

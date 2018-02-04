@@ -142,7 +142,7 @@ html, body {
 }
 #tab-one, #tab-two {
     height: 100%;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 ::-webkit-scrollbar {

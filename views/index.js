@@ -282,7 +282,6 @@ window.onload = function() {
             .css("cursor", "pointer")
             .on('click', function() {editor.setValue(""+element.source, 1)});
         if(element.type != null) {
-            console.log(statusColor(element.type));
             item.addClass(statusColor(element.type))
         }
         $(".dropdown-menu").append(item);
@@ -423,7 +422,7 @@ var programs = [
     "name":"abc"
 },
 {
-    "name":"abc"
+    "name":"this is a longer one for width"
 }
 ];
 },{"../dist/Lexer.js":1}]},{},[3]);

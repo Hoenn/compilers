@@ -18,24 +18,22 @@ html, body {
 }
 #compile-button-span {
     color: #f8f8f2;
-    opacity: 0.7;
+    opacity: .7;
     transition: all .2s ease-in-out;
 }
 #compile-text {
-    transition: all .2s ease-in-out;
-}
-#compile-img {
     transition: all .2s ease-in-out;
 }
 #compile-button-span:hover {
     opacity: 1;
 }
 #compile-button-span:hover {
-    -webkit-filter:drop-shadow(0px -2px 3px #ffb86a);
-    filter:drop-shadow(0px -2px 3px #ffb86a);
+    -webkit-filter:drop-shadow(0px -2px 3px #bd93f98a);
+    filter:drop-shadow(0px -2px 3px #bd93f98a);
 }
 #compile-img{
     z-index: 1000;
+    transition: all 1s ease-out;
     width: 52px;
     height: 62px;
 }

@@ -318,15 +318,37 @@ window.onload = function() {
         if (result.e) {
             let errorMsg = $("<span></span>").append("[LEXER] => "+result.e.lvl+": "+result.e.msg+"\n")
                 .addClass(statusColor(result.e.lvl));
+            applyFilter($("#compile-img"), result.e.lvl);
+            
             logError("lexer", errorMsg);
             $("#tab-head-two").addClass(statusColor(result.e.lvl));
-        } 
+        } else {
+            applyFilter($("#compile-img"), 'default');
+        }
         logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms");
 
         //Go back to editor when complete
         editor.focus();
     }
 }
+/*
+Working program, blue or green?
+const greenFilter = "hue-rotate(220deg)";
+const blueFilter = "hue-rotate(310deg)";
+*/
+const filters = {
+    "warning": "hue-rotate(110deg)",
+    "error": "hue-rotate(78deg)",
+    "default": "hue-rotate(0deg)"
+}
+applyFilter = function(element, color) {
+    element.css("filter", filters['default']).delay(1000)
+    .queue(function (next) {
+        $(this).css("filter", filters[color]);
+        next();
+    });
+}
+
 tabOutput = function (target, text) {
     let element = "#"+target+"-text";
     $(element).append(text);

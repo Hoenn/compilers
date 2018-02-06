@@ -27,8 +27,6 @@ compileCode = function() {
 
     let time = window.performance.now()-start;
 
-    //Clear Lex tab
-
     const tokens = result.t;
     //Append messages for whatever tokens are available
     for(var i = 0; i < tokens.length; i++) {
@@ -46,6 +44,7 @@ compileCode = function() {
     } else {
         applyFilter($("#compile-img"), 'default');
     }
+
     logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms");
 
     //Go back to editor when complete
@@ -60,14 +59,20 @@ const blueFilter = "hue-rotate(310deg)";
 const filters = {
     "warning": "hue-rotate(110deg)",
     "error": "hue-rotate(78deg)",
+    "neutral": "hue-rotate(220deg)",
     "default": "hue-rotate(0deg)"
 }
 applyFilter = function(element, color) {
-    element.css("filter", filters['default']).delay(1000)
-    .queue(function (next) {
-        $(this).css("filter", filters[color]);
-        next();
+    $(element).css("filter", randomFilter()).delay(750).queue(function(next) {
+            $(this).css("filter", filters[color]);
+            next();
     });
+}
+applyRandomFilter = function(element) {
+    $(element).css("filter", randomFilter());
+}
+randomFilter = function() {
+    return "hue-rotate("+(160+Math.floor(Math.random()*200))+"deg)";
 }
 
 tabOutput = function (target, text) {

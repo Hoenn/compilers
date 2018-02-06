@@ -33,7 +33,7 @@ html, body {
 }
 #compile-img{
     z-index: 1000;
-    transition: all 1s ease-out;
+    transition: all .75s ease-out;
     width: 52px;
     height: 62px;
 }

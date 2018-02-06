@@ -14,7 +14,7 @@ export function main(sourceArg: string, filePath?: boolean) {
 
 }
 console.log(process.argv);
-if(process.argv[3] == 'r'||process.argv[3]=='raw'){
+if(process.argv[3] && process.argv[3] == 'r'||process.argv[3]=='raw'){
     main(process.argv[2], false);
 } else {
     main(process.argv[2], true);

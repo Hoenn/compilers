@@ -66,7 +66,6 @@ export class Lexer {
             let noComment = blob.replace(/\/\*.*\*\//g, "");
             let splitQuote = noComment.split("");
             let tokenArray = [];
-            console.log(splitQuote);
             for(let char of splitQuote) {
                 //If it's a quote simply add that token
                 if(char === "\""){

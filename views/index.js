@@ -79,6 +79,7 @@ var Lexer = /** @class */ (function () {
             for (var _i = 0, splitQuote_1 = splitQuote; _i < splitQuote_1.length; _i++) {
                 var char = splitQuote_1[_i];
                 //If it's a quote simply add that token
+                console.log(char);
                 if (char === "\"") {
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Quote, char, lineNum));
                 }
@@ -206,7 +207,7 @@ exports.TokenGlyphs = {
 exports.TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
     Split: new RegExp(/([a-z]+)|([0-9])|(".*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\s)/g),
-    WhiteSpace: new RegExp(/\s/g),
+    WhiteSpace: new RegExp(/^(\s)$/g),
     //Match any keyword first, then valid ids after
     Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false|[a-z])/g),
     Comment: new RegExp(/(^|\s)\/\*.*\*\/($|\s)/),

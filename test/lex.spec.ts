@@ -192,7 +192,7 @@ describe('Running Tests', () => {
                 });
                 //Optional Error test
                 if(test.error.lvl || test.error.msg){
-                    it('should report '+test.error, () => {
+                    it('Should report: '+test.error.lvl+': '+test.error.msg, () => {
                         expect(result.e).to.deep.equal(test.error);
                     });
                 }

@@ -20,6 +20,7 @@ export class Lexer {
                 lineNum += 1;
                 continue;
             } else if (blob.match(TokenRegex.Comment) || blob.match(TokenRegex.WhiteSpace)){
+                console.log();
                 continue;
             }
             result = this.longestMatch(blob, lineNum);

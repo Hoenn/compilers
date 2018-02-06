@@ -45,7 +45,7 @@ export const TokenRegex:{[key:string]:RegExp } = {
     WhiteSpace: new RegExp(/^(\s)$/g),
     //Match any keyword first, then valid ids after
     Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false|[a-z])/g),
-    Comment: new RegExp(/(^|\s)\/\*.*\*\/($|\s)/),
+    Comment: new RegExp(/^\/\*.*\*\/$/),
     EOP: new RegExp(/(^|\s)[$]($|\s)/),
     While: new RegExp(/(^|\s)while($|\s)/),
     If: new RegExp(/(^|\s)if($|\s)/),

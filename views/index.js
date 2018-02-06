@@ -22,6 +22,7 @@ var Lexer = /** @class */ (function () {
                 continue;
             }
             else if (blob.match(Token_1.TokenRegex.Comment) || blob.match(Token_1.TokenRegex.WhiteSpace)) {
+                console.log();
                 continue;
             }
             result = this.longestMatch(blob, lineNum);
@@ -75,11 +76,9 @@ var Lexer = /** @class */ (function () {
             var noComment = blob.replace(/\/\*.*\*\//g, "");
             var splitQuote = noComment.split("");
             var tokenArray = [];
-            console.log(splitQuote);
             for (var _i = 0, splitQuote_1 = splitQuote; _i < splitQuote_1.length; _i++) {
                 var char = splitQuote_1[_i];
                 //If it's a quote simply add that token
-                console.log(char);
                 if (char === "\"") {
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Quote, char, lineNum));
                 }
@@ -210,7 +209,7 @@ exports.TokenRegex = {
     WhiteSpace: new RegExp(/^(\s)$/g),
     //Match any keyword first, then valid ids after
     Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false|[a-z])/g),
-    Comment: new RegExp(/(^|\s)\/\*.*\*\/($|\s)/),
+    Comment: new RegExp(/^\/\*.*\*\/$/),
     EOP: new RegExp(/(^|\s)[$]($|\s)/),
     While: new RegExp(/(^|\s)while($|\s)/),
     If: new RegExp(/(^|\s)if($|\s)/),
@@ -256,8 +255,6 @@ const programs = [
 }$
 `,
     "type":null
-,
-    "type":null
 },
 {
     "name": "EOP Warning",
@@ -282,7 +279,28 @@ const programs = [
     "type": "error"
 },
 {
-    "name":"abc"
+    "name":"Multiple Programs",
+    "source":
+`/*Multiple Programs*/
+{
+    int x
+} $ {
+    int y
+} $
+`,
+    "type": null
+},
+{
+    "name":"Lex Edge Cases",
+    "source":
+`/*Lex Edge Cases*/
+"a /*b*/ c"
+"int x"
+int intel
+intintel
+"ab
+`,
+    "type": "warning"
 },
 {
     "name":"abc"
@@ -294,11 +312,27 @@ const programs = [
     "name":"abc"
 },
 {
-    "name":"abc"
-},
+    "name":"Fast Inverse Square Root",
+    "source":
+`
+float Q_rsqrt( float number )
 {
-    "name":"this is a longer one for width"
-}
+	long i;
+	float x2, y;
+	const float threehalfs = 1.5F;
+
+	x2 = number * 0.5F;
+	y  = number;
+	i  = * ( long * ) &y;                       // evil floating point bit level hacking
+	i  = 0x5f3759df - ( i >> 1 );               // what the fuck? 
+	y  = * ( float * ) &i;
+	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
+//	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+
+    return y;
+`,
+    "type":"error"
+},
 ];
 module.exports = {
     programs: programs

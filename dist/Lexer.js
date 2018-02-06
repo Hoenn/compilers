@@ -21,6 +21,7 @@ var Lexer = /** @class */ (function () {
                 continue;
             }
             else if (blob.match(Token_1.TokenRegex.Comment) || blob.match(Token_1.TokenRegex.WhiteSpace)) {
+                console.log();
                 continue;
             }
             result = this.longestMatch(blob, lineNum);
@@ -74,11 +75,9 @@ var Lexer = /** @class */ (function () {
             var noComment = blob.replace(/\/\*.*\*\//g, "");
             var splitQuote = noComment.split("");
             var tokenArray = [];
-            console.log(splitQuote);
             for (var _i = 0, splitQuote_1 = splitQuote; _i < splitQuote_1.length; _i++) {
                 var char = splitQuote_1[_i];
                 //If it's a quote simply add that token
-                console.log(char);
                 if (char === "\"") {
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Quote, char, lineNum));
                 }

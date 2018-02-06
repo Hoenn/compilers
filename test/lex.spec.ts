@@ -117,11 +117,12 @@ const tests = [
         "error": L.error("!", 1)
     },
     {
-        "test": '"a /*b*/c"$',
+        "test": '"a /*b*/ c"$',
         "describe": "Ignore comments within quotes",
         "result": [
             new Token(TokenType.Quote, '"', 1),
             new Token(TokenType.Char, "a", 1),
+            new Token(TokenType.Char, " ", 1),
             new Token(TokenType.Char, " ", 1),
             new Token(TokenType.Char, "c", 1),
             new Token(TokenType.Quote, '"', 1),

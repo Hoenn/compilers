@@ -239,7 +239,7 @@ const programs = [
     int x
     x =0
     int y
-    y= 5
+    y= 6 
 
     while(x != y) {
         print(x)
@@ -302,19 +302,11 @@ intintel
 `,
     "type": "warning"
 },
-{
-    "name":"abc"
-},
-{
-    "name":"abc"
-},
-{
-    "name":"abc"
-},
+
 {
     "name":"Fast Inverse Square Root",
     "source":
-`
+`/*Fast Inverse Square Root*/
 float Q_rsqrt( float number )
 {
 	long i;
@@ -324,7 +316,7 @@ float Q_rsqrt( float number )
 	x2 = number * 0.5F;
 	y  = number;
 	i  = * ( long * ) &y;                       // evil floating point bit level hacking
-	i  = 0x5f3759df - ( i >> 1 );               // what the fuck? 
+	i  = 0x5f3759df - ( i >> 1 );               // what the f***? 
 	y  = * ( float * ) &i;
 	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
 //	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
@@ -332,11 +324,12 @@ float Q_rsqrt( float number )
     return y;
 `,
     "type":"error"
-},
+}
 ];
 module.exports = {
     programs: programs
 }
+
 },{}],4:[function(require,module,exports){
 var example  = require('./examples');
 const programs = example.programs;
@@ -370,7 +363,7 @@ compileCode = function() {
     const tokens = result.t;
     //Append messages for whatever tokens are available
     for(var i = 0; i < tokens.length; i++) {
-        let text = "[LEXER] => "+tokens[i].kind+" on line: "+tokens[i].lineNum+"\n"
+        let text = "[LEXER] => "+tokens[i].kind+" ["+tokens[i].value+"] on line: "+tokens[i].lineNum+"\n";
         tabOutput("lexer",text);
     }
     //If there was an error report it and color it based on level
@@ -504,4 +497,5 @@ setupProgramList = function() {
     });
 
 }
+
 },{"../dist/Lexer.js":1,"./examples":3}]},{},[4]);

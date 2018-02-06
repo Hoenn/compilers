@@ -7,7 +7,7 @@ const programs = [
     int x
     x =0
     int y
-    y= 5
+    y= 6 
 
     while(x != y) {
         print(x)
@@ -70,19 +70,11 @@ intintel
 `,
     "type": "warning"
 },
-{
-    "name":"abc"
-},
-{
-    "name":"abc"
-},
-{
-    "name":"abc"
-},
+
 {
     "name":"Fast Inverse Square Root",
     "source":
-`
+`/*Fast Inverse Square Root*/
 float Q_rsqrt( float number )
 {
 	long i;
@@ -92,7 +84,7 @@ float Q_rsqrt( float number )
 	x2 = number * 0.5F;
 	y  = number;
 	i  = * ( long * ) &y;                       // evil floating point bit level hacking
-	i  = 0x5f3759df - ( i >> 1 );               // what the fuck? 
+	i  = 0x5f3759df - ( i >> 1 );               // what the f***? 
 	y  = * ( float * ) &i;
 	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
 //	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
@@ -100,7 +92,7 @@ float Q_rsqrt( float number )
     return y;
 `,
     "type":"error"
-},
+}
 ];
 module.exports = {
     programs: programs

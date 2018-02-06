@@ -30,7 +30,7 @@ compileCode = function() {
     const tokens = result.t;
     //Append messages for whatever tokens are available
     for(var i = 0; i < tokens.length; i++) {
-        let text = "[LEXER] => "+tokens[i].kind+" on line: "+tokens[i].lineNum+"\n"
+        let text = "[LEXER] => "+tokens[i].kind+" ["+tokens[i].value+"] on line: "+tokens[i].lineNum+"\n";
         tabOutput("lexer",text);
     }
     //If there was an error report it and color it based on level

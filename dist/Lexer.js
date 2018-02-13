@@ -14,14 +14,12 @@ var Lexer = /** @class */ (function () {
         var result = { t: null, e: null };
         for (var _i = 0, tokenBlobs_1 = tokenBlobs; _i < tokenBlobs_1.length; _i++) {
             var blob = tokenBlobs_1[_i];
-            //If newline is found increment lineNum but skip
             //If a comment or whitespace just skip
-            if (blob.match("\n")) {
-                lineNum += 1;
-                continue;
-            }
-            else if (blob.match(Token_1.TokenRegex.Comment) || blob.match(Token_1.TokenRegex.WhiteSpace)) {
-                console.log();
+            if (blob.match(Token_1.TokenRegex.Comment) || blob.match(Token_1.TokenRegex.WhiteSpace)) {
+                //If newline is found increment lineNum but skip
+                if (blob.match("\n")) {
+                    lineNum += 1;
+                }
                 continue;
             }
             result = this.longestMatch(blob, lineNum);
@@ -60,6 +58,10 @@ var Lexer = /** @class */ (function () {
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Quote, char, lineNum));
                 }
                 else if (char.match(/[a-z]/) || char.match(/\s/)) {
+                    //If it's a new line, accurately report it
+                    if (char.match("\n")) {
+                        return { t: tokenArray, e: this.error("[\n]", lineNum) };
+                    }
                     //If it's a letter or space add that token
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Char, char, lineNum));
                 }

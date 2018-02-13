@@ -14,13 +14,12 @@ export class Lexer {
         let tokens: Token[] = [];
         let result: {t:Token[]|null, e: Error|null} = {t:null, e:null}
         for(let blob of tokenBlobs) {
-            //If newline is found increment lineNum but skip
             //If a comment or whitespace just skip
-            if(blob.match("\n")) {
-                lineNum += 1;
-                continue;
-            } else if (blob.match(TokenRegex.Comment) || blob.match(TokenRegex.WhiteSpace)){
-                console.log();
+            if (blob.match(TokenRegex.Comment) || blob.match(TokenRegex.WhiteSpace)){
+            //If newline is found increment lineNum but skip
+                if (blob.match("\n")) {
+                    lineNum+=1;
+                }
                 continue;
             }
             result = this.longestMatch(blob, lineNum);
@@ -57,6 +56,10 @@ export class Lexer {
                 if(char === "\""){
                     tokenArray.push(new Token(TokenType.Quote, char, lineNum));
                 } else if (char.match(/[a-z]/) || char.match(/\s/)) {
+                    //If it's a new line, accurately report it
+                    if(char.match("\n")){
+                        return {t:tokenArray, e:this.error("[\n]", lineNum)};
+                    }
                     //If it's a letter or space add that token
                     tokenArray.push(new Token(TokenType.Char, char, lineNum));
                 } else {

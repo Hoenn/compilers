@@ -32,6 +32,9 @@ compileCode = function() {
     for(var i = 0; i < tokens.length; i++) {
         let text = "[LEXER] => "+tokens[i].kind+" ["+tokens[i].value+"] on line: "+tokens[i].lineNum+"\n";
         tabOutput("lexer",text);
+        if(tokens[i].kind == "EOP") {
+            $("#lexer-text").append("\n");
+        }
     }
     //If there was an error report it and color it based on level
     if (result.e) {

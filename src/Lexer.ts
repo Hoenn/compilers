@@ -37,7 +37,7 @@ export class Lexer {
         }
         //If we have no errors, check if EOP is missing. No need if there are other lex errors
         if(result.e === null) {
-            if(tokens[tokens.length-1].kind != TokenType.EOP) {
+            if(tokens.length == 0  || tokens[tokens.length-1].kind != TokenType.EOP) {
                 tokens.push(new Token(TokenType.EOP, "$", lineNum));
                 result.e = this.warning("End of Program missing. Added $ symbol.");
             }

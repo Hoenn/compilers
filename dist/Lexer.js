@@ -50,6 +50,7 @@ var Lexer = /** @class */ (function () {
             //Break "quoted" blob into characters after removing comments
             var noComment = blob.replace(/\/\*.*\*\//g, "");
             var splitQuote = noComment.split("");
+            console.log(splitQuote);
             var tokenArray = [];
             for (var _i = 0, splitQuote_1 = splitQuote; _i < splitQuote_1.length; _i++) {
                 var char = splitQuote_1[_i];

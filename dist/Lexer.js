@@ -48,29 +48,7 @@ var Lexer = /** @class */ (function () {
         return { t: tokens, e: result.e };
     };
     Lexer.prototype.longestMatch = function (blob, lineNum) {
-        //Test the blob for each allowed token
-        if (Token_1.TokenRegex.While.test(blob)) {
-            return { t: [new Token_1.Token(Token_1.TokenType.While, blob, lineNum)], e: null };
-        }
-        else if (Token_1.TokenRegex.Print.test(blob)) {
-            return { t: [new Token_1.Token(Token_1.TokenType.Print, blob, lineNum)], e: null };
-        }
-        else if (Token_1.TokenRegex.EOP.test(blob)) {
-            return { t: [new Token_1.Token(Token_1.TokenType.EOP, blob, lineNum)], e: null };
-        }
-        else if (Token_1.TokenRegex.VarType.test(blob)) {
-            return { t: [new Token_1.Token(Token_1.TokenType.VarType, blob, lineNum)], e: null };
-        }
-        else if (Token_1.TokenRegex.If.test(blob)) {
-            return { t: [new Token_1.Token(Token_1.TokenType.If, blob, lineNum)], e: null };
-        }
-        else if (Token_1.TokenRegex.BoolLiteral.test(blob)) {
-            return { t: [new Token_1.Token(Token_1.TokenType.BoolLiteral, blob, lineNum)], e: null };
-        }
-        else if (Token_1.TokenRegex.Id.test(blob)) {
-            return { t: [new Token_1.Token(Token_1.TokenType.Id, blob, lineNum)], e: null };
-        }
-        else if (Token_1.TokenRegex.Quote.test(blob)) {
+        if (Token_1.TokenRegex.Quote.test(blob)) {
             //Break "quoted" blob into characters after removing comments
             var noComment = blob.replace(/\/\*.*\*\//g, "");
             var splitQuote = noComment.split("");
@@ -91,6 +69,27 @@ var Lexer = /** @class */ (function () {
                 }
             }
             return { t: tokenArray, e: null };
+        }
+        else if (Token_1.TokenRegex.While.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.While, blob, lineNum)], e: null };
+        }
+        else if (Token_1.TokenRegex.Print.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.Print, blob, lineNum)], e: null };
+        }
+        else if (Token_1.TokenRegex.EOP.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.EOP, blob, lineNum)], e: null };
+        }
+        else if (Token_1.TokenRegex.VarType.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.VarType, blob, lineNum)], e: null };
+        }
+        else if (Token_1.TokenRegex.If.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.If, blob, lineNum)], e: null };
+        }
+        else if (Token_1.TokenRegex.BoolLiteral.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.BoolLiteral, blob, lineNum)], e: null };
+        }
+        else if (Token_1.TokenRegex.Id.test(blob)) {
+            return { t: [new Token_1.Token(Token_1.TokenType.Id, blob, lineNum)], e: null };
         }
         else if (Token_1.TokenRegex.Digit.test(blob)) {
             return { t: [new Token_1.Token(Token_1.TokenType.Digit, blob, lineNum)], e: null };

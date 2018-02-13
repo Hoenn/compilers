@@ -50,7 +50,7 @@ exports.TokenRegex = {
     While: new RegExp(/(^|\s)while($|\s)/),
     If: new RegExp(/(^|\s)if($|\s)/),
     Print: new RegExp(/(^|\s)print($|\s)/),
-    VarType: new RegExp(/(^|\s)(int|boolean|string)($|\s)/),
+    VarType: new RegExp(/(^|\s)(int|boolean|string)($|\s)/g),
     BoolLiteral: new RegExp(/(^|\s)(true|false)($|\s)/),
     Id: new RegExp(/^[a-z]$/),
     Quote: new RegExp(/(".*)/g),

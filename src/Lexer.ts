@@ -47,22 +47,7 @@ export class Lexer {
     }
 
     longestMatch(blob: string, lineNum: number): {t: Token[]|null, e: Error | null} {
-        //Test the blob for each allowed token
-        if(TokenRegex.While.test(blob)){
-            return {t:[new Token(TokenType.While, blob, lineNum)], e: null};
-        } else if(TokenRegex.Print.test(blob)) {
-            return {t:[new Token(TokenType.Print, blob, lineNum)], e:null};
-        } else if(TokenRegex.EOP.test(blob)) {
-            return {t:[new Token(TokenType.EOP, blob, lineNum)], e:null};
-        } else if (TokenRegex.VarType.test(blob)) {
-            return {t:[new Token(TokenType.VarType, blob, lineNum)], e:null};
-        } else if (TokenRegex.If.test(blob)){
-            return {t:[new Token(TokenType.If, blob, lineNum)], e:null};
-        } else if (TokenRegex.BoolLiteral.test(blob)) {
-            return {t:[new Token(TokenType.BoolLiteral, blob, lineNum)], e:null};
-        } else if (TokenRegex.Id.test(blob)) {
-            return {t:[new Token(TokenType.Id, blob, lineNum)], e:null};
-        } else if (TokenRegex.Quote.test(blob)) {
+        if (TokenRegex.Quote.test(blob)) {
             //Break "quoted" blob into characters after removing comments
             let noComment = blob.replace(/\/\*.*\*\//g, "");
             let splitQuote = noComment.split("");
@@ -80,7 +65,21 @@ export class Lexer {
                 }
             }
             return {t:tokenArray, e:null};
-        } else if (TokenRegex.Digit.test(blob)){
+        } else if(TokenRegex.While.test(blob)){
+            return {t:[new Token(TokenType.While, blob, lineNum)], e: null};
+        } else if(TokenRegex.Print.test(blob)) {
+            return {t:[new Token(TokenType.Print, blob, lineNum)], e:null};
+        } else if(TokenRegex.EOP.test(blob)) {
+            return {t:[new Token(TokenType.EOP, blob, lineNum)], e:null};
+        } else if (TokenRegex.VarType.test(blob)) {
+            return {t:[new Token(TokenType.VarType, blob, lineNum)], e:null};
+        } else if (TokenRegex.If.test(blob)){
+            return {t:[new Token(TokenType.If, blob, lineNum)], e:null};
+        } else if (TokenRegex.BoolLiteral.test(blob)) {
+            return {t:[new Token(TokenType.BoolLiteral, blob, lineNum)], e:null};
+        } else if (TokenRegex.Id.test(blob)) {
+            return {t:[new Token(TokenType.Id, blob, lineNum)], e:null};
+        }  else if (TokenRegex.Digit.test(blob)){
             return {t:[new Token(TokenType.Digit, blob, lineNum)], e:null};
         } else if (TokenRegex.Assign.test(blob)) {
             return {t:[new Token(TokenType.Assign, blob, lineNum)], e:null};

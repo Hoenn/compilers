@@ -1,7 +1,1 @@
-/*Should pass the lexer with no warnings or errors*/
-{1=2}$
-{}$
-{{{}}}$
-{{{}}$
-{print("")}$
-"
+{{$

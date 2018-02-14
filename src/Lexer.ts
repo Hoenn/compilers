@@ -1,5 +1,4 @@
 import {Token, TokenRegex, TokenType} from './Token';
-import { join } from 'path';
 
 type Error = {lvl: string, msg: string}
 

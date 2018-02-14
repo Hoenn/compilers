@@ -70,6 +70,47 @@ intintel
 `,
     "type": "warning"
 },
+{
+    "name": "Many Lex Examples",
+    "source":
+`
+/*Should pass the lexer with no warnings or errors*/
+{1=2}$
+{}$
+{{{}}}$
+{{{}}$
+{print("")}$
+{print(a)}$
+{print(2)}$
+{print("a")}$
+{print(false)}$
+{print("inta")}$
+print(a){print(a)}$
+{a=1}$
+{a = 1}$
+{a = 1 + 2 + 3 + 4    +   5}$
+{
+    int a
+    a=a
+    string b
+    a=b
+}$
+{int a a=a string b a=b}$
+{{a=1+2+3+4+5{print(4+a)}}}$
+{
+    /*comment*/
+    string b
+}$
+{
+    string s
+    s="this string is /* in */ visible"
+}$
+
+
+`,
+    "type": "null"
+
+},
 
 {
     "name":"Fast Inverse Square Root",

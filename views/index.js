@@ -1,4 +1,4 @@
-(function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token_1 = require("./Token");
@@ -207,7 +207,7 @@ exports.TokenGlyphs = {
 };
 exports.TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
-    Split: new RegExp(/([a-z]+)|([0-9])|("[^"]+")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\s)/g),
+    Split: new RegExp(/([a-z]+)|([0-9])|("[^"]*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\s)/g),
     WhiteSpace: new RegExp(/^(\s)$/g),
     //Match any keyword first, then valid ids after
     Keywords: new RegExp(/(int|boolean|string|while|print|if|true|false|[a-z])/g),
@@ -303,6 +303,47 @@ intintel
 "ab
 `,
     "type": "warning"
+},
+{
+    "name": "Many Lex Examples",
+    "source":
+`
+/*Should pass the lexer with no warnings or errors*/
+{1=2}$
+{}$
+{{{}}}$
+{{{}}$
+{print("")}$
+{print(a)}$
+{print(2)}$
+{print("a")}$
+{print(false)}$
+{print("inta")}$
+print(a){print(a)}$
+{a=1}$
+{a = 1}$
+{a = 1 + 2 + 3 + 4    +   5}$
+{
+    int a
+    a=a
+    string b
+    a=b
+}$
+{int a a=a string b a=b}$
+{{a=1+2+3+4+5{print(4+a)}}}$
+{
+    /*comment*/
+    string b
+}$
+{
+    string s
+    s="this string is /* in */ visible"
+}$
+
+
+`,
+    "type": "null"
+
 },
 
 {

@@ -192,6 +192,21 @@ const tests = [
             new Token(TokenType.EOP, '$', 1)
         ],
         "error": {lvl: null, msg: null}
+    },
+    {
+        "test": 'print("")"$',
+        "describe": "Empty string with an extra quote",
+        "result": [
+            new Token(TokenType.Print, "print", 1),
+            new Token(TokenType.LParen, "(", 1),
+            new Token(TokenType.Quote, '"', 1),
+            new Token(TokenType.Quote, '"', 1),
+            new Token(TokenType.RParen, ")", 1),
+            new Token(TokenType.Quote, '"', 1),
+            new Token(TokenType.EOP, '$', 1)
+
+        ],
+        "error": {lvl: null, msg: null}
     }
 
 

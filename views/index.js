@@ -62,7 +62,7 @@ var Lexer = /** @class */ (function () {
                 else if (char.match(/[a-z]/) || char.match(/\s/)) {
                     //If it's a new line, accurately report it
                     if (char.match("\n")) {
-                        return { t: tokenArray, e: this.error("Multiline strings not allowed, found", lineNum) };
+                        return { t: tokenArray, e: this.multiLineStringError(lineNum) };
                     }
                     //If it's a letter or space add that token
                     tokenArray.push(new Token_1.Token(Token_1.TokenType.Char, char, lineNum));
@@ -155,6 +155,9 @@ var Lexer = /** @class */ (function () {
     };
     Lexer.prototype.unknownTokenError = function (blob, lineNum) {
         return this.error("Unknown token " + blob.trim(), lineNum);
+    };
+    Lexer.prototype.multiLineStringError = function (lineNum) {
+        return this.error("Multiline strings not allowed, found", lineNum);
     };
     Lexer.prototype.error = function (errMsg, lineNum) {
         return { lvl: "error", msg: errMsg + " on line " + lineNum };

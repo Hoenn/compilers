@@ -207,6 +207,16 @@ const tests = [
 
         ],
         "error": {lvl: null, msg: null}
+    },
+    {
+        "test": '{"t\nl"}$',
+        "describe": "Multiline string error",
+        "result": [
+            new Token(TokenType.LBracket, "{", 1),
+            new Token(TokenType.Quote, '"', 1),
+            new Token(TokenType.Char, "t", 1)
+        ],
+        "error": L.multiLineStringError(1)
     }
 
 

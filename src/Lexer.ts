@@ -59,7 +59,7 @@ export class Lexer {
                 } else if (char.match(/[a-z]/) || char.match(/\s/)) {
                     //If it's a new line, accurately report it
                     if(char.match("\n")){
-                        return {t:tokenArray, e:this.error("Multiline strings not allowed, found", lineNum)};
+                        return {t:tokenArray, e:this.multiLineStringError(lineNum)};
                     }
                     //If it's a letter or space add that token
                     tokenArray.push(new Token(TokenType.Char, char, lineNum));
@@ -133,6 +133,9 @@ export class Lexer {
 
     unknownTokenError(blob: string, lineNum: number):Error {
         return this.error("Unknown token "+blob.trim(), lineNum);
+    }
+    multiLineStringError(lineNum: number):Error {
+        return this.error("Multiline strings not allowed, found", lineNum);
     }
     error(errMsg: string, lineNum: number): Error {
         return {lvl: "error", msg:errMsg+" on line "+lineNum};

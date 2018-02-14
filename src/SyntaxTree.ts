@@ -49,14 +49,12 @@ export class SyntaxTree {
 export class Node {
     name: string;
     parent: Node | null;
-    value: string;
     children: Node[];
 
-    constructor(n:string, p: Node | null, v: string) {
+    constructor(n:string) {
         this.name = n;
-        this.parent = p;
+        this.parent = null;
         this.children = [];
-        this.value = v;
     }
     addChild(n: Node) {
         this.children.push(n);

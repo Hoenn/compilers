@@ -16,8 +16,13 @@ function main(sourceArg, filePath) {
     var tokens = l.lex(sourceProgram);
     if (tokens.t) {
         var p = new Parser_1.Parser(tokens.t);
-        var cst = p.parse();
-        console.log(cst.toString());
+        var tree = p.parse();
+        if (tree.cst) {
+            console.log(tree.cst.toString());
+        }
+        if (tree.e) {
+            console.log(tree.e);
+        }
     }
     return sourceProgram;
 }

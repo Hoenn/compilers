@@ -16,9 +16,14 @@ export function main(sourceArg: string, filePath?: boolean) {
 
     if(tokens.t) {
         let p = new Parser(tokens.t);
-        let cst = p.parse();
-        console.log(cst.toString());
+        let tree = p.parse();
 
+        if(tree.cst) {
+            console.log(tree.cst.toString());
+        } 
+        if(tree.e) {
+            console.log(tree.e);
+        }
     }
     
     return sourceProgram;

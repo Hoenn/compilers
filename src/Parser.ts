@@ -6,23 +6,29 @@ export class Parser {
     tokens : Token[];
     constructor(tokens: Token[]) {
         //Add initial program token, make root node
-        this.cst = new SyntaxTree(new Node("Program", null, ""));
+        this.cst = new SyntaxTree(new Node("Program"));
         this.tokens = tokens;
     }
-    parse():SyntaxTree {
-        let errors = this.parseBlock();
+    parse(): {cst:SyntaxTree | null, e: string |undefined } {
+        let error = this.parseBlock();
+        if(error) {
+            console.log("Errors: "+error);
+            return {cst: this.cst, e: error};
+        }
         this.consume(["$"], TokenType.EOP);
-        console.log("Errors: "+errors);
-        return this.cst;
+        return {cst:this.cst, e: undefined};
         //return syntax tree and errors        
     }
     parseBlock() {
-        this.cst.addBranchNode(new Node("Block", null, ""));
+        this.cst.addBranchNode(new Node("Block"));
         let error = this.consume(["{"], TokenType.LBracket);
         if(error) {
             return error;
         }
-        this.parseStatementList();
+        error = this.parseStatementList();
+        if(error) {
+            return error;
+        }
         error = this.consume(["}"], TokenType.RBracket);
         if(error) {
             return error;
@@ -30,15 +36,64 @@ export class Parser {
         this.cst.moveCurrentUp();
     }
     parseStatementList() {
-
+        this.cst.addBranchNode(new Node("StatementList"))
+        let error = this.parseStatement();
+        if (error) {
+            return error;
+        }
+        //If next token is a statement
+        //let error = this.parseStatementList()
+        this.cst.moveCurrentUp();
     }
-    consume(search:RegExp[]|string[], want: string): string|null { 
+    parseStatement(): string | undefined{
+        this.cst.addBranchNode(new Node("Statement"));
+        //Check if nextToken is print
+        let nToken = this.tokens[0].kind;
+        let error;
+        switch(nToken) {
+            case TokenType.LBracket: {
+                error = this.parseBlock();
+                break;
+            }
+            case TokenType.Print: {
+                //error = this.parsePrint();
+                break;
+            }
+            case TokenType.VarType: {
+                //error = this.parseVarDecl();
+                break;
+            }
+            case TokenType.While: {
+                //error = this.parseWhile();
+                break;
+            }
+            case TokenType.If: {
+                //error = this.parseIf();
+                break;
+            }
+            case TokenType.Id: {
+                //error = this.parseAssignment();
+                break;
+            }
+            default: {
+                //Either empty statement or unknown token
+                //parseBlock will catch unknown or correctly find RBracket
+                this.cst.moveCurrentUp();
+                return;
+            }
+        }
+        if(error) {
+            return error;
+        }
+        this.cst.moveCurrentUp();
+    }
+    consume(search:RegExp[]|string[], want: string): string|undefined { 
         let cToken = this.tokens.shift();
         if(cToken) {
             for(var exp of search){
                 if(cToken.value.match(exp)){
-                    this.cst.addLeafNode(new Node(cToken.kind, null, cToken.value));
-                    return null;
+                    this.cst.addLeafNode(new Node(cToken.kind));
+                    return undefined;
                 }
             }
         } else {

@@ -49,11 +49,10 @@ var SyntaxTree = /** @class */ (function () {
 }());
 exports.SyntaxTree = SyntaxTree;
 var Node = /** @class */ (function () {
-    function Node(n, p, v) {
+    function Node(n) {
         this.name = n;
-        this.parent = p;
+        this.parent = null;
         this.children = [];
-        this.value = v;
     }
     Node.prototype.addChild = function (n) {
         this.children.push(n);

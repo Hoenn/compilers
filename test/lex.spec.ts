@@ -64,7 +64,7 @@ const tests = [
             new Token(TokenType.LBracket, "{", 1),
             new Token(TokenType.VarType, "int", 1),
         ],
-        "error": L.error("@", 1)
+        "error": L.unknownTokenError("@", 1)
     },
     {
         "test": "{}${}$",
@@ -114,7 +114,7 @@ const tests = [
             new Token(TokenType.Char, "a", 1),
             new Token(TokenType.Char, "b", 1),
         ],
-        "error": L.error("!", 1)
+        "error": L.unknownTokenError("!", 1)
     },
     {
         "test": '"a /*b*/ c"$',

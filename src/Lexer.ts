@@ -59,13 +59,13 @@ export class Lexer {
                 } else if (char.match(/[a-z]/) || char.match(/\s/)) {
                     //If it's a new line, accurately report it
                     if(char.match("\n")){
-                        return {t:tokenArray, e:this.error("[\n]", lineNum)};
+                        return {t:tokenArray, e:this.error("Multiline strings not allowed, found", lineNum)};
                     }
                     //If it's a letter or space add that token
                     tokenArray.push(new Token(TokenType.Char, char, lineNum));
                 } else {
                     //"quoted" may only contain valid lexemes (chars)
-                    return {t:tokenArray, e: this.error(char, lineNum)};
+                    return {t:tokenArray, e: this.unknownTokenError(char, lineNum)};
                 }
             }
             return {t:tokenArray, e:null};
@@ -125,14 +125,17 @@ export class Lexer {
             } else {
 				console.log(blob);
                 //If the blob doesn't contain any keywords and reached here it must not be valid
-                return {t: null, e: this.error(blob, lineNum)};
+                return {t: null, e: this.unknownTokenError(blob, lineNum)};
             }
         }
         
     }
 
-    error(blob: string, lineNum: number):Error {
-        return {lvl: "error", msg:"Unknown token "+blob.trim()+" on line "+lineNum};
+    unknownTokenError(blob: string, lineNum: number):Error {
+        return this.error("Unknown token "+blob.trim(), lineNum);
+    }
+    error(errMsg: string, lineNum: number): Error {
+        return {lvl: "error", msg:errMsg+" on line "+lineNum};
     }
 
 

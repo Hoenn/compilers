@@ -222,7 +222,7 @@ const tests = [
 
 ]
 
-describe('Running Tests', () => {
+describe('Running Lex Tests', () => {
     //Dummy test needed before we can loop tests
     it('Tests Complete', function(done){
         tests.forEach(function(test) {

@@ -24,6 +24,7 @@ export function main(sourceArg: string, filePath?: boolean) {
         if(tree.e) {
             console.log(tree.e);
         }
+        console.log(tree.log);
     }
     
     return sourceProgram;

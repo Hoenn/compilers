@@ -4,22 +4,26 @@ import {SyntaxTree, Node} from './SyntaxTree';
 export class Parser {
     cst: SyntaxTree;
     tokens : Token[];
+    log : string[]
     constructor(tokens: Token[]) {
         //Add initial program token, make root node
         this.cst = new SyntaxTree(new Node("Program"));
         this.tokens = tokens;
+        this.log = [];
     }
-    parse(): {cst:SyntaxTree | null, e: string |undefined } {
+    parse(): {log: string[], cst:SyntaxTree | null, e: string |undefined } {
+        this.emit("program");
         let error = this.parseBlock();
         if(error) {
             console.log("Errors: "+error);
-            return {cst: this.cst, e: error};
+            return {log: this.log, cst: this.cst, e: error};
         }
         this.consume(["$"], TokenType.EOP);
-        return {cst:this.cst, e: undefined};
+        return {log: this.log, cst:this.cst, e: undefined};
         //return syntax tree and errors        
     }
     parseBlock() {
+        this.emit("block");
         this.cst.addBranchNode(new Node("Block"));
         let error = this.consume(["{"], TokenType.LBracket);
         if(error) {
@@ -36,6 +40,7 @@ export class Parser {
         this.cst.moveCurrentUp();
     }
     parseStatementList() {
+        this.emit("statement list");
         this.cst.addBranchNode(new Node("StatementList"))
         let error = this.parseStatement();
         if (error) {
@@ -46,6 +51,7 @@ export class Parser {
         this.cst.moveCurrentUp();
     }
     parseStatement(): string | undefined{
+        this.emit("statement");
         this.cst.addBranchNode(new Node("Statement"));
         //Check if nextToken is print
         let nToken = this.tokens[0].kind;
@@ -104,5 +110,8 @@ export class Parser {
         
         return "Expected "+want+" got " + cToken.kind+" on line "+ cToken.lineNum;
         
+    }
+    emit(s: string) {
+        this.log.push("Parsing "+s);
     }
 }

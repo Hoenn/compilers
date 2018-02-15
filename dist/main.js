@@ -23,6 +23,7 @@ function main(sourceArg, filePath) {
         if (tree.e) {
             console.log(tree.e);
         }
+        console.log(tree.log);
     }
     return sourceProgram;
 }

@@ -7,18 +7,21 @@ var Parser = /** @class */ (function () {
         //Add initial program token, make root node
         this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Program"));
         this.tokens = tokens;
+        this.log = [];
     }
     Parser.prototype.parse = function () {
+        this.emit("program");
         var error = this.parseBlock();
         if (error) {
             console.log("Errors: " + error);
-            return { cst: this.cst, e: error };
+            return { log: this.log, cst: this.cst, e: error };
         }
         this.consume(["$"], Token_1.TokenType.EOP);
-        return { cst: this.cst, e: undefined };
+        return { log: this.log, cst: this.cst, e: undefined };
         //return syntax tree and errors        
     };
     Parser.prototype.parseBlock = function () {
+        this.emit("block");
         this.cst.addBranchNode(new SyntaxTree_1.Node("Block"));
         var error = this.consume(["{"], Token_1.TokenType.LBracket);
         if (error) {
@@ -35,6 +38,7 @@ var Parser = /** @class */ (function () {
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseStatementList = function () {
+        this.emit("statement list");
         this.cst.addBranchNode(new SyntaxTree_1.Node("StatementList"));
         var error = this.parseStatement();
         if (error) {
@@ -45,6 +49,7 @@ var Parser = /** @class */ (function () {
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseStatement = function () {
+        this.emit("statement");
         this.cst.addBranchNode(new SyntaxTree_1.Node("Statement"));
         //Check if nextToken is print
         var nToken = this.tokens[0].kind;
@@ -75,6 +80,8 @@ var Parser = /** @class */ (function () {
                 break;
             }
             default: {
+                //Either empty statement or unknown token
+                //parseBlock will catch unknown or correctly find RBracket
                 this.cst.moveCurrentUp();
                 return;
             }
@@ -100,6 +107,9 @@ var Parser = /** @class */ (function () {
             return "Unexpected end of input";
         }
         return "Expected " + want + " got " + cToken.kind + " on line " + cToken.lineNum;
+    };
+    Parser.prototype.emit = function (s) {
+        this.log.push("Parsing " + s);
     };
     return Parser;
 }());

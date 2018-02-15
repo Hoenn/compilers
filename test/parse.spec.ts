@@ -22,28 +22,22 @@ const tests = [
     }
 
 ];
-describe('Running Parse Tests', () => {
-    //Dummy test needed before we can loop tests
-    it('Tests Complete', function(done){
-        tests.forEach(function(test) {
-            describe('Parse: '+test.test, () => {
-                const tokens = L.lex(test.test).t;
-                let P = new Parser(tokens);
-                const result = P.parse();
-                //Test Parse output
-                it(test.describe, ()=> {
-                    expect(result.cst.toString()).to.deep.equal(test.result);
-                });
-                //Optional Error test
-                if(test.error){
-                    it('Should report: '+test.error, () => {
-                        expect(result.e).to.deep.equal(test.error);
-                    });
-                }
-            });
+
+tests.forEach(function(test) {
+    describe('Parse: '+test.test, () => {
+        const tokens = L.lex(test.test).t;
+        let P = new Parser(tokens);
+        const result = P.parse();
+        //Test Parse output
+        it(test.describe, ()=> {
+            expect(result.cst.toString()).to.deep.equal(test.result);
         });
-        //Required for async testing loop
-        done();
+        //Optional Error test
+        if(test.error){
+            it('Should report: '+test.error, () => {
+                expect(result.e).to.deep.equal(test.error);
+            });
+        }
     });
 });
 

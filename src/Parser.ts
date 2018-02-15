@@ -15,7 +15,6 @@ export class Parser {
         this.emit("program");
         let error = this.parseBlock();
         if(error) {
-            console.log("Errors: "+error);
             return {log: this.log, cst: this.cst, e: error};
         }
         this.consume(["$"], TokenType.EOP);

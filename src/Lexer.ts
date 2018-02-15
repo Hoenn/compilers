@@ -9,7 +9,6 @@ export class Lexer {
         //filter out undefined blobs
         let tokenBlobs = src.split(TokenRegex.Split).filter((defined) => defined);
         let lineNum = 1;
-        console.log(tokenBlobs);
         let tokens: Token[] = [];
         let result: {t:Token[]|null, e: Error|null} = {t:null, e:null}
         for(let blob of tokenBlobs) {
@@ -29,7 +28,6 @@ export class Lexer {
             } 
             //It's possible to have valid tokens returned along with an error
             if(result.e) {
-                console.log(result.e);
                 break;
             }
         }
@@ -40,7 +38,6 @@ export class Lexer {
                 result.e = this.warning("End of Program missing. Added $ symbol.");
             }
         }
-        console.log(tokens);
         return {t:tokens, e:result.e}; 
     }
 
@@ -49,7 +46,6 @@ export class Lexer {
             //Break "quoted" blob into characters after removing comments
             let noComment = blob.replace(/\/\*.*\*\//g, "");
             let splitQuote = noComment.split("");
-            console.log(splitQuote);
             let tokenArray = [];
             for(let char of splitQuote) {
                 //If it's a quote simply add that token
@@ -122,7 +118,6 @@ export class Lexer {
                 }
                 return {t:tokenArray, e: result.e};
             } else {
-				console.log(blob);
                 //If the blob doesn't contain any keywords and reached here it must not be valid
                 return {t: null, e: this.unknownTokenError(blob, lineNum)};
             }

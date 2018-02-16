@@ -22,6 +22,17 @@ const tests = [
         "error": {lvl: null, msg: null} 
     },
     {
+        "test": "{$",
+        "describe": "Incomplete Block",
+        "result":
+            add("Program", 0)+
+             add("Block", 1)+
+              addLeaf("LBracket", 2)+
+              add("StatementList",2)+
+               addLeaf("Statement", 3),
+        "error": {lvl: "error", msg: "Expected RBracket got EOP on line 1"}
+    },
+    {
         "test": "{print()}$",
         "describe": "Parse empty print statement",
         "result":

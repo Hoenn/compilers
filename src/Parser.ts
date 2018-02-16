@@ -47,6 +47,9 @@ export class Parser {
         if (error) {
             return error;
         }
+        //Idea: If next token is not a right a right bracket... 
+        //  it must be another expression?
+
         //If next token is a statement
         //let error = this.parseStatementList()
         this.cst.moveCurrentUp();
@@ -100,6 +103,7 @@ export class Parser {
         this.emit("print statement");
         this.cst.addBranchNode(new Node("PrintStatement"));
         this.consume(["print"], "print");
+        //"[(]" since ( alone throws malformed RegExp error
         this.consume(["[(]"], "(");
         //let error = parseExpr()
         //if (error) {

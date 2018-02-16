@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token_1 = require("./Token");
+var Util_1 = require("./Util");
 var Lexer = /** @class */ (function () {
     function Lexer() {
     }
@@ -9,7 +10,6 @@ var Lexer = /** @class */ (function () {
         //filter out undefined blobs
         var tokenBlobs = src.split(Token_1.TokenRegex.Split).filter(function (defined) { return defined; });
         var lineNum = 1;
-        console.log(tokenBlobs);
         var tokens = [];
         var result = { t: null, e: null };
         for (var _i = 0, tokenBlobs_1 = tokenBlobs; _i < tokenBlobs_1.length; _i++) {
@@ -31,7 +31,6 @@ var Lexer = /** @class */ (function () {
             }
             //It's possible to have valid tokens returned along with an error
             if (result.e) {
-                console.log(result.e);
                 break;
             }
         }
@@ -39,10 +38,9 @@ var Lexer = /** @class */ (function () {
         if (result.e === null) {
             if (tokens.length == 0 || tokens[tokens.length - 1].kind != Token_1.TokenType.EOP) {
                 tokens.push(new Token_1.Token(Token_1.TokenType.EOP, "$", lineNum));
-                result.e = this.warning("End of Program missing. Added $ symbol.");
+                result.e = Util_1.warning("End of Program missing. Added $ symbol.");
             }
         }
-        console.log(tokens);
         return { t: tokens, e: result.e };
     };
     Lexer.prototype.longestMatch = function (blob, lineNum) {
@@ -50,7 +48,6 @@ var Lexer = /** @class */ (function () {
             //Break "quoted" blob into characters after removing comments
             var noComment = blob.replace(/\/\*.*\*\//g, "");
             var splitQuote = noComment.split("");
-            console.log(splitQuote);
             var tokenArray = [];
             for (var _i = 0, splitQuote_1 = splitQuote; _i < splitQuote_1.length; _i++) {
                 var char = splitQuote_1[_i];
@@ -146,23 +143,16 @@ var Lexer = /** @class */ (function () {
                 return { t: tokenArray, e: result.e };
             }
             else {
-                console.log(blob);
                 //If the blob doesn't contain any keywords and reached here it must not be valid
                 return { t: null, e: this.unknownTokenError(blob, lineNum) };
             }
         }
     };
     Lexer.prototype.unknownTokenError = function (blob, lineNum) {
-        return this.error("Unknown token " + blob.trim(), lineNum);
+        return Util_1.error("Unknown token " + blob.trim(), lineNum);
     };
     Lexer.prototype.multiLineStringError = function (lineNum) {
-        return this.error("Multiline strings not allowed, found", lineNum);
-    };
-    Lexer.prototype.error = function (errMsg, lineNum) {
-        return { lvl: "error", msg: errMsg + " on line " + lineNum };
-    };
-    Lexer.prototype.warning = function (m) {
-        return { lvl: "warning", msg: m };
+        return Util_1.error("Multiline strings not allowed, found", lineNum);
     };
     return Lexer;
 }());

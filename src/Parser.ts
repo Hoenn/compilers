@@ -1,6 +1,6 @@
 import {TokenType, Token, TokenGlyphs} from './Token';
 import {SyntaxTree, Node} from './SyntaxTree';
-
+import {Alert, error, warning} from './Alert';
 export class Parser {
     cst: SyntaxTree;
     tokens : Token[];
@@ -11,7 +11,7 @@ export class Parser {
         this.tokens = tokens;
         this.log = [];
     }
-    parse(): {log: string[], cst:SyntaxTree | null, e: string |undefined } {
+    parse(): {log: string[], cst:SyntaxTree | null, e: Alert |undefined } {
         this.emit("program");
         let error = this.parseBlock();
         if(error) {
@@ -49,7 +49,7 @@ export class Parser {
         //let error = this.parseStatementList()
         this.cst.moveCurrentUp();
     }
-    parseStatement(): string | undefined{
+    parseStatement(): Alert | undefined{
         this.emit("statement");
         this.cst.addBranchNode(new Node("Statement"));
         //Check if nextToken is print
@@ -87,12 +87,13 @@ export class Parser {
                 return;
             }
         }
+        //Propagate any errors from switch
         if(error) {
             return error;
         }
         this.cst.moveCurrentUp();
     }
-    consume(search:RegExp[]|string[], want: string): string|undefined { 
+    consume(search:RegExp[]|string[], want: string): Alert |undefined { 
         let cToken = this.tokens.shift();
         if(cToken) {
             for(var exp of search){
@@ -103,11 +104,10 @@ export class Parser {
             }
         } else {
             //Should never happen if Lex was passed
-            return "Unexpected end of input";
+            return error("Unexpected end of input");
         }
 
-        
-        return "Expected "+want+" got " + cToken.kind+" on line "+ cToken.lineNum;
+        return error("Expected "+want+" got " + cToken.kind, cToken.lineNum);
         
     }
     emit(s: string) {

@@ -1,5 +1,6 @@
-import { Lexer } from '../src/Lexer'
-import  {Token, TokenType} from '../src/Token'
+import { Lexer } from '../src/Lexer';
+import  {Token, TokenType} from '../src/Token';
+import {Alert, warning, error} from '../src/Alert';
 import { expect } from 'chai';
 import 'mocha';
 var L = new Lexer();
@@ -152,7 +153,7 @@ const tests = [
             new Token(TokenType.RBracket, "}", 1),
             new Token(TokenType.EOP, "$", 1)
         ],
-        "error": L.warning("End of Program missing. Added $ symbol.")
+        "error": warning("End of Program missing. Added $ symbol.")
     },
     {
         "test": "{\t x\t \r \f \t }$",

@@ -1,16 +1,15 @@
 import {Token, TokenRegex, TokenType} from './Token';
-
-type Error = {lvl: string, msg: string}
+import {Alert, error, warning} from './Alert';
 
 export class Lexer {
 
-    lex(src: string): {t:Token[]|null, e:Error|null} {
+    lex(src: string): {t:Token[]|null, e:Alert|null} {
         //Break text into blobs to perform longest match on
         //filter out undefined blobs
         let tokenBlobs = src.split(TokenRegex.Split).filter((defined) => defined);
         let lineNum = 1;
         let tokens: Token[] = [];
-        let result: {t:Token[]|null, e: Error|null} = {t:null, e:null}
+        let result: {t:Token[]|null, e: Alert|null} = {t:null, e:null}
         for(let blob of tokenBlobs) {
             //If a comment or whitespace just skip
             if (blob.match(TokenRegex.Comment) || blob.match(TokenRegex.WhiteSpace)){
@@ -35,13 +34,13 @@ export class Lexer {
         if(result.e === null) {
             if(tokens.length == 0  || tokens[tokens.length-1].kind != TokenType.EOP) {
                 tokens.push(new Token(TokenType.EOP, "$", lineNum));
-                result.e = this.warning("End of Program missing. Added $ symbol.");
+                result.e = warning("End of Program missing. Added $ symbol.");
             }
         }
         return {t:tokens, e:result.e}; 
     }
 
-    longestMatch(blob: string, lineNum: number): {t: Token[]|null, e: Error | null} {
+    longestMatch(blob: string, lineNum: number): {t: Token[]|null, e: Alert | null} {
         if (TokenRegex.Quote.test(blob)) {
             //Break "quoted" blob into characters after removing comments
             let noComment = blob.replace(/\/\*.*\*\//g, "");
@@ -103,7 +102,7 @@ export class Lexer {
                 let splitBlob = blob.split(TokenRegex.Keywords)
                     .filter((def)=>def);
                 let tokenArray = [];
-                let result: {t: Token[]|null, e: Error | null}  = {t: null, e: null}
+                let result: {t: Token[]|null, e: Alert | null}  = {t: null, e: null}
                 for(let b of splitBlob) {
                     //Longest match on new string
                     let result = this.longestMatch(b, lineNum);
@@ -125,19 +124,11 @@ export class Lexer {
         
     }
 
-    unknownTokenError(blob: string, lineNum: number):Error {
-        return this.error("Unknown token "+blob.trim(), lineNum);
+    unknownTokenError(blob: string, lineNum: number):Alert {
+        return error("Unknown token "+blob.trim(), lineNum);
     }
-    multiLineStringError(lineNum: number):Error {
-        return this.error("Multiline strings not allowed, found", lineNum);
+    multiLineStringError(lineNum: number):Alert {
+        return error("Multiline strings not allowed, found", lineNum);
     }
-    error(errMsg: string, lineNum: number): Error {
-        return {lvl: "error", msg:errMsg+" on line "+lineNum};
-    }
-
-
-    warning(m: string) : Error {
-        return {lvl: "warning", msg: m};
-    }
-
+    
 }

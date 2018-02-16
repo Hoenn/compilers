@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Lexer_1 = require("./Lexer");
 var Parser_1 = require("./Parser");
+var Util_1 = require("./Util");
 var fs = require("fs");
 function main(sourceArg, filePath) {
     var sourceProgram;
@@ -12,6 +13,8 @@ function main(sourceArg, filePath) {
     else {
         sourceProgram = sourceArg;
     }
+    console.log(Util_1.error("abc"));
+    console.log(Util_1.error("abc", 1));
     var l = new Lexer_1.Lexer();
     var tokens = l.lex(sourceProgram);
     if (tokens.t) {

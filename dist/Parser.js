@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token_1 = require("./Token");
 var SyntaxTree_1 = require("./SyntaxTree");
+var Util_1 = require("./Util");
 var Parser = /** @class */ (function () {
     function Parser(tokens) {
         //Add initial program token, make root node
@@ -13,7 +14,6 @@ var Parser = /** @class */ (function () {
         this.emit("program");
         var error = this.parseBlock();
         if (error) {
-            console.log("Errors: " + error);
             return { log: this.log, cst: this.cst, e: error };
         }
         this.consume(["$"], Token_1.TokenType.EOP);
@@ -86,6 +86,7 @@ var Parser = /** @class */ (function () {
                 return;
             }
         }
+        //Propagate any errors from switch
         if (error) {
             return error;
         }
@@ -104,9 +105,9 @@ var Parser = /** @class */ (function () {
         }
         else {
             //Should never happen if Lex was passed
-            return "Unexpected end of input";
+            return Util_1.error("Unexpected end of input");
         }
-        return "Expected " + want + " got " + cToken.kind + " on line " + cToken.lineNum;
+        return Util_1.error("Expected " + want + " got " + cToken.kind, cToken.lineNum);
     };
     Parser.prototype.emit = function (s) {
         this.log.push("Parsing " + s);

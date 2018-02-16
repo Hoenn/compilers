@@ -1,8 +1,20 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+function error(errMsg, lineNum) {
+    return { lvl: "error", msg: errMsg + (lineNum ? " on line " + lineNum : "") };
+}
+exports.error = error;
+function warning(m) {
+    return { lvl: "warning", msg: m };
+}
+exports.warning = warning;
+
+},{}],2:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var Token_1 = require("./Token");
-var Util_1 = require("./Util");
+var Alert_1 = require("./Alert");
 var Lexer = /** @class */ (function () {
     function Lexer() {
     }
@@ -39,7 +51,7 @@ var Lexer = /** @class */ (function () {
         if (result.e === null) {
             if (tokens.length == 0 || tokens[tokens.length - 1].kind != Token_1.TokenType.EOP) {
                 tokens.push(new Token_1.Token(Token_1.TokenType.EOP, "$", lineNum));
-                result.e = Util_1.warning("End of Program missing. Added $ symbol.");
+                result.e = Alert_1.warning("End of Program missing. Added $ symbol.");
             }
         }
         return { t: tokens, e: result.e };
@@ -150,16 +162,16 @@ var Lexer = /** @class */ (function () {
         }
     };
     Lexer.prototype.unknownTokenError = function (blob, lineNum) {
-        return Util_1.error("Unknown token " + blob.trim(), lineNum);
+        return Alert_1.error("Unknown token " + blob.trim(), lineNum);
     };
     Lexer.prototype.multiLineStringError = function (lineNum) {
-        return Util_1.error("Multiline strings not allowed, found", lineNum);
+        return Alert_1.error("Multiline strings not allowed, found", lineNum);
     };
     return Lexer;
 }());
 exports.Lexer = Lexer;
 
-},{"./Token":2,"./Util":3}],2:[function(require,module,exports){
+},{"./Alert":1,"./Token":3}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token = /** @class */ (function () {
@@ -226,18 +238,6 @@ exports.TokenRegex = {
     BoolOp: new RegExp(/(==)|(!=)/),
     IntOp: new RegExp(/(\+)/)
 };
-
-},{}],3:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function error(errMsg, lineNum) {
-    return { lvl: "error", msg: errMsg + (lineNum ? " on line " + lineNum : "") };
-}
-exports.error = error;
-function warning(m) {
-    return { lvl: "warning", msg: m };
-}
-exports.warning = warning;
 
 },{}],4:[function(require,module,exports){
 const programs = [
@@ -558,4 +558,4 @@ setupProgramList = function() {
 
 }
 
-},{"../dist/Lexer.js":1,"./examples":4}]},{},[5]);
+},{"../dist/Lexer.js":2,"./examples":4}]},{},[5]);

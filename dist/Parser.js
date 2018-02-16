@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token_1 = require("./Token");
 var SyntaxTree_1 = require("./SyntaxTree");
-var Util_1 = require("./Util");
+var Alert_1 = require("./Alert");
 var Parser = /** @class */ (function () {
     function Parser(tokens) {
         //Add initial program token, make root node
@@ -105,9 +105,9 @@ var Parser = /** @class */ (function () {
         }
         else {
             //Should never happen if Lex was passed
-            return Util_1.error("Unexpected end of input");
+            return Alert_1.error("Unexpected end of input");
         }
-        return Util_1.error("Expected " + want + " got " + cToken.kind, cToken.lineNum);
+        return Alert_1.error("Expected " + want + " got " + cToken.kind, cToken.lineNum);
     };
     Parser.prototype.emit = function (s) {
         this.log.push("Parsing " + s);

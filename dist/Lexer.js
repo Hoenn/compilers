@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token_1 = require("./Token");
-var Util_1 = require("./Util");
+var Alert_1 = require("./Alert");
 var Lexer = /** @class */ (function () {
     function Lexer() {
     }
@@ -38,7 +38,7 @@ var Lexer = /** @class */ (function () {
         if (result.e === null) {
             if (tokens.length == 0 || tokens[tokens.length - 1].kind != Token_1.TokenType.EOP) {
                 tokens.push(new Token_1.Token(Token_1.TokenType.EOP, "$", lineNum));
-                result.e = Util_1.warning("End of Program missing. Added $ symbol.");
+                result.e = Alert_1.warning("End of Program missing. Added $ symbol.");
             }
         }
         return { t: tokens, e: result.e };
@@ -149,10 +149,10 @@ var Lexer = /** @class */ (function () {
         }
     };
     Lexer.prototype.unknownTokenError = function (blob, lineNum) {
-        return Util_1.error("Unknown token " + blob.trim(), lineNum);
+        return Alert_1.error("Unknown token " + blob.trim(), lineNum);
     };
     Lexer.prototype.multiLineStringError = function (lineNum) {
-        return Util_1.error("Multiline strings not allowed, found", lineNum);
+        return Alert_1.error("Multiline strings not allowed, found", lineNum);
     };
     return Lexer;
 }());

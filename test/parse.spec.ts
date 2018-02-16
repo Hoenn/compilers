@@ -5,60 +5,60 @@ import {error} from '../src/Alert';
 import { expect } from 'chai';
 import 'mocha';
 
-var L = new Lexer();
+var Lex = new Lexer();
 
 const tests = [
     {
         "test": "{}$",
         "describe": "Parse empty statement",
         "result": 
-            add("Program", 0)+
-             add("Block", 1)+
-              addLeaf("LBracket", 2)+
-              add("StatementList", 2)+
-               addLeaf("Statement", 3)+
-              addLeaf("RBracket", 2)+
-             addLeaf("EOP", 1),
+            B("Program", 0)+
+             B("Block", 1)+
+              L("LBracket", 2)+
+              B("StatementList", 2)+
+               L("Statement", 3)+
+              L("RBracket", 2)+
+             L("EOP", 1),
         "error": {lvl: null, msg: null} 
     },
     {
         "test": "{$",
         "describe": "Incomplete Block",
         "result":
-            add("Program", 0)+
-             add("Block", 1)+
-              addLeaf("LBracket", 2)+
-              add("StatementList",2)+
-               addLeaf("Statement", 3),
+            B("Program", 0)+
+             B("Block", 1)+
+              L("LBracket", 2)+
+              B("StatementList",2)+
+               L("Statement", 3),
         "error": {lvl: "error", msg: "Expected RBracket got EOP on line 1"}
     },
     {
         "test": "{print()}$",
         "describe": "Parse empty print statement",
         "result":
-            add("Program", 0)+
-             add("Block", 1)+
-               addLeaf("LBracket", 2)+
-               add("StatementList", 2)+
-                add("Statement", 3)+
-                 add("PrintStatement", 4)+
-                  addLeaf("Print", 5)+
-                  addLeaf("LParen", 5)+
-                  addLeaf("RParen", 5)+
-              addLeaf("RBracket", 2)+
-             addLeaf("EOP", 1),
+            B("Program", 0)+
+             B("Block", 1)+
+               L("LBracket", 2)+
+               B("StatementList", 2)+
+                B("Statement", 3)+
+                 B("PrintStatement", 4)+
+                  L("Print", 5)+
+                  L("LParen", 5)+
+                  L("RParen", 5)+
+              L("RBracket", 2)+
+             L("EOP", 1),
         "error": {lvl: null, msg: null} 
     },
     {
         "test": "{}{}$",
         "describe": "Parse Invalid Second Top Level block",
         "result": 
-            add("Program", 0)+
-             add("Block", 1)+
-              addLeaf("LBracket", 2)+
-              add("StatementList", 2)+
-               addLeaf("Statement", 3)+
-              addLeaf("RBracket", 2),
+            B("Program", 0)+
+             B("Block", 1)+
+              L("LBracket", 2)+
+              B("StatementList", 2)+
+               L("Statement", 3)+
+              L("RBracket", 2),
         "error": error("Expected EOP got LBracket on line 1")
 
     }
@@ -68,7 +68,7 @@ const tests = [
 
 tests.forEach(function(test) {
     describe('Parse: '+test.test, () => {
-        const tokens = L.lex(test.test).t;
+        const tokens = Lex.lex(test.test).t;
         let P = new Parser(tokens);
         const result = P.parse();
         //Test Parse output
@@ -84,9 +84,9 @@ tests.forEach(function(test) {
     });
 });
 
-function add(name: string, depth: number): string {
+function B(name: string, depth: number): string {
     return "-".repeat(depth)+"<"+name+">\n";
 }
-function addLeaf(name: string, depth: number): string {
+function L(name: string, depth: number): string {
     return "-".repeat(depth)+"["+name+"]\n";
 }

@@ -2,9 +2,11 @@ import {TokenType, Token, TokenGlyphs} from './Token';
 import {SyntaxTree, Node} from './SyntaxTree';
 import {Alert, error, warning} from './Alert';
 export class Parser {
+
     cst: SyntaxTree;
     tokens : Token[];
-    log : string[]
+    log : string[];
+
     constructor(tokens: Token[]) {
         //Add initial program token, make root node
         this.cst = new SyntaxTree(new Node("Program"));
@@ -52,7 +54,8 @@ export class Parser {
     parseStatement(): Alert | undefined{
         this.emit("statement");
         this.cst.addBranchNode(new Node("Statement"));
-        //Check if nextToken is print
+
+        //Look at next token to decide how to parse
         let nToken = this.tokens[0].kind;
         let error;
         switch(nToken) {
@@ -61,7 +64,7 @@ export class Parser {
                 break;
             }
             case TokenType.Print: {
-                //error = this.parsePrint();
+                error = this.parsePrint();
                 break;
             }
             case TokenType.VarType: {
@@ -93,7 +96,23 @@ export class Parser {
         }
         this.cst.moveCurrentUp();
     }
-    consume(search:RegExp[]|string[], want: string): Alert |undefined { 
+    parsePrint() {
+        this.emit("print statement");
+        this.cst.addBranchNode(new Node("PrintStatement"));
+        this.consume(["print"], "print");
+        this.consume(["[(]"], "(");
+        //let error = parseExpr()
+        //if (error) {
+        //  return error;
+        //}
+        this.consume(["[)]"], ")");
+
+        this.cst.moveCurrentUp();
+    }
+    //search[] may contain string | RegExp
+    //want:string is needed for error reporting in case a list of
+    //  possible input is being searched for
+    consume(search:string[], want: string): Alert |undefined { 
         let cToken = this.tokens.shift();
         if(cToken) {
             for(var exp of search){

@@ -19,6 +19,24 @@ const tests = [
               addLeaf("RBracket", 2)+
              addLeaf("EOP", 1),
         "error": undefined
+    },
+    {
+        "test": "{print()}$",
+        "describe": "Parse empty print statement",
+        "result":
+            add("Program", 0)+
+             add("Block", 1)+
+               addLeaf("LBracket", 2)+
+               add("StatementList", 2)+
+                add("Statement", 3)+
+                 add("PrintStatement", 4)+
+                  addLeaf("Print", 5)+
+                  addLeaf("LParen", 5)+
+                  addLeaf("RParen", 5)+
+              addLeaf("RBracket", 2)+
+             addLeaf("EOP", 1),
+        "error": undefined
+
     }
 
 ];

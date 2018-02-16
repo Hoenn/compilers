@@ -51,7 +51,7 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parseStatement = function () {
         this.emit("statement");
         this.cst.addBranchNode(new SyntaxTree_1.Node("Statement"));
-        //Check if nextToken is print
+        //Look at next token to decide how to parse
         var nToken = this.tokens[0].kind;
         var error;
         switch (nToken) {
@@ -60,7 +60,7 @@ var Parser = /** @class */ (function () {
                 break;
             }
             case Token_1.TokenType.Print: {
-                //error = this.parsePrint();
+                error = this.parsePrint();
                 break;
             }
             case Token_1.TokenType.VarType: {
@@ -92,6 +92,21 @@ var Parser = /** @class */ (function () {
         }
         this.cst.moveCurrentUp();
     };
+    Parser.prototype.parsePrint = function () {
+        this.emit("print statement");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("PrintStatement"));
+        this.consume(["print"], "print");
+        this.consume(["[(]"], "(");
+        //let error = parseExpr()
+        //if (error) {
+        //  return error;
+        //}
+        this.consume(["[)]"], ")");
+        this.cst.moveCurrentUp();
+    };
+    //search[] may contain string | RegExp
+    //want:string is needed for error reporting in case a list of
+    //  possible input is being searched for
     Parser.prototype.consume = function (search, want) {
         var cToken = this.tokens.shift();
         if (cToken) {

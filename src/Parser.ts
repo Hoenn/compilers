@@ -1,4 +1,4 @@
-import {TokenType, Token, TokenGlyphs} from './Token';
+import {TokenType, Token, TokenRegex} from './Token';
 import {SyntaxTree, Node} from './SyntaxTree';
 import {Alert, error, warning} from './Alert';
 export class Parser {
@@ -19,8 +19,9 @@ export class Parser {
         if(error) {
             return {log: this.log, cst: this.cst, e: error};
         }
-        this.consume(["$"], TokenType.EOP);
-        return {log: this.log, cst:this.cst, e: undefined};
+        error = this.consume(["[$]"], TokenType.EOP);
+
+        return {log: this.log, cst:this.cst, e: error};
         //return syntax tree and errors        
     }
     parseBlock() {
@@ -40,18 +41,23 @@ export class Parser {
         }
         this.cst.moveCurrentUp();
     }
-    parseStatementList() {
+    parseStatementList(): Alert | undefined {
         this.emit("statement list");
         this.cst.addBranchNode(new Node("StatementList"))
         let error = this.parseStatement();
         if (error) {
             return error;
         }
-        //Idea: If next token is not a right a right bracket... 
-        //  it must be another expression?
 
-        //If next token is a statement
-        //let error = this.parseStatementList()
+        //See if next token would start a valid statement
+        //If so, recurse, if not moveUp
+        let nToken = this.tokens[0].value;
+        if(nToken.match(TokenRegex.Statement) ) {
+            error = this.parseStatementList();
+            if(error) {
+                return error;
+            }
+        }
         this.cst.moveCurrentUp();
     }
     parseStatement(): Alert | undefined{
@@ -104,6 +110,7 @@ export class Parser {
         this.cst.addBranchNode(new Node("PrintStatement"));
         this.consume(["print"], "print");
         //"[(]" since ( alone throws malformed RegExp error
+        // /\(/ also accomplishes the same
         this.consume(["[(]"], "(");
         //let error = parseExpr()
         //if (error) {

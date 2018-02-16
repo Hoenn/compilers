@@ -1,6 +1,7 @@
 import { Parser } from '../src/Parser';
 import { Lexer } from '../src/Lexer';
 import { SyntaxTree, Node } from '../src/SyntaxTree';
+import {error} from '../src/Alert';
 import { expect } from 'chai';
 import 'mocha';
 
@@ -18,7 +19,7 @@ const tests = [
                addLeaf("Statement", 3)+
               addLeaf("RBracket", 2)+
              addLeaf("EOP", 1),
-        "error": undefined
+        "error": {lvl: null, msg: null} 
     },
     {
         "test": "{print()}$",
@@ -35,9 +36,22 @@ const tests = [
                   addLeaf("RParen", 5)+
               addLeaf("RBracket", 2)+
              addLeaf("EOP", 1),
-        "error": undefined
+        "error": {lvl: null, msg: null} 
+    },
+    {
+        "test": "{}{}$",
+        "describe": "Parse Invalid Second Top Level block",
+        "result": 
+            add("Program", 0)+
+             add("Block", 1)+
+              addLeaf("LBracket", 2)+
+              add("StatementList", 2)+
+               addLeaf("Statement", 3)+
+              addLeaf("RBracket", 2),
+        "error": error("Expected EOP got LBracket on line 1")
 
     }
+
 
 ];
 
@@ -51,11 +65,11 @@ tests.forEach(function(test) {
             expect(result.cst.toString()).to.deep.equal(test.result);
         });
         //Optional Error test
-        if(test.error){
-            it('Should report: '+test.error, () => {
+        if(test.error.lvl || test.error.msg){
+            it('Should report: '+test.error.lvl+': '+test.error.msg, () => {
                 expect(result.e).to.deep.equal(test.error);
             });
-        }
+       }
     });
 });
 

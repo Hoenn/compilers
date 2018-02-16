@@ -16,8 +16,8 @@ var Parser = /** @class */ (function () {
         if (error) {
             return { log: this.log, cst: this.cst, e: error };
         }
-        this.consume(["$"], Token_1.TokenType.EOP);
-        return { log: this.log, cst: this.cst, e: undefined };
+        error = this.consume(["[$]"], Token_1.TokenType.EOP);
+        return { log: this.log, cst: this.cst, e: error };
         //return syntax tree and errors        
     };
     Parser.prototype.parseBlock = function () {
@@ -44,8 +44,15 @@ var Parser = /** @class */ (function () {
         if (error) {
             return error;
         }
-        //If next token is a statement
-        //let error = this.parseStatementList()
+        //See if next token would start a valid statement
+        //If so, recurse, if not moveUp
+        var nToken = this.tokens[0].value;
+        if (nToken.match(Token_1.TokenRegex.Statement)) {
+            error = this.parseStatementList();
+            if (error) {
+                return error;
+            }
+        }
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseStatement = function () {
@@ -96,6 +103,8 @@ var Parser = /** @class */ (function () {
         this.emit("print statement");
         this.cst.addBranchNode(new SyntaxTree_1.Node("PrintStatement"));
         this.consume(["print"], "print");
+        //"[(]" since ( alone throws malformed RegExp error
+        // /\(/ also accomplishes the same
         this.consume(["[(]"], "(");
         //let error = parseExpr()
         //if (error) {

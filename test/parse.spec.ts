@@ -15,8 +15,7 @@ const tests = [
             B("Program", 0)+
              B("Block", 1)+
               L("LBracket", 2)+
-              B("StatementList", 2)+
-               L("Statement", 3)+
+              L("StatementList", 2)+
               L("RBracket", 2)+
              L("EOP", 1),
         "error": {lvl: null, msg: null} 
@@ -28,8 +27,7 @@ const tests = [
             B("Program", 0)+
              B("Block", 1)+
               L("LBracket", 2)+
-              B("StatementList",2)+
-               L("Statement", 3),
+              L("StatementList",2),
         "error": {lvl: "error", msg: "Expected RBracket got EOP on line 1"}
     },
     {
@@ -56,8 +54,7 @@ const tests = [
             B("Program", 0)+
              B("Block", 1)+
               L("LBracket", 2)+
-              B("StatementList", 2)+
-               L("Statement", 3)+
+              L("StatementList", 2)+
               L("RBracket", 2),
         "error": error("Expected EOP got LBracket on line 1")
 

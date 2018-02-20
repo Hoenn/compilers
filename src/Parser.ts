@@ -42,28 +42,27 @@ export class Parser {
         this.cst.moveCurrentUp();
     }
     parseStatementList(): Alert | undefined {
-        this.emit("statement list");
         this.cst.addBranchNode(new Node("StatementList"))
-        let err = this.parseStatement();
-        if (err) {
-            return err;
+        let nToken = this.tokens[0].value;
+        if(nToken.match(TokenRegex.Statement)) {
+            let err = this.parseStatement();
+            if (err) {
+                return err;
+            }
+        } else {
+            //Lambda Production
+            this.emit("Lambda Production in StatementList on line "+this.tokens[0].lineNum);
         }
-
+        
+        //Incase tokens may have moved in parseStatement above, reassign nToken
+        nToken = this.tokens[0].value;
         //See if next token would start a valid statement
         //If so, recurse, if not moveUp
-        let nToken = this.tokens[0];
-        console.log(nToken.value);
-        if(nToken.value.match(TokenRegex.Statement) ) {
-            err = this.parseStatementList();
+        if(nToken.match(TokenRegex.Statement) ) {
+            let err = this.parseStatementList();
             if(err) {
                 return err;
             }
-        } else if (nToken.value.match("[}]")) { //If the statement is empty the next token will be RBracket
-            this.cst.moveCurrentUp();
-            return;
-        } else {
-            return error("Expected print|vardecl|block|while|assignment statement found "+
-                    nToken.value, nToken.lineNum);
         }
         this.cst.moveCurrentUp();
     }
@@ -73,42 +72,41 @@ export class Parser {
 
         //Look at next token to decide how to parse
         let nToken = this.tokens[0].kind;
-        let error;
+        let err;
         switch(nToken) {
             case TokenType.LBracket: {
-                error = this.parseBlock();
+                err = this.parseBlock();
                 break;
             }
             case TokenType.Print: {
-                error = this.parsePrint();
+                err = this.parsePrint();
                 break;
             }
             case TokenType.VarType: {
-                //error = this.parseVarDecl();
+                //err = this.parseVarDecl();
                 break;
             }
             case TokenType.While: {
-                //error = this.parseWhile();
+                //err = this.parseWhile();
                 break;
             }
             case TokenType.If: {
-                //error = this.parseIf();
+                //err = this.parseIf();
                 break;
             }
             case TokenType.Id: {
-                //error = this.parseAssignment();
+                //err = this.parseAssignment();
                 break;
             }
             default: {
-                //Either empty statement or unknown token
-                //parseBlock will catch unknown or correctly find RBracket
-                this.cst.moveCurrentUp();
-                return;
+                err = error("Expected print|while|Assignment|VarDecl|If|Block statement on ",
+                                this.tokens[0].lineNum);
+                break;
             }
         }
-        //Propagate any errors from switch
-        if(error) {
-            return error;
+        //Propagate any errs from switch
+        if(err) {
+            return err;
         }
         this.cst.moveCurrentUp();
     }

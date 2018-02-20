@@ -38,29 +38,27 @@ var Parser = /** @class */ (function () {
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseStatementList = function () {
-        this.emit("statement list");
         this.cst.addBranchNode(new SyntaxTree_1.Node("StatementList"));
-        var err = this.parseStatement();
-        if (err) {
-            return err;
-        }
-        //See if next token would start a valid statement
-        //If so, recurse, if not moveUp
-        var nToken = this.tokens[0];
-        console.log(nToken.value);
-        if (nToken.value.match(Token_1.TokenRegex.Statement)) {
-            err = this.parseStatementList();
+        var nToken = this.tokens[0].value;
+        if (nToken.match(Token_1.TokenRegex.Statement)) {
+            var err = this.parseStatement();
             if (err) {
                 return err;
             }
         }
-        else if (nToken.value.match("[}]")) {
-            this.cst.moveCurrentUp();
-            return;
-        }
         else {
-            return Alert_1.error("Expected print|vardecl|block|while|assignment statement found " +
-                nToken.value, nToken.lineNum);
+            //Lambda Production
+            this.emit("Lambda Production in StatementList on line " + this.tokens[0].lineNum);
+        }
+        //Incase tokens may have moved in parseStatement above, reassign nToken
+        nToken = this.tokens[0].value;
+        //See if next token would start a valid statement
+        //If so, recurse, if not moveUp
+        if (nToken.match(Token_1.TokenRegex.Statement)) {
+            var err = this.parseStatementList();
+            if (err) {
+                return err;
+            }
         }
         this.cst.moveCurrentUp();
     };
@@ -69,42 +67,40 @@ var Parser = /** @class */ (function () {
         this.cst.addBranchNode(new SyntaxTree_1.Node("Statement"));
         //Look at next token to decide how to parse
         var nToken = this.tokens[0].kind;
-        var error;
+        var err;
         switch (nToken) {
             case Token_1.TokenType.LBracket: {
-                error = this.parseBlock();
+                err = this.parseBlock();
                 break;
             }
             case Token_1.TokenType.Print: {
-                error = this.parsePrint();
+                err = this.parsePrint();
                 break;
             }
             case Token_1.TokenType.VarType: {
-                //error = this.parseVarDecl();
+                //err = this.parseVarDecl();
                 break;
             }
             case Token_1.TokenType.While: {
-                //error = this.parseWhile();
+                //err = this.parseWhile();
                 break;
             }
             case Token_1.TokenType.If: {
-                //error = this.parseIf();
+                //err = this.parseIf();
                 break;
             }
             case Token_1.TokenType.Id: {
-                //error = this.parseAssignment();
+                //err = this.parseAssignment();
                 break;
             }
             default: {
-                //Either empty statement or unknown token
-                //parseBlock will catch unknown or correctly find RBracket
-                this.cst.moveCurrentUp();
-                return;
+                err = Alert_1.error("Expected print|while|Assignment|VarDecl|If|Block statement on ", this.tokens[0].lineNum);
+                break;
             }
         }
-        //Propagate any errors from switch
-        if (error) {
-            return error;
+        //Propagate any errs from switch
+        if (err) {
+            return err;
         }
         this.cst.moveCurrentUp();
     };

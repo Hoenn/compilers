@@ -14,6 +14,12 @@ function main(sourceArg, filePath) {
     }
     var l = new Lexer_1.Lexer();
     var tokens = l.lex(sourceProgram);
+    //HCF is there was a lex error
+    if (tokens.e) {
+        if (tokens.e.lvl == 'error') {
+            return;
+        }
+    }
     if (tokens.t) {
         var p = new Parser_1.Parser(tokens.t);
         var tree = p.parse();

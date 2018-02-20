@@ -13,7 +13,12 @@ export function main(sourceArg: string, filePath?: boolean) {
     }
     let l = new Lexer();
     let tokens = l.lex(sourceProgram);
-
+    //HCF is there was a lex error
+    if(tokens.e) {
+        if(tokens.e.lvl == 'error'){
+            return;
+        }
+    }
     if(tokens.t) {
         let p = new Parser(tokens.t);
         let tree = p.parse();

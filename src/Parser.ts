@@ -44,19 +44,26 @@ export class Parser {
     parseStatementList(): Alert | undefined {
         this.emit("statement list");
         this.cst.addBranchNode(new Node("StatementList"))
-        let error = this.parseStatement();
-        if (error) {
-            return error;
+        let err = this.parseStatement();
+        if (err) {
+            return err;
         }
 
         //See if next token would start a valid statement
         //If so, recurse, if not moveUp
-        let nToken = this.tokens[0].value;
-        if(nToken.match(TokenRegex.Statement) ) {
-            error = this.parseStatementList();
-            if(error) {
-                return error;
+        let nToken = this.tokens[0];
+        console.log(nToken.value);
+        if(nToken.value.match(TokenRegex.Statement) ) {
+            err = this.parseStatementList();
+            if(err) {
+                return err;
             }
+        } else if (nToken.value.match("[}]")) { //If the statement is empty the next token will be RBracket
+            this.cst.moveCurrentUp();
+            return;
+        } else {
+            return error("Expected print|vardecl|block|while|assignment statement found "+
+                    nToken.value, nToken.lineNum);
         }
         this.cst.moveCurrentUp();
     }

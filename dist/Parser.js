@@ -40,18 +40,27 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parseStatementList = function () {
         this.emit("statement list");
         this.cst.addBranchNode(new SyntaxTree_1.Node("StatementList"));
-        var error = this.parseStatement();
-        if (error) {
-            return error;
+        var err = this.parseStatement();
+        if (err) {
+            return err;
         }
         //See if next token would start a valid statement
         //If so, recurse, if not moveUp
-        var nToken = this.tokens[0].value;
-        if (nToken.match(Token_1.TokenRegex.Statement)) {
-            error = this.parseStatementList();
-            if (error) {
-                return error;
+        var nToken = this.tokens[0];
+        console.log(nToken.value);
+        if (nToken.value.match(Token_1.TokenRegex.Statement)) {
+            err = this.parseStatementList();
+            if (err) {
+                return err;
             }
+        }
+        else if (nToken.value.match("[}]")) {
+            this.cst.moveCurrentUp();
+            return;
+        }
+        else {
+            return Alert_1.error("Expected print|vardecl|block|while|assignment statement found " +
+                nToken.value, nToken.lineNum);
         }
         this.cst.moveCurrentUp();
     };

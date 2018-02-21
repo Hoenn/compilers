@@ -20,6 +20,7 @@ function main(sourceArg, filePath) {
             return;
         }
     }
+    console.log(tokens.t);
     if (tokens.t) {
         var p = new Parser_1.Parser(tokens.t);
         var tree = p.parse();

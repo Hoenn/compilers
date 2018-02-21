@@ -218,7 +218,19 @@ const tests = [
             new Token(TokenType.Char, "t", 1)
         ],
         "error": L.multiLineStringError(1)
+    },
+    {    
+        "test": "true==false$",
+        "describe": "Bool literal and Bool operation",
+        "result": [
+            new Token(TokenType.BoolLiteral, "true", 1),
+            new Token(TokenType.BoolOp, "==", 1),
+            new Token(TokenType.BoolLiteral, "false", 1),
+            new Token(TokenType.EOP, "$", 1)
+        ],
+        "error": {lvl: null, msg: null}
     }
+
 
 
 ]

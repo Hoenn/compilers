@@ -19,6 +19,7 @@ export function main(sourceArg: string, filePath?: boolean) {
             return;
         }
     }
+    console.log(tokens.t);
     if(tokens.t) {
         let p = new Parser(tokens.t);
         let tree = p.parse();

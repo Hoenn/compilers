@@ -256,11 +256,11 @@ var Parser = /** @class */ (function () {
                 break;
             }
             case Token_1.TokenType.VarType: {
-                //err = this.parseVarDecl();
+                err = this.parseVarDecl();
                 break;
             }
             case Token_1.TokenType.While: {
-                //err = this.parseWhile();
+                err = this.parseWhile();
                 break;
             }
             case Token_1.TokenType.If: {
@@ -268,7 +268,7 @@ var Parser = /** @class */ (function () {
                 break;
             }
             case Token_1.TokenType.Id: {
-                //err = this.parseAssignment();
+                err = this.parseAssignment();
                 break;
             }
             default: {
@@ -296,6 +296,53 @@ var Parser = /** @class */ (function () {
         this.consume(["[)]"], ")");
         this.cst.moveCurrentUp();
     };
+    Parser.prototype.parseAssignment = function () {
+        this.emit("assignment statement");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("AssignmentStatement"));
+        var err = this.parseId();
+        if (err) {
+            return err;
+        }
+        err = this.consume([Token_1.TokenRegex.Assign], "Equals");
+        if (err) {
+            return err;
+        }
+        err = this.parseExpr();
+        if (err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseWhile = function () {
+        this.emit("while statement");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("WhileStatement"));
+        var err = this.consume(["while"], "while");
+        if (err) {
+            return err;
+        }
+        err = this.parseBoolExpr();
+        if (err) {
+            return err;
+        }
+        err = this.parseBlock();
+        if (err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseVarDecl = function () {
+        this.emit("variable declaration");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("VarDeclStatement"));
+        var err = this.parseType();
+        if (err) {
+            return err;
+        }
+        err = this.parseId();
+        if (err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    };
     Parser.prototype.parseExpr = function () {
         this.emit("expression");
         this.cst.addBranchNode(new SyntaxTree_1.Node("Expression"));
@@ -308,6 +355,14 @@ var Parser = /** @class */ (function () {
             }
             case Token_1.TokenType.Id: {
                 err = this.parseId();
+                break;
+            }
+            case Token_1.TokenType.LParen: {
+                err = this.parseBoolExpr();
+                break;
+            }
+            case Token_1.TokenType.BoolLiteral: {
+                err = this.parseBoolExpr();
                 break;
             }
             default: {
@@ -340,10 +395,58 @@ var Parser = /** @class */ (function () {
         }
         this.cst.moveCurrentUp();
     };
+    Parser.prototype.parseBoolExpr = function () {
+        this.emit("boolean expression");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("BooleanExpr"));
+        var err;
+        var nToken = this.tokens[0];
+        if (nToken.kind == Token_1.TokenType.LParen) {
+            err = this.consume(["[(]"], Token_1.TokenType.LParen);
+            if (err) {
+                return err;
+            }
+            err = this.parseExpr();
+            if (err) {
+                return err;
+            }
+            err = this.consume(["==", "!="], "boolean operation");
+            if (err) {
+                return err;
+            }
+            err = this.parseExpr();
+            if (err) {
+                return err;
+            }
+            err = this.consume(["[)]"], Token_1.TokenType.RParen);
+            if (err) {
+                return err;
+            }
+        }
+        else if (nToken.kind == Token_1.TokenType.BoolLiteral) {
+            err = this.consume(["true", "false"], "boolean literal");
+            if (err) {
+                return err;
+            }
+        }
+        else {
+            //Should not get here
+            return Alert_1.error("Expected BooleanExpression");
+        }
+        this.cst.moveCurrentUp();
+    };
     Parser.prototype.parseId = function () {
         this.cst.addBranchNode(new SyntaxTree_1.Node("Id"));
         this.emit("id");
         var err = this.consume([Token_1.TokenRegex.Id], "Id");
+        if (err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseType = function () {
+        this.cst.addBranchNode(new SyntaxTree_1.Node("Type"));
+        this.emit("type");
+        var err = this.consume([Token_1.TokenRegex.Type], "int|boolean|string type");
         if (err) {
             return err;
         }
@@ -484,7 +587,7 @@ exports.TokenGlyphs = {
 };
 exports.TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
-    Split: new RegExp(/([a-z]+)|([0-9])|("[^"]*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\s)/g),
+    Split: new RegExp(/([a-z]+)|([0-9])|("[^"]*")|(\/\*.*\*\/)|(==|!=|=|\$|{|}|\(|\)|\+|\s)/g),
     WhiteSpace: new RegExp(/^(\s)$/g),
     //types, while, print, id (for assignment), block start,
     Statement: new RegExp(/(int|boolean|string|[a-z]|{|if|while)/g),
@@ -505,7 +608,7 @@ exports.TokenRegex = {
     RParen: new RegExp(/(\))/),
     LBracket: new RegExp(/({)/),
     RBracket: new RegExp(/(})/),
-    Assign: new RegExp(/(=)/),
+    Assign: new RegExp(/^(=)$/),
     BoolOp: new RegExp(/(==)|(!=)/),
     IntOp: new RegExp(/(\+)/)
 };

@@ -41,7 +41,7 @@ exports.TokenGlyphs = {
 };
 exports.TokenRegex = {
     //Break on characters -> digits -> "any/*text*/" -> /*comments*/ -> symbols and new lines
-    Split: new RegExp(/([a-z]+)|([0-9])|("[^"]*")|(\/\*.*\*\/)|(=|==|!=|\$|{|}|\(|\)|\+|\s)/g),
+    Split: new RegExp(/([a-z]+)|([0-9])|("[^"]*")|(\/\*.*\*\/)|(==|!=|=|\$|{|}|\(|\)|\+|\s)/g),
     WhiteSpace: new RegExp(/^(\s)$/g),
     //types, while, print, id (for assignment), block start,
     Statement: new RegExp(/(int|boolean|string|[a-z]|{|if|while)/g),
@@ -62,7 +62,7 @@ exports.TokenRegex = {
     RParen: new RegExp(/(\))/),
     LBracket: new RegExp(/({)/),
     RBracket: new RegExp(/(})/),
-    Assign: new RegExp(/(=)/),
+    Assign: new RegExp(/^(=)$/),
     BoolOp: new RegExp(/(==)|(!=)/),
     IntOp: new RegExp(/(\+)/)
 };

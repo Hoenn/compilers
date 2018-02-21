@@ -87,11 +87,11 @@ export class Parser {
                 break;
             }
             case TokenType.VarType: {
-                //err = this.parseVarDecl();
+                err = this.parseVarDecl();
                 break;
             }
             case TokenType.While: {
-                //err = this.parseWhile();
+                err = this.parseWhile();
                 break;
             }
             case TokenType.If: {
@@ -99,7 +99,7 @@ export class Parser {
                 break;
             }
             case TokenType.Id: {
-                //err = this.parseAssignment();
+                err = this.parseAssignment();
                 break;
             }
             default: {
@@ -129,6 +129,54 @@ export class Parser {
 
         this.cst.moveCurrentUp();
     }
+    parseAssignment() {
+        this.emit("assignment statement");
+        this.cst.addBranchNode(new Node("AssignmentStatement"));
+        let err = this.parseId();
+        if(err){
+            return err;
+        }
+        err = this.consume([TokenRegex.Assign], "Equals");
+        if(err) {
+            return err;
+        }
+        err = this.parseExpr();
+        if(err){
+            return err;
+        }
+        this.cst.moveCurrentUp();
+
+    }
+    parseWhile() {
+        this.emit("while statement");
+        this.cst.addBranchNode(new Node("WhileStatement"));
+        let err = this.consume(["while"], "while");
+        if(err) {
+            return err;
+        }
+        err = this.parseBoolExpr();
+        if(err) {
+            return err;
+        }
+        err = this.parseBlock();
+        if(err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    }
+    parseVarDecl() {
+        this.emit("variable declaration");
+        this.cst.addBranchNode(new Node("VarDeclStatement"));
+        let err = this.parseType();
+        if(err) {
+            return err;
+        }
+        err = this.parseId();
+        if(err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    }
     parseExpr() {
         this.emit("expression");
         this.cst.addBranchNode(new Node("Expression"));
@@ -142,6 +190,14 @@ export class Parser {
             }
             case TokenType.Id: {
                 err = this.parseId();
+                break;
+            }
+            case TokenType.LParen: {
+                err = this.parseBoolExpr();
+                break;
+            }
+            case TokenType.BoolLiteral: {
+                err = this.parseBoolExpr();
                 break;
             }
             default: {
@@ -176,11 +232,57 @@ export class Parser {
         }
         this.cst.moveCurrentUp();
     }
+    parseBoolExpr(): Alert |undefined {
+        this.emit("boolean expression");
+        this.cst.addBranchNode(new Node("BooleanExpr"));
+        let err;
+        let nToken = this.tokens[0];
+        if(nToken.kind == TokenType.LParen) {
+            err = this.consume(["[(]"], TokenType.LParen);
+            if(err) {
+                return err;
+            }
+            err = this.parseExpr();
+            if(err) {
+                return err;
+            }
+            err = this.consume(["==", "!="], "boolean operation");
+            if(err) {
+                return err;
+            }
+            err = this.parseExpr();
+            if(err) {
+                return err;
+            }
+            err = this.consume(["[)]"], TokenType.RParen);
+            if(err) {
+                return err;
+            }
+        } else if(nToken.kind == TokenType.BoolLiteral) {
+            err = this.consume(["true", "false"], "boolean literal");
+            if(err) {
+                return err;
+            }
+        } else {
+            //Should not get here
+            return error("Expected BooleanExpression")
+        }
+        this.cst.moveCurrentUp();
+    }
     parseId() {
         this.cst.addBranchNode(new Node("Id"));
         this.emit("id");
         let err = this.consume([TokenRegex.Id], "Id");
         if (err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    }
+    parseType() {
+        this.cst.addBranchNode(new Node("Type"));
+        this.emit("type");
+        let err = this.consume([TokenRegex.Type], "int|boolean|string type");
+        if(err){
             return err;
         }
         this.cst.moveCurrentUp();

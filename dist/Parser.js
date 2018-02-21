@@ -17,6 +17,7 @@ var Parser = /** @class */ (function () {
             return { log: this.log, cst: null, e: err };
         }
         err = this.consume(["[$]"], Token_1.TokenType.EOP);
+        //Will be an error if there is anything after main block
         if (err) {
             return { log: this.log, cst: null, e: err };
         }
@@ -125,18 +126,19 @@ var Parser = /** @class */ (function () {
         this.emit("expression");
         this.cst.addBranchNode(new SyntaxTree_1.Node("Expression"));
         var nToken = this.tokens[0].kind;
+        var err;
         switch (nToken) {
             case Token_1.TokenType.Digit: {
-                var err = this.parseIntExpr();
-                if (err) {
-                    return err;
-                }
+                err = this.parseIntExpr();
                 break;
             }
             default: {
                 return Alert_1.error("Expected Int|Boolean|String expression or Id got " +
                     this.tokens[0].kind, this.tokens[0].lineNum);
             }
+        }
+        if (err) {
+            return err;
         }
         this.cst.moveCurrentUp();
     };

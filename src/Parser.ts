@@ -20,6 +20,7 @@ export class Parser {
             return {log: this.log, cst: null, e: err};
         }
         err = this.consume(["[$]"], TokenType.EOP);
+        //Will be an error if there is anything after main block
         if(err) {
             return {log: this.log, cst: null, e:err};
         }
@@ -131,21 +132,22 @@ export class Parser {
     parseExpr() {
         this.emit("expression");
         this.cst.addBranchNode(new Node("Expression"));
+ 
         let nToken = this.tokens[0].kind
+        let err;
         switch(nToken) {
             case TokenType.Digit: {
-                let err = this.parseIntExpr()
-                if(err){
-                    return err;
-                }
-                
-                
+                err = this.parseIntExpr()
                 break;
             }
             default: {
                 return error("Expected Int|Boolean|String expression or Id got "+
                     this.tokens[0].kind, this.tokens[0].lineNum);
             }
+        }
+
+        if(err){
+            return err;
         }
         this.cst.moveCurrentUp();
     }

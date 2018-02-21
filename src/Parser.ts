@@ -177,7 +177,6 @@ export class Parser {
         this.cst.moveCurrentUp();
     }
     parseId() {
-        //Symbol Table?
         this.cst.addBranchNode(new Node("Id"));
         this.emit("id");
         let err = this.consume([TokenRegex.Id], "Id");

@@ -167,7 +167,6 @@ var Parser = /** @class */ (function () {
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseId = function () {
-        //Symbol Table?
         this.cst.addBranchNode(new SyntaxTree_1.Node("Id"));
         this.emit("id");
         var err = this.consume([Token_1.TokenRegex.Id], "Id");

@@ -171,7 +171,276 @@ var Lexer = /** @class */ (function () {
 }());
 exports.Lexer = Lexer;
 
-},{"./Alert":1,"./Token":3}],3:[function(require,module,exports){
+},{"./Alert":1,"./Token":5}],3:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Token_1 = require("./Token");
+var SyntaxTree_1 = require("./SyntaxTree");
+var Alert_1 = require("./Alert");
+var Parser = /** @class */ (function () {
+    function Parser(tokens) {
+        //Add initial program token, make root node
+        this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Program"));
+        this.tokens = tokens;
+        this.log = [];
+    }
+    Parser.prototype.parse = function () {
+        this.emit("program");
+        var err = this.parseBlock();
+        if (err) {
+            return { log: this.log, cst: null, e: err };
+        }
+        err = this.consume(["[$]"], Token_1.TokenType.EOP);
+        //Will be an error if there is anything after main block
+        if (err) {
+            return { log: this.log, cst: null, e: err };
+        }
+        return { log: this.log, cst: this.cst, e: err };
+        //return syntax tree and errors        
+    };
+    Parser.prototype.parseBlock = function () {
+        this.emit("block");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("Block"));
+        var error = this.consume(["{"], Token_1.TokenType.LBracket);
+        if (error) {
+            return error;
+        }
+        error = this.parseStatementList();
+        if (error) {
+            return error;
+        }
+        error = this.consume(["}"], Token_1.TokenType.RBracket);
+        if (error) {
+            return error;
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseStatementList = function () {
+        this.cst.addBranchNode(new SyntaxTree_1.Node("StatementList"));
+        var nToken = this.tokens[0].value;
+        if (nToken.match(Token_1.TokenRegex.Statement)) {
+            var err = this.parseStatement();
+            if (err) {
+                return err;
+            }
+        }
+        else {
+            //Lambda Production
+            this.emit("Lambda Production in StatementList on line " + this.tokens[0].lineNum);
+        }
+        //Incase tokens may have moved in parseStatement above, reassign nToken
+        nToken = this.tokens[0].value;
+        //See if next token would start a valid statement
+        //If so, recurse, if not moveUp
+        if (nToken.match(Token_1.TokenRegex.Statement)) {
+            var err = this.parseStatementList();
+            if (err) {
+                return err;
+            }
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseStatement = function () {
+        this.emit("statement");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("Statement"));
+        //Look at next token to decide how to parse
+        var nToken = this.tokens[0].kind;
+        var err;
+        switch (nToken) {
+            case Token_1.TokenType.LBracket: {
+                err = this.parseBlock();
+                break;
+            }
+            case Token_1.TokenType.Print: {
+                err = this.parsePrint();
+                break;
+            }
+            case Token_1.TokenType.VarType: {
+                //err = this.parseVarDecl();
+                break;
+            }
+            case Token_1.TokenType.While: {
+                //err = this.parseWhile();
+                break;
+            }
+            case Token_1.TokenType.If: {
+                //err = this.parseIf();
+                break;
+            }
+            case Token_1.TokenType.Id: {
+                //err = this.parseAssignment();
+                break;
+            }
+            default: {
+                err = Alert_1.error("Expected print|while|Assignment|VarDecl|If|Block statement on ", this.tokens[0].lineNum);
+                break;
+            }
+        }
+        //Propagate any errs from switch
+        if (err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parsePrint = function () {
+        this.emit("print statement");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("PrintStatement"));
+        this.consume(["print"], "print");
+        //"[(]" since ( alone throws malformed RegExp error
+        // /\(/ also accomplishes the same
+        this.consume(["[(]"], "(");
+        var err = this.parseExpr();
+        if (err) {
+            return err;
+        }
+        this.consume(["[)]"], ")");
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseExpr = function () {
+        this.emit("expression");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("Expression"));
+        var nToken = this.tokens[0].kind;
+        var err;
+        switch (nToken) {
+            case Token_1.TokenType.Digit: {
+                err = this.parseIntExpr();
+                break;
+            }
+            case Token_1.TokenType.Id: {
+                err = this.parseId();
+                break;
+            }
+            default: {
+                return Alert_1.error("Expected Int|Boolean|String expression or Id got " +
+                    this.tokens[0].kind, this.tokens[0].lineNum);
+            }
+        }
+        if (err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseIntExpr = function () {
+        this.emit("int expression");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("IntExpr"));
+        var err = this.consume([Token_1.TokenRegex.Digit], "Digit");
+        if (err) {
+            return err;
+        }
+        var nToken = this.tokens[0].kind;
+        if (nToken == Token_1.TokenType.IntOp) {
+            err = this.consume([Token_1.TokenRegex.IntOp], "Plus");
+            if (err) {
+                return err;
+            }
+            err = this.parseExpr();
+            if (err) {
+                return err;
+            }
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseId = function () {
+        this.cst.addBranchNode(new SyntaxTree_1.Node("Id"));
+        this.emit("id");
+        var err = this.consume([Token_1.TokenRegex.Id], "Id");
+        if (err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    };
+    //search[] may contain string | RegExp
+    //want:string is needed for error reporting in case a list of
+    //  possible input is being searched for
+    Parser.prototype.consume = function (search, want) {
+        var cToken = this.tokens.shift();
+        if (cToken) {
+            for (var _i = 0, search_1 = search; _i < search_1.length; _i++) {
+                var exp = search_1[_i];
+                if (cToken.value.match(exp)) {
+                    this.cst.addLeafNode(new SyntaxTree_1.Node(cToken.value));
+                    return undefined;
+                }
+            }
+        }
+        else {
+            //Should never happen if Lex was passed
+            return Alert_1.error("Unexpected end of input");
+        }
+        return Alert_1.error("Expected " + want + " got " + cToken.kind, cToken.lineNum);
+    };
+    Parser.prototype.emit = function (s) {
+        this.log.push("Parsing " + s);
+    };
+    return Parser;
+}());
+exports.Parser = Parser;
+
+},{"./Alert":1,"./SyntaxTree":4,"./Token":5}],4:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var SyntaxTree = /** @class */ (function () {
+    function SyntaxTree(n) {
+        this.root = n;
+        this.current = this.root;
+    }
+    SyntaxTree.prototype.addBranchNode = function (n) {
+        //Maybe refactor to construct a node here
+        //Set the parent of new Node
+        n.parent = this.current;
+        //Add new node to current child list
+        this.current.addChild(n);
+        //Update current to new node
+        this.current = n;
+    };
+    SyntaxTree.prototype.addLeafNode = function (n) {
+        n.parent = this.current;
+        this.current.addChild(n);
+    };
+    SyntaxTree.prototype.moveCurrentUp = function () {
+        //If it has a parent move it up
+        if (this.current.parent) {
+            this.current = this.current.parent;
+        }
+    };
+    SyntaxTree.prototype.toString = function () {
+        var result = "";
+        function expand(node, depth) {
+            //Add indentation
+            for (var i = 0; i < depth; i++) {
+                result += "-";
+            }
+            if (node.children.length === 0) {
+                result += "[" + node.name + "]";
+                result += "\n";
+            }
+            else {
+                result += "<" + node.name + ">\n";
+                for (var i = 0; i < node.children.length; i++) {
+                    expand(node.children[i], depth + 1);
+                }
+            }
+        }
+        expand(this.root, 0);
+        return result;
+    };
+    return SyntaxTree;
+}());
+exports.SyntaxTree = SyntaxTree;
+var Node = /** @class */ (function () {
+    function Node(n) {
+        this.name = n;
+        this.parent = null;
+        this.children = [];
+    }
+    Node.prototype.addChild = function (n) {
+        this.children.push(n);
+    };
+    return Node;
+}());
+exports.Node = Node;
+
+},{}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token = /** @class */ (function () {
@@ -241,7 +510,7 @@ exports.TokenRegex = {
     IntOp: new RegExp(/(\+)/)
 };
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 const programs = [
 {
     "name": "Example",
@@ -389,10 +658,11 @@ module.exports = {
     programs: programs
 }
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var example  = require('./examples');
 const programs = example.programs;
 const LexerModule = require('../dist/Lexer.js');
+const ParserModule = require('../dist/Parser.js');
 var editor;
 window.onload = function() {
     setupAceEditor();
@@ -408,15 +678,15 @@ compileCode = function() {
         return;
     } 
     clearTabsAndErrors();
+
+    //Lexer
     $("#log-text").html("Starting Lexer...\n");
     //Safe way to track time, supported on newer browsers
     let start =  window.performance.now();
 
     const lexer = new LexerModule.Lexer();
     //result :: {t:Token[], e:{lvl:string, msg:string} | null} | null
-    const result = lexer.lex(editor.getValue());
-
-
+    let result = lexer.lex(editor.getValue());
     let time = window.performance.now()-start;
 
     const tokens = result.t;
@@ -428,11 +698,14 @@ compileCode = function() {
             $("#lexer-text").append("\n");
         }
     }
+
+    let lexFailed = false;
     //If there was an error report it and color it based on level
     if (result.e) {
-        let errorMsg = $("<span></span>").append("[LEXER] => "+result.e.lvl+": "+result.e.msg+"\n")
-            .addClass(statusColor(result.e.lvl));
-        applyFilter($("#compile-img"), result.e.lvl);
+        if(result.e.lvl === "error"){
+            lexFailed = true;
+        }
+        let errorMsg = errorSpan("LEXER", result.e); 
         
         logError("lexer", errorMsg);
         $("#tab-head-two").addClass(statusColor(result.e.lvl));
@@ -440,8 +713,53 @@ compileCode = function() {
         applyFilter($("#compile-img"), 'default');
     }
 
-    logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms");
+    logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms\n");
 
+    //Bail out if Lex had any errors
+    if(lexFailed) {
+        editor.focus();
+        return;
+    }
+
+    //Parser
+    $("#log-text").append("\nStarting Parser...\n");
+    //Safe way to track time, supported on newer browsers
+    start =  window.performance.now();
+
+    const parser = new ParserModule.Parser(tokens);
+    //result :: {log: string[], cst:SyntaxTree | undefined,  e:{lvl:string, msg:string} | null} 
+    result = parser.parse();
+    let log = result.log;
+    for(var i =0; i < log.length; i++) {
+        let text = "[PARSER] => "+log[i]+"\n";
+        tabOutput("parser",text);
+    }
+    let parseFailed = false;
+    let err = result.e;
+    if(err) {
+        parseFailed = true;
+        let errorMsg = errorSpan("PARSER", err);
+        
+        logError("parser", errorMsg);
+        $("#tab-head-three").addClass(statusColor(err.lvl));
+    } else {
+        applyFilter($("#compile-img"), 'default');
+    }
+    let cst = result.cst;
+    if(cst) {
+        let lines = cst.toString().split("\n");
+        console.log(lines);
+        tabOutput("parser", "\n[PARSER] => Concrete Syntax Tree\n");
+        for(let i = 0; i < lines.length-1; i++) {
+            tabOutput("parser", "[PARSER] => " + lines[i]+"\n");
+        }
+
+    }
+
+
+    time = window.performance.now()-start;
+
+    logOutput("parser", "[PARSER] => Completed in: "+time.toFixed(2)+" ms\n");
     //Go back to editor when complete
     editor.focus();
 }
@@ -469,10 +787,17 @@ applyRandomFilter = function(element) {
 randomFilter = function() {
     return "hue-rotate("+(160+Math.floor(Math.random()*200))+"deg)";
 }
-
+//component: compiler step that has failed
+//err: {lvl: string, msg: string}
+// lvl: "warning" | "error"
+errorSpan = function(component, err) {
+    applyFilter($("#compile-img"), err.lvl);
+    return $("<span></span>").append("["+component+"] => "+err.lvl+": "+err.msg+"\n")
+            .addClass(statusColor(err.lvl));
+}
 tabOutput = function (target, text) {
     let element = "#"+target+"-text";
-    $(element).append(text);
+    $(element).append($("<span></span>").text(text));
 }
 logOutput = function (target, text) {
     let element = "#"+target+"-text";
@@ -491,6 +816,11 @@ clearTabsAndErrors = function(){
     //Lexer
     $("#lexer-text").html("");
     $("#tab-head-two").removeClass( function(index, className) {
+        return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
+    });
+    //Parser
+    $("#parser-text").html("");
+    $("#tab-head-three").removeClass( function(index, className) {
         return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
     });
 }
@@ -560,4 +890,4 @@ setupProgramList = function() {
 
 }
 
-},{"../dist/Lexer.js":2,"./examples":4}]},{},[5]);
+},{"../dist/Lexer.js":2,"../dist/Parser.js":3,"./examples":6}]},{},[7]);

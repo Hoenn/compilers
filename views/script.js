@@ -1,6 +1,7 @@
 var example  = require('./examples');
 const programs = example.programs;
 const LexerModule = require('../dist/Lexer.js');
+const ParserModule = require('../dist/Parser.js');
 var editor;
 window.onload = function() {
     setupAceEditor();
@@ -16,15 +17,15 @@ compileCode = function() {
         return;
     } 
     clearTabsAndErrors();
+
+    //Lexer
     $("#log-text").html("Starting Lexer...\n");
     //Safe way to track time, supported on newer browsers
     let start =  window.performance.now();
 
     const lexer = new LexerModule.Lexer();
     //result :: {t:Token[], e:{lvl:string, msg:string} | null} | null
-    const result = lexer.lex(editor.getValue());
-
-
+    let result = lexer.lex(editor.getValue());
     let time = window.performance.now()-start;
 
     const tokens = result.t;
@@ -36,11 +37,14 @@ compileCode = function() {
             $("#lexer-text").append("\n");
         }
     }
+
+    let lexFailed = false;
     //If there was an error report it and color it based on level
     if (result.e) {
-        let errorMsg = $("<span></span>").append("[LEXER] => "+result.e.lvl+": "+result.e.msg+"\n")
-            .addClass(statusColor(result.e.lvl));
-        applyFilter($("#compile-img"), result.e.lvl);
+        if(result.e.lvl === "error"){
+            lexFailed = true;
+        }
+        let errorMsg = errorSpan("LEXER", result.e); 
         
         logError("lexer", errorMsg);
         $("#tab-head-two").addClass(statusColor(result.e.lvl));
@@ -48,8 +52,53 @@ compileCode = function() {
         applyFilter($("#compile-img"), 'default');
     }
 
-    logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms");
+    logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms\n");
 
+    //Bail out if Lex had any errors
+    if(lexFailed) {
+        editor.focus();
+        return;
+    }
+
+    //Parser
+    $("#log-text").append("\nStarting Parser...\n");
+    //Safe way to track time, supported on newer browsers
+    start =  window.performance.now();
+
+    const parser = new ParserModule.Parser(tokens);
+    //result :: {log: string[], cst:SyntaxTree | undefined,  e:{lvl:string, msg:string} | null} 
+    result = parser.parse();
+    let log = result.log;
+    for(var i =0; i < log.length; i++) {
+        let text = "[PARSER] => "+log[i]+"\n";
+        tabOutput("parser",text);
+    }
+    let parseFailed = false;
+    let err = result.e;
+    if(err) {
+        parseFailed = true;
+        let errorMsg = errorSpan("PARSER", err);
+        
+        logError("parser", errorMsg);
+        $("#tab-head-three").addClass(statusColor(err.lvl));
+    } else {
+        applyFilter($("#compile-img"), 'default');
+    }
+    let cst = result.cst;
+    if(cst) {
+        let lines = cst.toString().split("\n");
+        console.log(lines);
+        tabOutput("parser", "\n[PARSER] => Concrete Syntax Tree\n");
+        for(let i = 0; i < lines.length-1; i++) {
+            tabOutput("parser", "[PARSER] => " + lines[i]+"\n");
+        }
+
+    }
+
+
+    time = window.performance.now()-start;
+
+    logOutput("parser", "[PARSER] => Completed in: "+time.toFixed(2)+" ms\n");
     //Go back to editor when complete
     editor.focus();
 }
@@ -77,10 +126,17 @@ applyRandomFilter = function(element) {
 randomFilter = function() {
     return "hue-rotate("+(160+Math.floor(Math.random()*200))+"deg)";
 }
-
+//component: compiler step that has failed
+//err: {lvl: string, msg: string}
+// lvl: "warning" | "error"
+errorSpan = function(component, err) {
+    applyFilter($("#compile-img"), err.lvl);
+    return $("<span></span>").append("["+component+"] => "+err.lvl+": "+err.msg+"\n")
+            .addClass(statusColor(err.lvl));
+}
 tabOutput = function (target, text) {
     let element = "#"+target+"-text";
-    $(element).append(text);
+    $(element).append($("<span></span>").text(text));
 }
 logOutput = function (target, text) {
     let element = "#"+target+"-text";
@@ -99,6 +155,11 @@ clearTabsAndErrors = function(){
     //Lexer
     $("#lexer-text").html("");
     $("#tab-head-two").removeClass( function(index, className) {
+        return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
+    });
+    //Parser
+    $("#parser-text").html("");
+    $("#tab-head-three").removeClass( function(index, className) {
         return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
     });
 }

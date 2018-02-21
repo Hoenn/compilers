@@ -246,7 +246,7 @@ export class Parser {
             if(err) {
                 return err;
             }
-            err = this.consume(["==", "!="], "boolean operation");
+            err = this.consume([TokenRegex.BoolOp], "boolean operation");
             if(err) {
                 return err;
             }
@@ -259,7 +259,7 @@ export class Parser {
                 return err;
             }
         } else if(nToken.kind == TokenType.BoolLiteral) {
-            err = this.consume(["true", "false"], "boolean literal");
+            err = this.consume([TokenRegex.BoolLiteral], "boolean literal");
             if(err) {
                 return err;
             }

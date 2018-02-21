@@ -235,7 +235,7 @@ var Parser = /** @class */ (function () {
             if (err) {
                 return err;
             }
-            err = this.consume(["==", "!="], "boolean operation");
+            err = this.consume([Token_1.TokenRegex.BoolOp], "boolean operation");
             if (err) {
                 return err;
             }
@@ -249,7 +249,7 @@ var Parser = /** @class */ (function () {
             }
         }
         else if (nToken.kind == Token_1.TokenType.BoolLiteral) {
-            err = this.consume(["true", "false"], "boolean literal");
+            err = this.consume([Token_1.TokenRegex.BoolLiteral], "boolean literal");
             if (err) {
                 return err;
             }

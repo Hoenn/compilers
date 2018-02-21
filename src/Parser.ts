@@ -20,6 +20,9 @@ export class Parser {
             return {log: this.log, cst: null, e: err};
         }
         err = this.consume(["[$]"], TokenType.EOP);
+        if(err) {
+            return {log: this.log, cst: null, e:err};
+        }
 
         return {log: this.log, cst:this.cst, e: err};
         //return syntax tree and errors        

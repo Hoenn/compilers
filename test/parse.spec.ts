@@ -23,11 +23,7 @@ const tests = [
     {
         "test": "{$",
         "describe": "Incomplete Block",
-        "result":
-            B("Program", 0)+
-             B("Block", 1)+
-              L("LBracket", 2)+
-              L("StatementList",2),
+        "result": null,
         "error": {lvl: "error", msg: "Expected RBracket got EOP on line 1"}
     },
     {
@@ -61,12 +57,7 @@ const tests = [
     {
         "test": "{}{}$",
         "describe": "Parse Invalid Second Top Level block",
-        "result": 
-            B("Program", 0)+
-             B("Block", 1)+
-              L("LBracket", 2)+
-              L("StatementList", 2)+
-              L("RBracket", 2),
+        "result": null,
         "error": error("Expected EOP got LBracket on line 1")
 
     }

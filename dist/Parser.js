@@ -12,12 +12,15 @@ var Parser = /** @class */ (function () {
     }
     Parser.prototype.parse = function () {
         this.emit("program");
-        var error = this.parseBlock();
-        if (error) {
-            return { log: this.log, cst: this.cst, e: error };
+        var err = this.parseBlock();
+        if (err) {
+            return { log: this.log, cst: null, e: err };
         }
-        error = this.consume(["[$]"], Token_1.TokenType.EOP);
-        return { log: this.log, cst: this.cst, e: error };
+        err = this.consume(["[$]"], Token_1.TokenType.EOP);
+        if (err) {
+            return { log: this.log, cst: null, e: err };
+        }
+        return { log: this.log, cst: this.cst, e: err };
         //return syntax tree and errors        
     };
     Parser.prototype.parseBlock = function () {

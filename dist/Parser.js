@@ -111,11 +111,50 @@ var Parser = /** @class */ (function () {
         //"[(]" since ( alone throws malformed RegExp error
         // /\(/ also accomplishes the same
         this.consume(["[(]"], "(");
-        //let error = parseExpr()
-        //if (error) {
-        //  return error;
-        //}
+        var err = this.parseExpr();
+        if (err) {
+            return err;
+        }
         this.consume(["[)]"], ")");
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseExpr = function () {
+        this.emit("expression");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("Expression"));
+        var nToken = this.tokens[0].kind;
+        switch (nToken) {
+            case Token_1.TokenType.Digit: {
+                var err = this.parseIntExpr();
+                if (err) {
+                    return err;
+                }
+                break;
+            }
+            default: {
+                return Alert_1.error("Expected Int|Boolean|String expression or Id got " +
+                    this.tokens[0].kind, this.tokens[0].lineNum);
+            }
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseIntExpr = function () {
+        this.emit("int expression");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("IntExpr"));
+        var err = this.consume([Token_1.TokenRegex.Digit], "Digit");
+        if (err) {
+            return err;
+        }
+        var nToken = this.tokens[0].kind;
+        if (nToken == Token_1.TokenType.IntOp) {
+            err = this.consume([Token_1.TokenRegex.IntOp], "Plus");
+            if (err) {
+                return err;
+            }
+            err = this.parseIntExpr();
+            if (err) {
+                return err;
+            }
+        }
         this.cst.moveCurrentUp();
     };
     //search[] may contain string | RegExp

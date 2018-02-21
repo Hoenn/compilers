@@ -15,13 +15,13 @@ export class Parser {
     }
     parse(): {log: string[], cst:SyntaxTree | null, e: Alert |undefined } {
         this.emit("program");
-        let error = this.parseBlock();
-        if(error) {
-            return {log: this.log, cst: this.cst, e: error};
+        let err = this.parseBlock();
+        if(err) {
+            return {log: this.log, cst: null, e: err};
         }
-        error = this.consume(["[$]"], TokenType.EOP);
+        err = this.consume(["[$]"], TokenType.EOP);
 
-        return {log: this.log, cst:this.cst, e: error};
+        return {log: this.log, cst:this.cst, e: err};
         //return syntax tree and errors        
     }
     parseBlock() {
@@ -117,18 +117,60 @@ export class Parser {
         //"[(]" since ( alone throws malformed RegExp error
         // /\(/ also accomplishes the same
         this.consume(["[(]"], "(");
-        //let error = parseExpr()
-        //if (error) {
-        //  return error;
-        //}
+        let err = this.parseExpr()
+        if (err) {
+          return err;
+        }
         this.consume(["[)]"], ")");
 
+        this.cst.moveCurrentUp();
+    }
+    parseExpr() {
+        this.emit("expression");
+        this.cst.addBranchNode(new Node("Expression"));
+        let nToken = this.tokens[0].kind
+        switch(nToken) {
+            case TokenType.Digit: {
+                let err = this.parseIntExpr()
+                if(err){
+                    return err;
+                }
+                
+                
+                break;
+            }
+            default: {
+                return error("Expected Int|Boolean|String expression or Id got "+
+                    this.tokens[0].kind, this.tokens[0].lineNum);
+            }
+        }
+        this.cst.moveCurrentUp();
+    }
+    parseIntExpr(): Alert|undefined{
+        this.emit("int expression");
+        this.cst.addBranchNode(new Node("IntExpr"));
+        let err = this.consume([TokenRegex.Digit], "Digit");
+        if(err){
+            return err;
+        }
+        let nToken = this.tokens[0].kind;
+        if(nToken == TokenType.IntOp){
+            err = this.consume([TokenRegex.IntOp], "Plus");
+            if(err) {
+                return err;
+            }
+            err = this.parseIntExpr();
+            if(err) {
+                return err;
+            }
+            
+        }
         this.cst.moveCurrentUp();
     }
     //search[] may contain string | RegExp
     //want:string is needed for error reporting in case a list of
     //  possible input is being searched for
-    consume(search:string[], want: string): Alert |undefined { 
+    consume(search:string[] | RegExp[], want: string): Alert |undefined { 
         let cToken = this.tokens.shift();
         if(cToken) {
             for(var exp of search){

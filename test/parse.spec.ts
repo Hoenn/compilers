@@ -33,6 +33,14 @@ const tests = [
     {
         "test": "{print()}$",
         "describe": "Parse empty print statement",
+        "result": null,
+            
+        "error": {lvl: "error", msg: "Expected Int|Boolean|String expression or Id "+
+                "got RParen on line 1"} 
+    },
+    {
+        "test": "{print(1)}$",
+        "describe": "Parse print(digit) statement",
         "result":
             B("Program", 0)+
              B("Block", 1)+
@@ -42,6 +50,9 @@ const tests = [
                  B("PrintStatement", 4)+
                   L("Print", 5)+
                   L("LParen", 5)+
+                  B("Expression", 5)+
+                   B("IntExpr", 6)+
+                    L("Digit", 7)+
                   L("RParen", 5)+
               L("RBracket", 2)+
              L("EOP", 1),
@@ -59,8 +70,6 @@ const tests = [
         "error": error("Expected EOP got LBracket on line 1")
 
     }
-
-
 ];
 
 tests.forEach(function(test) {
@@ -68,10 +77,13 @@ tests.forEach(function(test) {
         const tokens = Lex.lex(test.test).t;
         let P = new Parser(tokens);
         const result = P.parse();
-        //Test Parse output
-        it(test.describe, ()=> {
-            expect(result.cst.toString()).to.deep.equal(test.result);
-        });
+        //If cst is not null (no errors)
+        if(result.cst) {
+            //Test Parse output
+            it(test.describe, ()=> {
+                expect(result.cst.toString()).to.deep.equal(test.result);
+            });
+        }
         //Optional Error test
         if(test.error.lvl || test.error.msg){
             it('Should report: '+test.error.lvl+': '+test.error.msg, () => {

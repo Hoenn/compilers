@@ -57,7 +57,7 @@ exports.TokenRegex = {
     Id: new RegExp(/^[a-z]$/),
     Quote: new RegExp(/(".*)/g),
     Char: new RegExp(/[a-z]/),
-    Digit: new RegExp(/^[0-9]$/),
+    Digit: new RegExp(/[0-9]/),
     LParen: new RegExp(/(\()/),
     RParen: new RegExp(/(\))/),
     LBracket: new RegExp(/({)/),

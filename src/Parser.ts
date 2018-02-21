@@ -140,6 +140,10 @@ export class Parser {
                 err = this.parseIntExpr()
                 break;
             }
+            case TokenType.Id: {
+                err = this.parseId();
+                break;
+            }
             default: {
                 return error("Expected Int|Boolean|String expression or Id got "+
                     this.tokens[0].kind, this.tokens[0].lineNum);
@@ -164,11 +168,21 @@ export class Parser {
             if(err) {
                 return err;
             }
-            err = this.parseIntExpr();
+            err = this.parseExpr();
             if(err) {
                 return err;
             }
             
+        }
+        this.cst.moveCurrentUp();
+    }
+    parseId() {
+        //Symbol Table?
+        this.cst.addBranchNode(new Node("Id"));
+        this.emit("id");
+        let err = this.consume([TokenRegex.Id], "Id");
+        if (err) {
+            return err;
         }
         this.cst.moveCurrentUp();
     }
@@ -180,7 +194,8 @@ export class Parser {
         if(cToken) {
             for(var exp of search){
                 if(cToken.value.match(exp)){
-                    this.cst.addLeafNode(new Node(cToken.kind));
+                    this.cst.addLeafNode(new Node(cToken.value));
+                    
                     return undefined;
                 }
             }

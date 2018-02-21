@@ -14,10 +14,10 @@ const tests = [
         "result": 
             B("Program", 0)+
              B("Block", 1)+
-              L("LBracket", 2)+
+              L("{", 2)+
               L("StatementList", 2)+
-              L("RBracket", 2)+
-             L("EOP", 1),
+              L("}", 2)+
+             L("$", 1),
         "error": {lvl: null, msg: null} 
     },
     {
@@ -40,18 +40,18 @@ const tests = [
         "result":
             B("Program", 0)+
              B("Block", 1)+
-               L("LBracket", 2)+
+               L("{", 2)+
                B("StatementList", 2)+
                 B("Statement", 3)+
                  B("PrintStatement", 4)+
-                  L("Print", 5)+
-                  L("LParen", 5)+
+                  L("print", 5)+
+                  L("(", 5)+
                   B("Expression", 5)+
                    B("IntExpr", 6)+
-                    L("Digit", 7)+
-                  L("RParen", 5)+
-              L("RBracket", 2)+
-             L("EOP", 1),
+                    L("1", 7)+
+                  L(")", 5)+
+              L("}", 2)+
+             L("$", 1),
         "error": {lvl: null, msg: null} 
     },
     {

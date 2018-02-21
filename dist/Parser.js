@@ -132,6 +132,10 @@ var Parser = /** @class */ (function () {
                 err = this.parseIntExpr();
                 break;
             }
+            case Token_1.TokenType.Id: {
+                err = this.parseId();
+                break;
+            }
             default: {
                 return Alert_1.error("Expected Int|Boolean|String expression or Id got " +
                     this.tokens[0].kind, this.tokens[0].lineNum);
@@ -155,10 +159,20 @@ var Parser = /** @class */ (function () {
             if (err) {
                 return err;
             }
-            err = this.parseIntExpr();
+            err = this.parseExpr();
             if (err) {
                 return err;
             }
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseId = function () {
+        //Symbol Table?
+        this.cst.addBranchNode(new SyntaxTree_1.Node("Id"));
+        this.emit("id");
+        var err = this.consume([Token_1.TokenRegex.Id], "Id");
+        if (err) {
+            return err;
         }
         this.cst.moveCurrentUp();
     };
@@ -171,7 +185,7 @@ var Parser = /** @class */ (function () {
             for (var _i = 0, search_1 = search; _i < search_1.length; _i++) {
                 var exp = search_1[_i];
                 if (cToken.value.match(exp)) {
-                    this.cst.addLeafNode(new SyntaxTree_1.Node(cToken.kind));
+                    this.cst.addLeafNode(new SyntaxTree_1.Node(cToken.value));
                     return undefined;
                 }
             }

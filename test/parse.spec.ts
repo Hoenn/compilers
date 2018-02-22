@@ -55,6 +55,61 @@ const tests = [
         "error": {lvl: null, msg: null} 
     },
     {
+        "test": '"{print("")}$',
+        "describe": "Parse StringExpr with empty CharList",
+        "result": 
+            B("Program", 0)+
+             B("Block", 1)+
+              L("{", 2)+
+              B("StatementList", 2)+
+               B("Statement", 3)+
+                B("PrintStatement", 4)+
+                 L("print", 5)+
+                 L("(", 5)+
+                 B("Expression", 5)+
+                  B("StringExpr", 6)+
+                   L('"', 7)+
+                   L("CharList", 7)+
+                   L('"', 7)+
+                 L(")", 5)+
+              L("}", 2)+
+             L("$", 1),
+        "error": {lvl: null, msg: null}
+    },
+    {
+        "test": '"{print("a ")}$',
+        "describe": "Parse StringExpr with char and space",
+        "result": 
+            B("Program", 0)+
+             B("Block", 1)+
+              L("{", 2)+
+              B("StatementList", 2)+
+               B("Statement", 3)+
+                B("PrintStatement", 4)+
+                 L("print", 5)+
+                 L("(", 5)+
+                 B("Expression", 5)+
+                  B("StringExpr", 6)+
+                   L('"', 7)+
+                   B("CharList", 7)+
+                    L("a", 8)+
+                    B("CharList", 8)+
+                     L(" ", 9)+
+                     L("CharList", 9)+
+                   L('"', 7)+
+                 L(")", 5)+
+              L("}", 2)+
+             L("$", 1),
+        "error": {lvl: null, msg: null}
+    },
+    {
+        "test": '{if a {}}$',
+        "describe": "Parse If stmt with invalid boolean expr",
+        "result": null,
+        "error": {lvl: "error", msg: "Expected BooleanExpression "+
+            "got Id on line 1"}
+    },  
+    {
         "test": "{}{}$",
         "describe": "Parse Invalid Second Top Level block",
         "result": null,

@@ -10,7 +10,7 @@ var Lex = new Lexer();
 const tests = [
     {
         "test": "{}$",
-        "describe": "Parse empty statement",
+        "describe": "Parse empty block",
         "result": 
             B("Program", 0)+
              B("Block", 1)+
@@ -55,7 +55,7 @@ const tests = [
         "error": {lvl: null, msg: null} 
     },
     {
-        "test": '"{print("")}$',
+        "test": '{print("")}$',
         "describe": "Parse StringExpr with empty CharList",
         "result": 
             B("Program", 0)+
@@ -77,7 +77,7 @@ const tests = [
         "error": {lvl: null, msg: null}
     },
     {
-        "test": '"{print("a ")}$',
+        "test": '{print("a ")}$',
         "describe": "Parse StringExpr with char and space",
         "result": 
             B("Program", 0)+
@@ -103,11 +103,37 @@ const tests = [
         "error": {lvl: null, msg: null}
     },
     {
+        "test": '{if true{}}$',
+        "describe": "Parse If Expression with bool literal",
+        "result": 
+            B("Program", 0)+
+             B("Block", 1)+
+              L("{", 2)+
+              B("StatementList", 2)+
+               B("Statement", 3)+
+                B("IfStatement", 4)+
+                 L("if", 5)+
+                 B("BooleanExpr", 5)+
+                  L("true", 6)+
+                 B("Block", 5)+
+                  L("{", 6)+
+                  L("StatementList", 6)+
+                  L("}", 6)+
+              L("}", 2)+
+             L("$", 1),
+        "error": {lvl: null, msg: null}
+    },
+    {
         "test": '{if a {}}$',
-        "describe": "Parse If stmt with invalid boolean expr",
+        "describe": "parse if stmt with invalid boolean expr",
         "result": null,
-        "error": {lvl: "error", msg: "Expected BooleanExpression "+
-            "got Id on line 1"}
+        "error": error("Expected BooleanExpression got Id on line 1")
+    },  
+    {
+        "test": '{while a {}}$',
+        "describe": "parse while stmt with invalid boolean expr",
+        "result": null,
+        "error": error("Expected BooleanExpression got Id on line 1")
     },  
     {
         "test": "{}{}$",

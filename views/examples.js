@@ -11,7 +11,7 @@ const programs = [
 
     while(x != y) {
         print(x)
-        x = x + 1
+        x = 1 + x
         if(x == 3) {
             print("fizz")
         }

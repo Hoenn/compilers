@@ -90,7 +90,7 @@ var Parser = /** @class */ (function () {
                 break;
             }
             case Token_1.TokenType.If: {
-                //err = this.parseIf();
+                err = this.parseIf();
                 break;
             }
             case Token_1.TokenType.Id: {
@@ -134,6 +134,23 @@ var Parser = /** @class */ (function () {
             return err;
         }
         err = this.parseExpr();
+        if (err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseIf = function () {
+        this.emit("if statement");
+        this.cst.addBranchNode(new SyntaxTree_1.Node("IfStatement"));
+        var err = this.consume([Token_1.TokenRegex.If], "if");
+        if (err) {
+            return err;
+        }
+        err = this.parseBoolExpr();
+        if (err) {
+            return err;
+        }
+        err = this.parseBlock();
         if (err) {
             return err;
         }
@@ -189,6 +206,10 @@ var Parser = /** @class */ (function () {
             }
             case Token_1.TokenType.BoolLiteral: {
                 err = this.parseBoolExpr();
+                break;
+            }
+            case Token_1.TokenType.Quote: {
+                err = this.parseStringExpr();
                 break;
             }
             default: {
@@ -255,10 +276,51 @@ var Parser = /** @class */ (function () {
             }
         }
         else {
-            //Should not get here
-            return Alert_1.error("Expected BooleanExpression");
+            return Alert_1.error("Expected BooleanExpression got " + nToken.kind + " on line " + nToken.lineNum);
         }
         this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseStringExpr = function () {
+        this.cst.addBranchNode(new SyntaxTree_1.Node("StringExpr"));
+        this.emit("string expression");
+        var err = this.consume(['"'], "open quote");
+        if (err) {
+            return err;
+        }
+        err = this.parseCharList();
+        if (err) {
+            return err;
+        }
+        err = this.consume(['"'], "close quote");
+        if (err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    };
+    Parser.prototype.parseCharList = function () {
+        this.cst.addBranchNode(new SyntaxTree_1.Node("CharList"));
+        this.emit("character list");
+        var nToken = this.tokens[0];
+        var err;
+        //Check for character
+        if (nToken.value.match(Token_1.TokenRegex.Char)) {
+            err = this.consume([Token_1.TokenRegex.Char], "lower case character");
+        }
+        else if (nToken.value == ' ') {
+            err = this.consume([" "], "space");
+        }
+        else {
+            //Lambda production for empty charlist"
+        }
+        //If next token is a char, repeat
+        if (nToken.value.match(/[a-z]|( )/)) {
+            err = this.parseCharList();
+            if (err) {
+                return err;
+            }
+        }
+        this.cst.moveCurrentUp();
+        return err;
     };
     Parser.prototype.parseId = function () {
         this.cst.addBranchNode(new SyntaxTree_1.Node("Id"));

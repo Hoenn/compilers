@@ -95,7 +95,7 @@ export class Parser {
                 break;
             }
             case TokenType.If: {
-                //err = this.parseIf();
+                err = this.parseIf();
                 break;
             }
             case TokenType.Id: {
@@ -146,6 +146,23 @@ export class Parser {
         }
         this.cst.moveCurrentUp();
 
+    }
+    parseIf() {
+        this.emit("if statement");
+        this.cst.addBranchNode(new Node("IfStatement"));
+        let err = this.consume([TokenRegex.If], "if");
+        if (err) {
+            return err;
+        }
+        err = this.parseBoolExpr();
+        if(err) {
+            return err;
+        }
+        err = this.parseBlock();
+        if(err) {
+            return err;
+        }
+        this.cst.moveCurrentUp();
     }
     parseWhile() {
         this.emit("while statement");
@@ -198,6 +215,10 @@ export class Parser {
             }
             case TokenType.BoolLiteral: {
                 err = this.parseBoolExpr();
+                break;
+            }
+            case TokenType.Quote: {
+                err = this.parseStringExpr();
                 break;
             }
             default: {
@@ -264,10 +285,51 @@ export class Parser {
                 return err;
             }
         } else {
-            //Should not get here
-            return error("Expected BooleanExpression")
+            return error("Expected BooleanExpression got "+nToken.kind+" on line "+nToken.lineNum);
         }
         this.cst.moveCurrentUp();
+    }
+    parseStringExpr() {
+        this.cst.addBranchNode(new Node("StringExpr"));
+        this.emit("string expression");
+
+        let err = this.consume(['"'], "open quote");
+        if(err){
+            return err;
+        }
+        err = this.parseCharList();
+        if(err) {
+            return err;
+        }
+        err = this.consume(['"'], "close quote");
+        if(err){
+            return err;
+        }
+        this.cst.moveCurrentUp();
+    }
+    parseCharList(): Alert |undefined {
+        this.cst.addBranchNode(new Node("CharList"))
+        this.emit("character list");
+        let nToken = this.tokens[0];
+        let err;
+        //Check for character
+        if(nToken.value.match(TokenRegex.Char)) {
+            err = this.consume([TokenRegex.Char], "lower case character");
+        } else if(nToken.value == ' '){ //And space
+            err = this.consume([" "], "space");
+        } else {
+            //Lambda production for empty charlist"
+        }
+        //If next token is a char, repeat
+        if(nToken.value.match(/[a-z]|( )/)) {
+            err = this.parseCharList();
+            if(err) {
+                return err;
+            }
+        }
+        this.cst.moveCurrentUp();
+        return err;
+
     }
     parseId() {
         this.cst.addBranchNode(new Node("Id"));

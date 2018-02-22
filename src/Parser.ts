@@ -117,15 +117,21 @@ export class Parser {
     parsePrint() {
         this.emit("print statement");
         this.cst.addBranchNode(new Node("PrintStatement"));
-        this.consume(["print"], "print");
+        let err = this.consume(["print"], "print");
+        if(err) {
+            return err;
+        }
         //"[(]" since ( alone throws malformed RegExp error
         // /\(/ also accomplishes the same
         this.consume(["[(]"], "(");
-        let err = this.parseExpr()
+        err = this.parseExpr()
         if (err) {
           return err;
         }
-        this.consume(["[)]"], ")");
+        err = this.consume(["[)]"], ")");
+        if(err) {
+            return err;
+        }
 
         this.cst.moveCurrentUp();
     }

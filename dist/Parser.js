@@ -111,15 +111,21 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parsePrint = function () {
         this.emit("print statement");
         this.cst.addBranchNode(new SyntaxTree_1.Node("PrintStatement"));
-        this.consume(["print"], "print");
-        //"[(]" since ( alone throws malformed RegExp error
-        // /\(/ also accomplishes the same
-        this.consume(["[(]"], "(");
-        var err = this.parseExpr();
+        var err = this.consume(["print"], "print");
         if (err) {
             return err;
         }
-        this.consume(["[)]"], ")");
+        //"[(]" since ( alone throws malformed RegExp error
+        // /\(/ also accomplishes the same
+        this.consume(["[(]"], "(");
+        err = this.parseExpr();
+        if (err) {
+            return err;
+        }
+        err = this.consume(["[)]"], ")");
+        if (err) {
+            return err;
+        }
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseAssignment = function () {

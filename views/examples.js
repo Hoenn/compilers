@@ -114,7 +114,7 @@ print(a){print(a)}$
 {
     "name": "Ugly code will Lex",
     "source":
-`{intii=0stringss="hello"booleanbb=(true==)1!=2))if(b==true){while(true!=(b!=(false==(2!=3)))){i=1+iprint(s)}}print("ugly code")}$`,
+`{intii=0stringss="hello"booleanbb=(true==(1!=2))if(b==true){while(true!=(b!=(false==(2!=3)))){i=1+iprint(s)}}print("ugly code")}$`,
     "type": "null"
 },
 

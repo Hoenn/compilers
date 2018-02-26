@@ -180,27 +180,49 @@ var Alert_1 = require("./Alert");
 var Parser = /** @class */ (function () {
     function Parser(tokens) {
         //Add initial program token, make root node
-        this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Program"));
+        this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Root"));
         this.tokens = tokens;
         this.log = [];
     }
     Parser.prototype.parse = function () {
-        this.emit("program");
-        var err = this.parseBlock();
+        var err = this.parseProgram();
         if (err) {
             return { log: this.log, cst: null, e: err };
+        }
+        //If there are more tokens
+        if (this.tokens.length > 0) {
+            //If there is a left bracket, parse the next program
+            // LBracket is the only valid token after EOP
+            if (this.tokens[0].kind == Token_1.TokenType.LBracket) {
+                this.parse();
+            }
+            else {
+                err = Alert_1.error("Unexpected token after EOP");
+            }
+        }
+        if (err) {
+            return { log: this.log, cst: null, e: err };
+        }
+        return { log: this.log, cst: this.cst, e: undefined };
+    };
+    Parser.prototype.parseProgram = function () {
+        this.emit("program");
+        this.addBranch("Program");
+        var err = this.parseBlock();
+        if (err) {
+            return err;
         }
         err = this.consume(["[$]"], Token_1.TokenType.EOP);
         //Will be an error if there is anything after main block
         if (err) {
-            return { log: this.log, cst: null, e: err };
+            return err;
         }
-        return { log: this.log, cst: this.cst, e: err };
-        //return syntax tree and errors        
+        this.moveUp();
+        this.cst.moveCurrentUp();
     };
     Parser.prototype.parseBlock = function () {
         this.emit("block");
-        this.cst.addBranchNode(new SyntaxTree_1.Node("Block"));
+        this.addBranch("Block");
         var error = this.consume(["{"], Token_1.TokenType.LBracket);
         if (error) {
             return error;
@@ -216,7 +238,7 @@ var Parser = /** @class */ (function () {
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseStatementList = function () {
-        this.cst.addBranchNode(new SyntaxTree_1.Node("StatementList"));
+        this.addBranch("StatementList");
         var nToken = this.tokens[0].value;
         if (nToken.match(Token_1.TokenRegex.Statement)) {
             var err = this.parseStatement();
@@ -242,7 +264,7 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.parseStatement = function () {
         this.emit("statement");
-        this.cst.addBranchNode(new SyntaxTree_1.Node("Statement"));
+        this.addBranch("Statement");
         //Look at next token to decide how to parse
         var nToken = this.tokens[0].kind;
         var err;
@@ -284,7 +306,7 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.parsePrint = function () {
         this.emit("print statement");
-        this.cst.addBranchNode(new SyntaxTree_1.Node("PrintStatement"));
+        this.addBranch("PrintStatement");
         var err = this.consume(["print"], "print");
         if (err) {
             return err;
@@ -304,7 +326,7 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.parseAssignment = function () {
         this.emit("assignment statement");
-        this.cst.addBranchNode(new SyntaxTree_1.Node("AssignmentStatement"));
+        this.addBranch("AssignmentStatement");
         var err = this.parseId();
         if (err) {
             return err;
@@ -321,7 +343,7 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.parseIf = function () {
         this.emit("if statement");
-        this.cst.addBranchNode(new SyntaxTree_1.Node("IfStatement"));
+        this.addBranch("IfStatement");
         var err = this.consume([Token_1.TokenRegex.If], "if");
         if (err) {
             return err;
@@ -338,7 +360,7 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.parseWhile = function () {
         this.emit("while statement");
-        this.cst.addBranchNode(new SyntaxTree_1.Node("WhileStatement"));
+        this.addBranch("WhileStatement");
         var err = this.consume(["while"], "while");
         if (err) {
             return err;
@@ -355,7 +377,7 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.parseVarDecl = function () {
         this.emit("variable declaration");
-        this.cst.addBranchNode(new SyntaxTree_1.Node("VarDeclStatement"));
+        this.addBranch("VarDeclStatement");
         var err = this.parseType();
         if (err) {
             return err;
@@ -368,7 +390,7 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.parseExpr = function () {
         this.emit("expression");
-        this.cst.addBranchNode(new SyntaxTree_1.Node("Expression"));
+        this.addBranch("Expression");
         var nToken = this.tokens[0].kind;
         var err;
         switch (nToken) {
@@ -404,7 +426,7 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.parseIntExpr = function () {
         this.emit("int expression");
-        this.cst.addBranchNode(new SyntaxTree_1.Node("IntExpr"));
+        this.addBranch("IntExpr");
         var err = this.consume([Token_1.TokenRegex.Digit], "Digit");
         if (err) {
             return err;
@@ -424,7 +446,7 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.parseBoolExpr = function () {
         this.emit("boolean expression");
-        this.cst.addBranchNode(new SyntaxTree_1.Node("BooleanExpr"));
+        this.addBranch("BooleanExpr");
         var err;
         var nToken = this.tokens[0];
         if (nToken.kind == Token_1.TokenType.LParen) {
@@ -461,7 +483,7 @@ var Parser = /** @class */ (function () {
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseStringExpr = function () {
-        this.cst.addBranchNode(new SyntaxTree_1.Node("StringExpr"));
+        this.addBranch("StringExpr");
         this.emit("string expression");
         var err = this.consume(['"'], "open quote");
         if (err) {
@@ -478,7 +500,7 @@ var Parser = /** @class */ (function () {
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseCharList = function () {
-        this.cst.addBranchNode(new SyntaxTree_1.Node("CharList"));
+        this.addBranch("CharList");
         this.emit("character list");
         var nToken = this.tokens[0];
         var err;
@@ -503,7 +525,7 @@ var Parser = /** @class */ (function () {
         return err;
     };
     Parser.prototype.parseId = function () {
-        this.cst.addBranchNode(new SyntaxTree_1.Node("Id"));
+        this.addBranch("Id");
         this.emit("id");
         var err = this.consume([Token_1.TokenRegex.Id], "Id");
         if (err) {
@@ -512,7 +534,7 @@ var Parser = /** @class */ (function () {
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseType = function () {
-        this.cst.addBranchNode(new SyntaxTree_1.Node("Type"));
+        this.addBranch("Type");
         this.emit("type");
         var err = this.consume([Token_1.TokenRegex.Type], "int|boolean|string type");
         if (err) {
@@ -542,6 +564,12 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.emit = function (s) {
         this.log.push("Parsing " + s);
+    };
+    Parser.prototype.addBranch = function (nodeName) {
+        this.cst.addBranchNode(new SyntaxTree_1.Node(nodeName));
+    };
+    Parser.prototype.moveUp = function () {
+        this.cst.moveCurrentUp();
     };
     return Parser;
 }());

@@ -9,28 +9,50 @@ export class Parser {
 
     constructor(tokens: Token[]) {
         //Add initial program token, make root node
-        this.cst = new SyntaxTree(new Node("Program"));
+        this.cst = new SyntaxTree(new Node("Root"));
         this.tokens = tokens;
         this.log = [];
     }
-    parse(): {log: string[], cst:SyntaxTree | null, e: Alert |undefined } {
-        this.emit("program");
-        let err = this.parseBlock();
+    parse() : {log: string[], cst:SyntaxTree | null, e: Alert |undefined }{
+        let err = this.parseProgram();
         if(err) {
             return {log: this.log, cst: null, e: err};
+        }
+        //If there are more tokens
+        if(this.tokens.length > 0) {
+            //If there is a left bracket, parse the next program
+            // LBracket is the only valid token after EOP
+            if(this.tokens[0].kind == TokenType.LBracket) {
+                this.parse();
+            } else { 
+                err = error("Unexpected token after EOP");
+            }
+        }
+        if(err) {
+            return {log: this.log, cst: null, e: err};
+        }
+
+        return {log: this.log, cst: this.cst, e: undefined};
+    }
+    parseProgram()  {
+        this.emit("program");
+        this.addBranch("Program");
+        let err = this.parseBlock();
+        if(err) {
+            return err;
         }
         err = this.consume(["[$]"], TokenType.EOP);
         //Will be an error if there is anything after main block
         if(err) {
-            return {log: this.log, cst: null, e:err};
+            return err;
         }
-
-        return {log: this.log, cst:this.cst, e: err};
-        //return syntax tree and errors        
+        this.moveUp();
+        this.cst.moveCurrentUp();
+    
     }
     parseBlock() {
         this.emit("block");
-        this.cst.addBranchNode(new Node("Block"));
+        this.addBranch("Block");
         let error = this.consume(["{"], TokenType.LBracket);
         if(error) {
             return error;
@@ -46,7 +68,7 @@ export class Parser {
         this.cst.moveCurrentUp();
     }
     parseStatementList(): Alert | undefined {
-        this.cst.addBranchNode(new Node("StatementList"))
+        this.addBranch("StatementList");
         let nToken = this.tokens[0].value;
         if(nToken.match(TokenRegex.Statement)) {
             let err = this.parseStatement();
@@ -72,7 +94,7 @@ export class Parser {
     }
     parseStatement(): Alert | undefined{
         this.emit("statement");
-        this.cst.addBranchNode(new Node("Statement"));
+        this.addBranch("Statement");
 
         //Look at next token to decide how to parse
         let nToken = this.tokens[0].kind;
@@ -116,7 +138,7 @@ export class Parser {
     }
     parsePrint() {
         this.emit("print statement");
-        this.cst.addBranchNode(new Node("PrintStatement"));
+        this.addBranch("PrintStatement");
         let err = this.consume(["print"], "print");
         if(err) {
             return err;
@@ -137,7 +159,7 @@ export class Parser {
     }
     parseAssignment() {
         this.emit("assignment statement");
-        this.cst.addBranchNode(new Node("AssignmentStatement"));
+        this.addBranch("AssignmentStatement");
         let err = this.parseId();
         if(err){
             return err;
@@ -155,7 +177,7 @@ export class Parser {
     }
     parseIf() {
         this.emit("if statement");
-        this.cst.addBranchNode(new Node("IfStatement"));
+        this.addBranch("IfStatement");
         let err = this.consume([TokenRegex.If], "if");
         if (err) {
             return err;
@@ -172,7 +194,7 @@ export class Parser {
     }
     parseWhile() {
         this.emit("while statement");
-        this.cst.addBranchNode(new Node("WhileStatement"));
+        this.addBranch("WhileStatement");
         let err = this.consume(["while"], "while");
         if(err) {
             return err;
@@ -189,7 +211,7 @@ export class Parser {
     }
     parseVarDecl() {
         this.emit("variable declaration");
-        this.cst.addBranchNode(new Node("VarDeclStatement"));
+        this.addBranch("VarDeclStatement");
         let err = this.parseType();
         if(err) {
             return err;
@@ -202,7 +224,7 @@ export class Parser {
     }
     parseExpr() {
         this.emit("expression");
-        this.cst.addBranchNode(new Node("Expression"));
+        this.addBranch("Expression");
  
         let nToken = this.tokens[0].kind
         let err;
@@ -240,7 +262,7 @@ export class Parser {
     }
     parseIntExpr(): Alert|undefined{
         this.emit("int expression");
-        this.cst.addBranchNode(new Node("IntExpr"));
+        this.addBranch("IntExpr");
         let err = this.consume([TokenRegex.Digit], "Digit");
         if(err){
             return err;
@@ -261,7 +283,7 @@ export class Parser {
     }
     parseBoolExpr(): Alert |undefined {
         this.emit("boolean expression");
-        this.cst.addBranchNode(new Node("BooleanExpr"));
+        this.addBranch("BooleanExpr");
         let err;
         let nToken = this.tokens[0];
         if(nToken.kind == TokenType.LParen) {
@@ -296,7 +318,7 @@ export class Parser {
         this.cst.moveCurrentUp();
     }
     parseStringExpr() {
-        this.cst.addBranchNode(new Node("StringExpr"));
+        this.addBranch("StringExpr");
         this.emit("string expression");
 
         let err = this.consume(['"'], "open quote");
@@ -314,7 +336,7 @@ export class Parser {
         this.cst.moveCurrentUp();
     }
     parseCharList(): Alert |undefined {
-        this.cst.addBranchNode(new Node("CharList"))
+        this.addBranch("CharList");
         this.emit("character list");
         let nToken = this.tokens[0];
         let err;
@@ -338,7 +360,7 @@ export class Parser {
 
     }
     parseId() {
-        this.cst.addBranchNode(new Node("Id"));
+        this.addBranch("Id");
         this.emit("id");
         let err = this.consume([TokenRegex.Id], "Id");
         if (err) {
@@ -347,7 +369,7 @@ export class Parser {
         this.cst.moveCurrentUp();
     }
     parseType() {
-        this.cst.addBranchNode(new Node("Type"));
+        this.addBranch("Type");
         this.emit("type");
         let err = this.consume([TokenRegex.Type], "int|boolean|string type");
         if(err){
@@ -378,5 +400,11 @@ export class Parser {
     }
     emit(s: string) {
         this.log.push("Parsing "+s);
+    }
+    addBranch(nodeName: string) {
+        this.cst.addBranchNode(new Node(nodeName));
+    }
+    moveUp() {
+        this.cst.moveCurrentUp();
     }
 }

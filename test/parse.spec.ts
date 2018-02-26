@@ -12,12 +12,13 @@ const tests = [
         "test": "{}$",
         "describe": "Parse empty block",
         "result": 
-            B("Program", 0)+
-             B("Block", 1)+
-              L("{", 2)+
-              L("StatementList", 2)+
-              L("}", 2)+
-             L("$", 1),
+            B("Root", 0)+
+             B("Program", 1)+
+              B("Block", 2)+
+               L("{", 3)+
+               L("StatementList", 3)+
+               L("}", 3)+
+              L("$", 2),
         "error": {lvl: null, msg: null} 
     },
     {
@@ -38,89 +39,93 @@ const tests = [
         "test": "{print(1)}$",
         "describe": "Parse print(digit) statement",
         "result":
-            B("Program", 0)+
-             B("Block", 1)+
-               L("{", 2)+
-               B("StatementList", 2)+
-                B("Statement", 3)+
-                 B("PrintStatement", 4)+
-                  L("print", 5)+
-                  L("(", 5)+
-                  B("Expression", 5)+
-                   B("IntExpr", 6)+
-                    L("1", 7)+
-                  L(")", 5)+
-              L("}", 2)+
-             L("$", 1),
+            B("Root", 0)+
+             B("Program", 1)+
+              B("Block", 2)+
+                L("{", 3)+
+                B("StatementList", 3)+
+                 B("Statement", 4)+
+                  B("PrintStatement", 5)+
+                   L("print", 6)+
+                   L("(", 6)+
+                   B("Expression", 6)+
+                    B("IntExpr", 7)+
+                     L("1", 8)+
+                   L(")", 6)+
+               L("}", 3)+
+              L("$", 2),
         "error": {lvl: null, msg: null} 
     },
     {
         "test": '{print("")}$',
         "describe": "Parse StringExpr with empty CharList",
         "result": 
-            B("Program", 0)+
-             B("Block", 1)+
-              L("{", 2)+
-              B("StatementList", 2)+
-               B("Statement", 3)+
-                B("PrintStatement", 4)+
-                 L("print", 5)+
-                 L("(", 5)+
-                 B("Expression", 5)+
-                  B("StringExpr", 6)+
-                   L('"', 7)+
-                   L("CharList", 7)+
-                   L('"', 7)+
-                 L(")", 5)+
-              L("}", 2)+
-             L("$", 1),
+            B("Root", 0)+
+             B("Program", 1)+
+              B("Block", 2)+
+               L("{", 3)+
+               B("StatementList", 3)+
+                B("Statement", 4)+
+                 B("PrintStatement", 5)+
+                  L("print", 6)+
+                  L("(", 6)+
+                  B("Expression", 6)+
+                   B("StringExpr", 7)+
+                    L('"', 8)+
+                    L("CharList", 8)+
+                    L('"', 8)+
+                  L(")", 6)+
+               L("}", 3)+
+              L("$", 2),
         "error": {lvl: null, msg: null}
     },
     {
         "test": '{print("a ")}$',
         "describe": "Parse StringExpr with char and space",
         "result": 
-            B("Program", 0)+
-             B("Block", 1)+
-              L("{", 2)+
-              B("StatementList", 2)+
-               B("Statement", 3)+
-                B("PrintStatement", 4)+
-                 L("print", 5)+
-                 L("(", 5)+
-                 B("Expression", 5)+
-                  B("StringExpr", 6)+
-                   L('"', 7)+
-                   B("CharList", 7)+
-                    L("a", 8)+
+            B("Root", 0)+
+             B("Program", 1)+
+              B("Block", 2)+
+               L("{", 3)+
+               B("StatementList", 3)+
+                B("Statement", 4)+
+                 B("PrintStatement", 5)+
+                  L("print", 6)+
+                  L("(", 6)+
+                  B("Expression", 6)+
+                   B("StringExpr", 7)+
+                    L('"', 8)+
                     B("CharList", 8)+
-                     L(" ", 9)+
-                     L("CharList", 9)+
-                   L('"', 7)+
-                 L(")", 5)+
-              L("}", 2)+
-             L("$", 1),
+                     L("a", 9)+
+                     B("CharList", 9)+
+                      L(" ", 10)+
+                      L("CharList", 10)+
+                    L('"', 8)+
+                  L(")", 6)+
+               L("}", 3)+
+              L("$", 2),
         "error": {lvl: null, msg: null}
     },
     {
         "test": '{if true{}}$',
         "describe": "Parse If Expression with bool literal",
         "result": 
-            B("Program", 0)+
-             B("Block", 1)+
-              L("{", 2)+
-              B("StatementList", 2)+
-               B("Statement", 3)+
-                B("IfStatement", 4)+
-                 L("if", 5)+
-                 B("BooleanExpr", 5)+
-                  L("true", 6)+
-                 B("Block", 5)+
-                  L("{", 6)+
-                  L("StatementList", 6)+
-                  L("}", 6)+
-              L("}", 2)+
-             L("$", 1),
+            B("Root", 0)+
+             B("Program", 1)+
+              B("Block", 2)+
+               L("{", 3)+
+               B("StatementList", 3)+
+                B("Statement", 4)+
+                 B("IfStatement", 5)+
+                  L("if", 6)+
+                  B("BooleanExpr", 6)+
+                   L("true", 7)+
+                  B("Block", 6)+
+                   L("{", 7)+
+                   L("StatementList", 7)+
+                   L("}", 7)+
+               L("}", 3)+
+              L("$", 2),
         "error": {lvl: null, msg: null}
     },
     {

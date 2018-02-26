@@ -197,7 +197,7 @@ var Parser = /** @class */ (function () {
                 this.parse();
             }
             else {
-                err = Alert_1.error("Unexpected token after EOP");
+                err = Alert_1.error("Unexpected token '" + this.tokens[0].value + "' after EOP");
             }
         }
         if (err) {

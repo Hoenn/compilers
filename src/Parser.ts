@@ -25,7 +25,7 @@ export class Parser {
             if(this.tokens[0].kind == TokenType.LBracket) {
                 this.parse();
             } else { 
-                err = error("Unexpected token after EOP");
+                err = error("Unexpected token '"+this.tokens[0].value+"' after EOP");
             }
         }
         if(err) {

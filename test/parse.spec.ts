@@ -22,6 +22,25 @@ const tests = [
         "error": {lvl: null, msg: null} 
     },
     {
+        "test": "{}${}$",
+        "describe": "Parse multiple programs",
+        "result":
+            B("Root", 0)+
+             B("Program", 1)+
+              B("Block", 2)+
+               L("{", 3)+
+               L("StatementList", 3)+
+               L("}", 3)+
+              L("$", 2)+
+             B("Program", 1)+
+              B("Block", 2)+
+               L("{", 3)+
+               L("StatementList", 3)+
+               L("}", 3)+
+              L("$", 2),
+        "error": {lvl: null, msg:null}
+    },
+    {
         "test": "{$",
         "describe": "Incomplete Block",
         "result": null,
@@ -145,7 +164,12 @@ const tests = [
         "describe": "Parse Invalid Second Top Level block",
         "result": null,
         "error": error("Expected EOP got LBracket on line 1")
-
+    },
+    {
+        "test": "{}$a",
+        "describe": "Unexpected Token after EOP",
+        "result": null,
+        "error": error("Unexpected token 'a' after EOP")
     }
 ];
 

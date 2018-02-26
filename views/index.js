@@ -213,7 +213,6 @@ var Parser = /** @class */ (function () {
             return err;
         }
         err = this.consume(["[$]"], Token_1.TokenType.EOP);
-        //Will be an error if there is anything after main block
         if (err) {
             return err;
         }

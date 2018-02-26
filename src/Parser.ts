@@ -42,7 +42,6 @@ export class Parser {
             return err;
         }
         err = this.consume(["[$]"], TokenType.EOP);
-        //Will be an error if there is anything after main block
         if(err) {
             return err;
         }

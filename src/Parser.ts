@@ -23,7 +23,7 @@ export class Parser {
             //If there is a left bracket, parse the next program
             // LBracket is the only valid token after EOP
             if(this.tokens[0].kind == TokenType.LBracket) {
-                this.parse();
+                err=this.parseProgram();
             } else { 
                 err = error("Unexpected token '"+this.tokens[0].value+"' after EOP");
             }

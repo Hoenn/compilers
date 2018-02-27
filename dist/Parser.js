@@ -20,7 +20,7 @@ var Parser = /** @class */ (function () {
             //If there is a left bracket, parse the next program
             // LBracket is the only valid token after EOP
             if (this.tokens[0].kind == Token_1.TokenType.LBracket) {
-                this.parse();
+                err = this.parseProgram();
             }
             else {
                 err = Alert_1.error("Unexpected token '" + this.tokens[0].value + "' after EOP");

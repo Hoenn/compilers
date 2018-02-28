@@ -84,15 +84,21 @@ compileCode = function() {
     } else {
         applyFilter($("#compile-img"), 'default');
     }
+    let st = result.st;
+    if(st) {
+        tabOutput("parser", "\n[PARSER] => Symbol Table\n");
+        for(let i = 0; i < st.length; i++){
+            console.log(st[i].toString());
+            tabOutput("parser", "[PARSER] => "+st[i].toString()+"\n");
+        }
+    }
     let cst = result.cst;
     if(cst) {
         let lines = cst.toString().split("\n");
-        console.log(lines);
         tabOutput("parser", "\n[PARSER] => Concrete Syntax Tree\n");
         for(let i = 0; i < lines.length-1; i++) {
-            tabOutput("parser", "[PARSER] => " + lines[i]+"\n");
+            tabOutput("parser", "[PARSER] => " + lines[i].toString()+"\n");
         }
-
     }
 
 

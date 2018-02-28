@@ -27,6 +27,9 @@ export function main(sourceArg: string, filePath?: boolean) {
         if(tree.cst) {
             console.log(tree.cst.toString());
         } 
+        if(tree.st) {
+            console.log(tree.st);
+        }
         if(tree.e) {
             console.log(tree.e);
         }

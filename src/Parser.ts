@@ -1,22 +1,25 @@
 import {TokenType, Token, TokenRegex} from './Token';
 import {SyntaxTree, Node} from './SyntaxTree';
 import {Alert, error, warning} from './Alert';
+import {Symbol} from './Symbol';
 export class Parser {
 
     cst: SyntaxTree;
     tokens : Token[];
     log : string[];
+    symbolTable: Symbol[];
 
     constructor(tokens: Token[]) {
         //Add initial program token, make root node
         this.cst = new SyntaxTree(new Node("Root"));
         this.tokens = tokens;
         this.log = [];
+        this.symbolTable = [];
     }
-    parse() : {log: string[], cst:SyntaxTree | null, e: Alert |undefined }{
+    parse() : {log: string[], cst:SyntaxTree | null, st: Symbol[] | null, e: Alert |undefined }{
         let err = this.parseProgram();
         if(err) {
-            return {log: this.log, cst: null, e: err};
+            return {log: this.log, cst: null, st: null,  e: err};
         }
         //If there are more tokens
         if(this.tokens.length > 0) {
@@ -29,10 +32,10 @@ export class Parser {
             }
         }
         if(err) {
-            return {log: this.log, cst: null, e: err};
+            return {log: this.log, cst: null, st: null, e: err};
         }
 
-        return {log: this.log, cst: this.cst, e: undefined};
+        return {log: this.log, cst: this.cst, st: this.symbolTable, e: undefined};
     }
     parseProgram()  {
         this.emit("program");
@@ -211,14 +214,19 @@ export class Parser {
     parseVarDecl() {
         this.emit("variable declaration");
         this.addBranch("VarDeclStatement");
+        let type = this.tokens[0].value;
         let err = this.parseType();
         if(err) {
             return err;
         }
+        let id = this.tokens[0].value;
+        let line = this.tokens[0].lineNum;
         err = this.parseId();
         if(err) {
             return err;
         }
+        this.log.push("Adding "+type+" "+id+" to Symbol Table");
+        this.symbolTable.push(new Symbol(id, type, line));
         this.cst.moveCurrentUp();
     }
     parseExpr() {
@@ -385,7 +393,6 @@ export class Parser {
             for(var exp of search){
                 if(cToken.value.match(exp)){
                     this.cst.addLeafNode(new Node(cToken.value));
-                    
                     return undefined;
                 }
             }

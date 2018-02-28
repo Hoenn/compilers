@@ -3,17 +3,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Token_1 = require("./Token");
 var SyntaxTree_1 = require("./SyntaxTree");
 var Alert_1 = require("./Alert");
+var Symbol_1 = require("./Symbol");
 var Parser = /** @class */ (function () {
     function Parser(tokens) {
         //Add initial program token, make root node
         this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Root"));
         this.tokens = tokens;
         this.log = [];
+        this.symbolTable = [];
     }
     Parser.prototype.parse = function () {
         var err = this.parseProgram();
         if (err) {
-            return { log: this.log, cst: null, e: err };
+            return { log: this.log, cst: null, st: null, e: err };
         }
         //If there are more tokens
         if (this.tokens.length > 0) {
@@ -27,9 +29,9 @@ var Parser = /** @class */ (function () {
             }
         }
         if (err) {
-            return { log: this.log, cst: null, e: err };
+            return { log: this.log, cst: null, st: null, e: err };
         }
-        return { log: this.log, cst: this.cst, e: undefined };
+        return { log: this.log, cst: this.cst, st: this.symbolTable, e: undefined };
     };
     Parser.prototype.parseProgram = function () {
         this.emit("program");
@@ -203,14 +205,19 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parseVarDecl = function () {
         this.emit("variable declaration");
         this.addBranch("VarDeclStatement");
+        var type = this.tokens[0].value;
         var err = this.parseType();
         if (err) {
             return err;
         }
+        var id = this.tokens[0].value;
+        var line = this.tokens[0].lineNum;
         err = this.parseId();
         if (err) {
             return err;
         }
+        this.log.push("Adding " + type + " " + id + " to Symbol Table");
+        this.symbolTable.push(new Symbol_1.Symbol(id, type, line));
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseExpr = function () {

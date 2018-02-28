@@ -27,6 +27,9 @@ function main(sourceArg, filePath) {
         if (tree.cst) {
             console.log(tree.cst.toString());
         }
+        if (tree.st) {
+            console.log(tree.st);
+        }
         if (tree.e) {
             console.log(tree.e);
         }

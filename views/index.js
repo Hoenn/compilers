@@ -1,4 +1,4 @@
-(function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function error(errMsg, lineNum) {
@@ -171,23 +171,25 @@ var Lexer = /** @class */ (function () {
 }());
 exports.Lexer = Lexer;
 
-},{"./Alert":1,"./Token":5}],3:[function(require,module,exports){
+},{"./Alert":1,"./Token":6}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token_1 = require("./Token");
 var SyntaxTree_1 = require("./SyntaxTree");
 var Alert_1 = require("./Alert");
+var Symbol_1 = require("./Symbol");
 var Parser = /** @class */ (function () {
     function Parser(tokens) {
         //Add initial program token, make root node
         this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Root"));
         this.tokens = tokens;
         this.log = [];
+        this.symbolTable = [];
     }
     Parser.prototype.parse = function () {
         var err = this.parseProgram();
         if (err) {
-            return { log: this.log, cst: null, e: err };
+            return { log: this.log, cst: null, st: null, e: err };
         }
         //If there are more tokens
         if (this.tokens.length > 0) {
@@ -201,9 +203,9 @@ var Parser = /** @class */ (function () {
             }
         }
         if (err) {
-            return { log: this.log, cst: null, e: err };
+            return { log: this.log, cst: null, st: null, e: err };
         }
-        return { log: this.log, cst: this.cst, e: undefined };
+        return { log: this.log, cst: this.cst, st: this.symbolTable, e: undefined };
     };
     Parser.prototype.parseProgram = function () {
         this.emit("program");
@@ -377,14 +379,19 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parseVarDecl = function () {
         this.emit("variable declaration");
         this.addBranch("VarDeclStatement");
+        var type = this.tokens[0].value;
         var err = this.parseType();
         if (err) {
             return err;
         }
+        var id = this.tokens[0].value;
+        var line = this.tokens[0].lineNum;
         err = this.parseId();
         if (err) {
             return err;
         }
+        this.log.push("Adding " + type + " " + id + " to Symbol Table");
+        this.symbolTable.push(new Symbol_1.Symbol(id, type, line));
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseExpr = function () {
@@ -574,7 +581,23 @@ var Parser = /** @class */ (function () {
 }());
 exports.Parser = Parser;
 
-},{"./Alert":1,"./SyntaxTree":4,"./Token":5}],4:[function(require,module,exports){
+},{"./Alert":1,"./Symbol":4,"./SyntaxTree":5,"./Token":6}],4:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Symbol = /** @class */ (function () {
+    function Symbol(id, type, line) {
+        this.id = id;
+        this.type = type;
+        this.line = line;
+    }
+    Symbol.prototype.toString = function () {
+        return "[ id: " + this.id + " type: " + this.type + " line: " + this.line + "]";
+    };
+    return Symbol;
+}());
+exports.Symbol = Symbol;
+
+},{}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var SyntaxTree = /** @class */ (function () {
@@ -638,7 +661,7 @@ var Node = /** @class */ (function () {
 }());
 exports.Node = Node;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token = /** @class */ (function () {
@@ -708,7 +731,7 @@ exports.TokenRegex = {
     IntOp: new RegExp(/(\+)/)
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 const programs = [
 {
     "name": "Example",
@@ -856,7 +879,7 @@ module.exports = {
     programs: programs
 }
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var example  = require('./examples');
 const programs = example.programs;
 const LexerModule = require('../dist/Lexer.js');
@@ -943,15 +966,21 @@ compileCode = function() {
     } else {
         applyFilter($("#compile-img"), 'default');
     }
+    let st = result.st;
+    if(st) {
+        tabOutput("parser", "\n[PARSER] => Symbol Table\n");
+        for(let i = 0; i < st.length; i++){
+            console.log(st[i].toString());
+            tabOutput("parser", "[PARSER] => "+st[i].toString()+"\n");
+        }
+    }
     let cst = result.cst;
     if(cst) {
         let lines = cst.toString().split("\n");
-        console.log(lines);
         tabOutput("parser", "\n[PARSER] => Concrete Syntax Tree\n");
         for(let i = 0; i < lines.length-1; i++) {
-            tabOutput("parser", "[PARSER] => " + lines[i]+"\n");
+            tabOutput("parser", "[PARSER] => " + lines[i].toString()+"\n");
         }
-
     }
 
 
@@ -1088,4 +1117,4 @@ setupProgramList = function() {
 
 }
 
-},{"../dist/Lexer.js":2,"../dist/Parser.js":3,"./examples":6}]},{},[7]);
+},{"../dist/Lexer.js":2,"../dist/Parser.js":3,"./examples":7}]},{},[8]);

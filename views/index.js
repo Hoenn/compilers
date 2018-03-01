@@ -910,13 +910,24 @@ compileCode = function() {
     let result = lexer.lex(editor.getValue());
     let time = window.performance.now()-start;
 
+    let programNumber = 0;
+    let programTokensList = [[]];
+    programTokensList.push([]);
     const tokens = result.t;
+    $("#lexer-text").append("Program "+(programNumber+1)+"\n");
     //Append messages for whatever tokens are available
     for(var i = 0; i < tokens.length; i++) {
         let text = "[LEXER] => "+tokens[i].kind+" ["+tokens[i].value+"] on line: "+tokens[i].lineNum+"\n";
         tabOutput("lexer",text);
+        programTokensList[programNumber].push(tokens[i]);
         if(tokens[i].kind == "EOP") {
             $("#lexer-text").append("\n");
+            //If it's not the last token
+            if(i != tokens.length-1){
+                programTokensList.push([]);
+                programNumber++;
+                $("#lexer-text").append("Program "+(programNumber+1)+"\n");
+            }
         }
     }
 
@@ -946,44 +957,48 @@ compileCode = function() {
     $("#log-text").append("\nStarting Parser...\n");
     //Safe way to track time, supported on newer browsers
     start =  window.performance.now();
+    for(let programNum = 0; programNum < programTokensList.length-1; programNum++) {
+        tabOutput("parser", "Parsing Program "+(programNum+1)+"\n");
 
-    const parser = new ParserModule.Parser(tokens);
-    //result :: {log: string[], cst:SyntaxTree | undefined,  e:{lvl:string, msg:string} | null} 
-    result = parser.parse();
-    let log = result.log;
-    for(var i =0; i < log.length; i++) {
-        let text = "[PARSER] => "+log[i]+"\n";
-        tabOutput("parser",text);
-    }
-    let parseFailed = false;
-    let err = result.e;
-    if(err) {
-        parseFailed = true;
-        let errorMsg = errorSpan("PARSER", err);
-        
-        logError("parser", errorMsg);
-        $("#tab-head-three").addClass(statusColor(err.lvl));
-    } else {
-        applyFilter($("#compile-img"), 'default');
-    }
-    let st = result.st;
-    if(st) {
-        tabOutput("parser", "\n[PARSER] => Symbol Table\n");
-        for(let i = 0; i < st.length; i++){
-            console.log(st[i].toString());
-            tabOutput("parser", "[PARSER] => "+st[i].toString()+"\n");
+        let parser = new ParserModule.Parser(programTokensList[programNum]);
+        //result :: {log: string[], cst:SyntaxTree | undefined,
+        //           st:[Symbol]|undefined, e:{lvl:string, msg:string} | null} 
+        result = parser.parse();
+        let log = result.log;
+        for(var i =0; i < log.length; i++) {
+            let text = "[PARSER] => "+log[i]+"\n";
+            tabOutput("parser",text);
         }
-    }
-    let cst = result.cst;
-    if(cst) {
-        let lines = cst.toString().split("\n");
-        tabOutput("parser", "\n[PARSER] => Concrete Syntax Tree\n");
-        for(let i = 0; i < lines.length-1; i++) {
-            tabOutput("parser", "[PARSER] => " + lines[i].toString()+"\n");
+        let parseFailed = false;
+        let err = result.e;
+        if(err) {
+            parseFailed = true;
+            let errorMsg = errorSpan("PARSER", err);
+            
+            logError("parser", errorMsg);
+            $("#tab-head-three").addClass(statusColor(err.lvl));
+            break;
+        } else {
+            applyFilter($("#compile-img"), 'default');
         }
+        let st = result.st;
+        if(st) {
+            tabOutput("parser", "\n[PARSER] => Symbol Table\n");
+            for(let i = 0; i < st.length; i++){
+                tabOutput("parser", "[PARSER] => "+st[i].toString()+"\n");
+            }
+        }
+        let cst = result.cst;
+        if(cst) {
+            let lines = cst.toString().split("\n");
+            tabOutput("parser", "\n[PARSER] => Concrete Syntax Tree\n");
+            for(let i = 0; i < lines.length-1; i++) {
+                tabOutput("parser", "[PARSER] => " + lines[i].toString()+"\n");
+            }
+        }
+        tabOutput("parser", "\n");
+
     }
-
-
     time = window.performance.now()-start;
 
     logOutput("parser", "[PARSER] => Completed in: "+time.toFixed(2)+" ms\n");

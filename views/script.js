@@ -32,7 +32,7 @@ compileCode = function() {
     let programTokensList = [[]];
     programTokensList.push([]);
     const tokens = result.t;
-    $("#lexer-text").append("Program "+(programNumber+1)+"\n");
+    $("#lexer-text").append("<i>Program "+(programNumber+1)+"\n</i>");
     //Append messages for whatever tokens are available
     for(var i = 0; i < tokens.length; i++) {
         let text = "[LEXER] => "+tokens[i].kind+" ["+tokens[i].value+"] on line: "+tokens[i].lineNum+"\n";
@@ -44,7 +44,7 @@ compileCode = function() {
             if(i != tokens.length-1){
                 programTokensList.push([]);
                 programNumber++;
-                $("#lexer-text").append("Program "+(programNumber+1)+"\n");
+                $("#lexer-text").append("<i>Program "+(programNumber+1)+"\n</i>");
             }
         }
     }
@@ -76,7 +76,7 @@ compileCode = function() {
     //Safe way to track time, supported on newer browsers
     start =  window.performance.now();
     for(let programNum = 0; programNum < programTokensList.length-1; programNum++) {
-        tabOutput("parser", "Parsing Program "+(programNum+1)+"\n");
+        $('#parser-text').append("<i>Parsing Program "+(programNum+1)+"\n</i>");
 
         let parser = new ParserModule.Parser(programTokensList[programNum]);
         //result :: {log: string[], cst:SyntaxTree | undefined,

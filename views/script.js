@@ -120,9 +120,13 @@ preGroup = function(source) {
     source = source.trim();
     let result = [];
     let current = "";
+    let inQuotes = false;
     for(let i = 0; i < source.length; i++) {
         current += source[i];
-        if(source[i] == "$") {
+        if(source[i] == '"') {
+            inQuotes = !inQuotes;
+        }
+        if(!inQuotes && source[i] == "$") {
             result.push(current);
             current = "";
         } else if(i == source.length -1){

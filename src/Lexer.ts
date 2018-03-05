@@ -14,7 +14,8 @@ export class Lexer {
         
         let tokens: Token[] = [];
         let result: {t:Token[]|null, e: Alert|null} = {t:null, e:null}
-        for(let blob of tokenBlobs) {
+        for(let i = 0; i < tokenBlobs.length; i++) {
+            let blob = tokenBlobs[i];
             //If a comment or whitespace just skip
             if (blob.match(TokenRegex.Comment) || blob.match(TokenRegex.WhiteSpace)){
             //If newline is found increment lineNum but skip
@@ -31,6 +32,12 @@ export class Lexer {
             } 
             //It's possible to have valid tokens returned along with an error
             if(result.e) {
+                //Keep the lineNum for future programs (in the same file..)
+                for(let j = i; j < tokenBlobs.length; j++) {
+                    if(tokenBlobs[j].match("\n")) {
+                        this.lineNum+=1;
+                    }
+                }
                 break;
             }
         }

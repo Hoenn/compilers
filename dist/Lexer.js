@@ -12,8 +12,8 @@ var Lexer = /** @class */ (function () {
         var tokenBlobs = src.split(Token_1.TokenRegex.Split).filter(function (defined) { return defined; });
         var tokens = [];
         var result = { t: null, e: null };
-        for (var _i = 0, tokenBlobs_1 = tokenBlobs; _i < tokenBlobs_1.length; _i++) {
-            var blob = tokenBlobs_1[_i];
+        for (var i = 0; i < tokenBlobs.length; i++) {
+            var blob = tokenBlobs[i];
             //If a comment or whitespace just skip
             if (blob.match(Token_1.TokenRegex.Comment) || blob.match(Token_1.TokenRegex.WhiteSpace)) {
                 //If newline is found increment lineNum but skip
@@ -24,13 +24,19 @@ var Lexer = /** @class */ (function () {
             }
             result = this.longestMatch(blob, this.lineNum);
             if (result.t) {
-                for (var _a = 0, _b = result.t; _a < _b.length; _a++) {
-                    var t = _b[_a];
+                for (var _i = 0, _a = result.t; _i < _a.length; _i++) {
+                    var t = _a[_i];
                     tokens.push(t);
                 }
             }
             //It's possible to have valid tokens returned along with an error
             if (result.e) {
+                //Keep the lineNum for future programs (in the same file..)
+                for (var j = i; j < tokenBlobs.length; j++) {
+                    if (tokenBlobs[j].match("\n")) {
+                        this.lineNum += 1;
+                    }
+                }
                 break;
             }
         }

@@ -237,7 +237,7 @@ const tests = [
 
 tests.forEach(function(test) {
     describe('Lex: '+test.test, () => {
-        const result = L.lex(test.test);
+        const result = new Lexer().lex(test.test);
         //Test Token output
         it(test.describe, ()=> {
             expect(result.t).to.deep.equal(test.result);

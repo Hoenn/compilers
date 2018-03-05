@@ -17,12 +17,12 @@ var Token_1 = require("./Token");
 var Alert_1 = require("./Alert");
 var Lexer = /** @class */ (function () {
     function Lexer() {
+        this.lineNum = 1;
     }
     Lexer.prototype.lex = function (src) {
         //Break text into blobs to perform longest match on
         //filter out undefined blobs
         var tokenBlobs = src.split(Token_1.TokenRegex.Split).filter(function (defined) { return defined; });
-        var lineNum = 1;
         var tokens = [];
         var result = { t: null, e: null };
         for (var _i = 0, tokenBlobs_1 = tokenBlobs; _i < tokenBlobs_1.length; _i++) {
@@ -31,11 +31,11 @@ var Lexer = /** @class */ (function () {
             if (blob.match(Token_1.TokenRegex.Comment) || blob.match(Token_1.TokenRegex.WhiteSpace)) {
                 //If newline is found increment lineNum but skip
                 if (blob.match("\n")) {
-                    lineNum += 1;
+                    this.lineNum += 1;
                 }
                 continue;
             }
-            result = this.longestMatch(blob, lineNum);
+            result = this.longestMatch(blob, this.lineNum);
             if (result.t) {
                 for (var _a = 0, _b = result.t; _a < _b.length; _a++) {
                     var t = _b[_a];
@@ -50,7 +50,7 @@ var Lexer = /** @class */ (function () {
         //If we have no errors, check if EOP is missing. No need if there are other lex errors
         if (result.e === null) {
             if (tokens.length == 0 || tokens[tokens.length - 1].kind != Token_1.TokenType.EOP) {
-                tokens.push(new Token_1.Token(Token_1.TokenType.EOP, "$", lineNum));
+                tokens.push(new Token_1.Token(Token_1.TokenType.EOP, "$", this.lineNum));
                 result.e = Alert_1.warning("End of Program missing. Added $ symbol.");
             }
         }
@@ -899,87 +899,78 @@ compileCode = function() {
         return;
     } 
     clearTabsAndErrors();
+    
+    //Pre group programs by EOP ($)
+    var pgms = preGroup(editor.getValue());
 
     //Lexer
     $("#log-text").html("Starting Lexer...\n");
     //Safe way to track time, supported on newer browsers
     let start =  window.performance.now();
 
-    const lexer = new LexerModule.Lexer();
-    //result :: {t:Token[], e:{lvl:string, msg:string} | null} | null
-    let result = lexer.lex(editor.getValue());
-    let time = window.performance.now()-start;
-
-    let programNumber = 0;
-    let programTokensList = [[]];
-    programTokensList.push([]);
-    const tokens = result.t;
-    $("#lexer-text").append("<i>Program "+(programNumber+1)+"\n</i>");
-    //Append messages for whatever tokens are available
-    for(var i = 0; i < tokens.length; i++) {
-        let text = "[LEXER] => "+tokens[i].kind+" ["+tokens[i].value+"] on line: "+tokens[i].lineNum+"\n";
-        tabOutput("lexer",text);
-        programTokensList[programNumber].push(tokens[i]);
-        if(tokens[i].kind == "EOP") {
-            $("#lexer-text").append("\n");
-            //If it's not the last token
-            if(i != tokens.length-1){
-                programTokensList.push([]);
-                programNumber++;
-                $("#lexer-text").append("<i>Program "+(programNumber+1)+"\n</i>");
+    let lexedPgms = lexPgms(pgms);
+    console.log(lexedPgms);
+    //lexedPrograms :: [{t:Token[], e:{lvl:string, msg:string} | null} | null]
+    for(let i = 0; i < lexedPgms.length; i++) {
+        //Program number text
+        $("#lexer-text").append("<i>Program "+(i+1)+"\n</i>");
+        //Check for errors
+        let result = lexedPgms[i];
+        if (result.t){
+            let tokens = result.t;
+            for(let k = 0; k < tokens.length; k++) {
+                let text = "[LEXER] => "+tokens[k].kind+" ["+tokens[k].value+
+                           "] on line: "+tokens[k].lineNum+"\n";
+                tabOutput("lexer",text);
             }
         }
+        if(result.e) {
+            let errorMsg = errorSpan("LEXER", result.e);
+            logError('lexer', errorMsg);
+            $("#tab-head-two").addClass(statusColor(result.e.lvl));
+        } 
+        $("#lexer-text").append("\n");
     }
-
-    let lexFailed = false;
-    //If there was an error report it and color it based on level
-    if (result.e) {
-        if(result.e.lvl === "error"){
-            lexFailed = true;
-        }
-        let errorMsg = errorSpan("LEXER", result.e); 
-        
-        logError("lexer", errorMsg);
-        $("#tab-head-two").addClass(statusColor(result.e.lvl));
-    } else {
-        applyFilter($("#compile-img"), 'default');
-    }
-
+   
+    
+ 
+    let time = window.performance.now()-start;
     logOutput("lexer", "[LEXER] => Completed in: "+time.toFixed(2)+" ms\n");
-
-    //Bail out if Lex had any errors
-    if(lexFailed) {
-        editor.focus();
-        return;
-    }
 
     //Parser
     $("#log-text").append("\nStarting Parser...\n");
     //Safe way to track time, supported on newer browsers
     start =  window.performance.now();
-    for(let programNum = 0; programNum < programTokensList.length-1; programNum++) {
-        $('#parser-text').append("<i>Parsing Program "+(programNum+1)+"\n</i>");
+    let parsedPgms = []
+    for(let i = 0; i < lexedPgms.length; i++) {
+        $('#parser-text').append("<i>Parsing Program "+(i+1)+"\n</i>");
+        if(lexedPgms[i].e && lexedPgms[i].e.lvl == 'error') {
+            $('#parser-text').append("<i>Skipping Program "+(i+1)+" with lexical error <br/></i>");
+            $('#parser-text').append("<br/>");
+            parsedPgms.push("lex");
+            continue;
+        }
 
-        let parser = new ParserModule.Parser(programTokensList[programNum]);
+        let parser = new ParserModule.Parser(lexedPgms[i].t);
         //result :: {log: string[], cst:SyntaxTree | undefined,
         //           st:[Symbol]|undefined, e:{lvl:string, msg:string} | null} 
         result = parser.parse();
         let log = result.log;
-        for(var i =0; i < log.length; i++) {
+        for(let i =0; i < log.length; i++) {
             let text = "[PARSER] => "+log[i]+"\n";
             tabOutput("parser",text);
         }
-        let parseFailed = false;
         let err = result.e;
         if(err) {
-            parseFailed = true;
             let errorMsg = errorSpan("PARSER", err);
             
             logError("parser", errorMsg);
             $("#tab-head-three").addClass(statusColor(err.lvl));
+            parsedPgms.push("parse");
             break;
         } else {
             applyFilter($("#compile-img"), 'default');
+            parsedPgms.push(result)
         }
         let st = result.st;
         if(st) {
@@ -1006,6 +997,35 @@ compileCode = function() {
     editor.focus();
 }
 
+//Split on $ glyph to separate multiple programs into list
+preGroup = function(source) {
+    source = source.trim();
+    let result = [];
+    let current = "";
+    for(let i = 0; i < source.length; i++) {
+        current += source[i];
+        if(source[i] == "$") {
+            result.push(current);
+            current = "";
+        } else if(i == source.length -1){
+            result.push(current);
+        }
+    }
+    
+    console.log(result);
+    return result;
+}
+
+lexPgms = function(pgms) {
+    let lexer = new LexerModule.Lexer();
+    let result = [];
+    //Lex each program
+    for (let i = 0; i < pgms.length; i++) {
+        result.push(lexer.lex(pgms[i]));
+    }
+
+    return result; 
+}
 /*
 Working program, blue or green?
 const greenFilter = "hue-rotate(220deg)";
@@ -1055,6 +1075,7 @@ statusColor = function (type) {
     return 'compile-'+type;
 }
 clearTabsAndErrors = function(){
+    applyFilter($("#compile-img"), 'default');
     //Lexer
     $("#lexer-text").html("");
     $("#tab-head-two").removeClass( function(index, className) {

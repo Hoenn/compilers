@@ -4,12 +4,12 @@ var Token_1 = require("./Token");
 var Alert_1 = require("./Alert");
 var Lexer = /** @class */ (function () {
     function Lexer() {
+        this.lineNum = 1;
     }
     Lexer.prototype.lex = function (src) {
         //Break text into blobs to perform longest match on
         //filter out undefined blobs
         var tokenBlobs = src.split(Token_1.TokenRegex.Split).filter(function (defined) { return defined; });
-        var lineNum = 1;
         var tokens = [];
         var result = { t: null, e: null };
         for (var _i = 0, tokenBlobs_1 = tokenBlobs; _i < tokenBlobs_1.length; _i++) {
@@ -18,11 +18,11 @@ var Lexer = /** @class */ (function () {
             if (blob.match(Token_1.TokenRegex.Comment) || blob.match(Token_1.TokenRegex.WhiteSpace)) {
                 //If newline is found increment lineNum but skip
                 if (blob.match("\n")) {
-                    lineNum += 1;
+                    this.lineNum += 1;
                 }
                 continue;
             }
-            result = this.longestMatch(blob, lineNum);
+            result = this.longestMatch(blob, this.lineNum);
             if (result.t) {
                 for (var _a = 0, _b = result.t; _a < _b.length; _a++) {
                     var t = _b[_a];
@@ -37,7 +37,7 @@ var Lexer = /** @class */ (function () {
         //If we have no errors, check if EOP is missing. No need if there are other lex errors
         if (result.e === null) {
             if (tokens.length == 0 || tokens[tokens.length - 1].kind != Token_1.TokenType.EOP) {
-                tokens.push(new Token_1.Token(Token_1.TokenType.EOP, "$", lineNum));
+                tokens.push(new Token_1.Token(Token_1.TokenType.EOP, "$", this.lineNum));
                 result.e = Alert_1.warning("End of Program missing. Added $ symbol.");
             }
         }

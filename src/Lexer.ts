@@ -2,12 +2,16 @@ import {Token, TokenRegex, TokenType} from './Token';
 import {Alert, error, warning} from './Alert';
 
 export class Lexer {
+    lineNum: number;
+    constructor(){
+        this.lineNum = 1;
+    }
 
     lex(src: string): {t:Token[]|null, e:Alert|null} {
         //Break text into blobs to perform longest match on
         //filter out undefined blobs
         let tokenBlobs = src.split(TokenRegex.Split).filter((defined) => defined);
-        let lineNum = 1;
+        
         let tokens: Token[] = [];
         let result: {t:Token[]|null, e: Alert|null} = {t:null, e:null}
         for(let blob of tokenBlobs) {
@@ -15,11 +19,11 @@ export class Lexer {
             if (blob.match(TokenRegex.Comment) || blob.match(TokenRegex.WhiteSpace)){
             //If newline is found increment lineNum but skip
                 if (blob.match("\n")) {
-                    lineNum+=1;
+                    this.lineNum+=1;
                 }
                 continue;
             }
-            result = this.longestMatch(blob, lineNum);
+            result = this.longestMatch(blob, this.lineNum);
             if(result.t) { //is not null
                 for(let t of result.t){
                     tokens.push(t);
@@ -33,7 +37,7 @@ export class Lexer {
         //If we have no errors, check if EOP is missing. No need if there are other lex errors
         if(result.e === null) {
             if(tokens.length == 0  || tokens[tokens.length-1].kind != TokenType.EOP) {
-                tokens.push(new Token(TokenType.EOP, "$", lineNum));
+                tokens.push(new Token(TokenType.EOP, "$", this.lineNum));
                 result.e = warning("End of Program missing. Added $ symbol.");
             }
         }

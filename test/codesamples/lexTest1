@@ -1,1 +1,10 @@
-{if true{}}$
+{
+    int x
+    {
+        int y
+        if true {
+            int a
+        }
+    }
+    int z
+}$

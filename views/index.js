@@ -192,6 +192,7 @@ var Parser = /** @class */ (function () {
         this.tokens = tokens;
         this.log = [];
         this.symbolTable = [];
+        this.scopeLevel = -1;
         this.currentString = "";
     }
     Parser.prototype.parse = function () {
@@ -234,6 +235,7 @@ var Parser = /** @class */ (function () {
         this.emit("block");
         this.addBranch("Block");
         this.addASTBranch("Block");
+        this.scopeLevel++;
         var error = this.consume(["{"], Token_1.TokenType.LBracket);
         if (error) {
             return error;
@@ -246,6 +248,7 @@ var Parser = /** @class */ (function () {
         if (error) {
             return error;
         }
+        this.scopeLevel--;
         this.cst.moveCurrentUp();
         this.ast.moveCurrentUp();
     };
@@ -411,7 +414,7 @@ var Parser = /** @class */ (function () {
             return err;
         }
         this.log.push("Adding " + type + " " + id + " to Symbol Table");
-        this.symbolTable.push(new Symbol_1.Symbol(id, type, line));
+        this.symbolTable.push(new Symbol_1.Symbol(id, type, this.scopeLevel, line));
         this.cst.moveCurrentUp();
         this.ast.moveCurrentUp();
     };
@@ -617,13 +620,14 @@ exports.Parser = Parser;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Symbol = /** @class */ (function () {
-    function Symbol(id, type, line) {
+    function Symbol(id, type, scope, line) {
         this.id = id;
         this.type = type;
         this.line = line;
+        this.scopeLevel = scope;
     }
     Symbol.prototype.toString = function () {
-        return "[ id: " + this.id + " type: " + this.type + " line: " + this.line + "]";
+        return "[ id: " + this.id + " type: " + this.type + " scope level: " + this.scopeLevel + " line: " + this.line + "]";
     };
     return Symbol;
 }());

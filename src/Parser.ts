@@ -9,6 +9,7 @@ export class Parser {
     tokens : Token[];
     log : string[];
     symbolTable: Symbol[];
+    scopeLevel : number;
     currentString: string;
 
     constructor(tokens: Token[]) {
@@ -18,6 +19,7 @@ export class Parser {
         this.tokens = tokens;
         this.log = [];
         this.symbolTable = [];
+        this.scopeLevel = -1;
         this.currentString = "";
     }
     parse() : {log: string[], cst:SyntaxTree | null, ast: SyntaxTree|null, st: Symbol[] | null, e: Alert |undefined }{
@@ -61,6 +63,7 @@ export class Parser {
         this.emit("block");
         this.addBranch("Block");
         this.addASTBranch("Block");
+        this.scopeLevel++;
         let error = this.consume(["{"], TokenType.LBracket);
         if(error) {
             return error;
@@ -73,6 +76,7 @@ export class Parser {
         if(error) {
             return error;
         }
+        this.scopeLevel--;
         this.cst.moveCurrentUp();
         this.ast.moveCurrentUp();
     }
@@ -242,7 +246,7 @@ export class Parser {
             return err;
         }
         this.log.push("Adding "+type+" "+id+" to Symbol Table");
-        this.symbolTable.push(new Symbol(id, type, line));
+        this.symbolTable.push(new Symbol(id, type, this.scopeLevel, line));
         this.cst.moveCurrentUp();
         this.ast.moveCurrentUp();
     }

@@ -12,6 +12,7 @@ var Parser = /** @class */ (function () {
         this.tokens = tokens;
         this.log = [];
         this.symbolTable = [];
+        this.scopeLevel = -1;
         this.currentString = "";
     }
     Parser.prototype.parse = function () {
@@ -54,6 +55,7 @@ var Parser = /** @class */ (function () {
         this.emit("block");
         this.addBranch("Block");
         this.addASTBranch("Block");
+        this.scopeLevel++;
         var error = this.consume(["{"], Token_1.TokenType.LBracket);
         if (error) {
             return error;
@@ -66,6 +68,7 @@ var Parser = /** @class */ (function () {
         if (error) {
             return error;
         }
+        this.scopeLevel--;
         this.cst.moveCurrentUp();
         this.ast.moveCurrentUp();
     };
@@ -231,7 +234,7 @@ var Parser = /** @class */ (function () {
             return err;
         }
         this.log.push("Adding " + type + " " + id + " to Symbol Table");
-        this.symbolTable.push(new Symbol_1.Symbol(id, type, line));
+        this.symbolTable.push(new Symbol_1.Symbol(id, type, this.scopeLevel, line));
         this.cst.moveCurrentUp();
         this.ast.moveCurrentUp();
     };

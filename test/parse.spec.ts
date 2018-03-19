@@ -19,6 +19,8 @@ const tests = [
                L("StatementList", 3)+
                L("}", 3)+
               L("$", 2),
+        "ast":
+            L("Block", 0),
         "error": {lvl: null, msg: null} 
     },
     {
@@ -73,6 +75,10 @@ const tests = [
                    L(")", 6)+
                L("}", 3)+
               L("$", 2),
+        "ast":
+            B("Block", 0)+
+             B("Print", 1)+
+              L("1", 2),
         "error": {lvl: null, msg: null} 
     },
     {
@@ -96,6 +102,10 @@ const tests = [
                   L(")", 6)+
                L("}", 3)+
               L("$", 2),
+        "ast":
+            B("Block", 0)+
+             B("Print", 1)+
+              L("", 2),
         "error": {lvl: null, msg: null}
     },
     {
@@ -123,6 +133,10 @@ const tests = [
                   L(")", 6)+
                L("}", 3)+
               L("$", 2),
+        "ast":
+            B("Block", 0)+
+             B("Print", 1)+
+              L("a ", 2),
         "error": {lvl: null, msg: null}
     },
     {
@@ -145,6 +159,11 @@ const tests = [
                    L("}", 7)+
                L("}", 3)+
               L("$", 2),
+        "ast": 
+            B("Block", 0)+
+             B("If", 1)+
+              L("true", 2)+
+              L("Block",2),
         "error": {lvl: null, msg: null}
     },
     {
@@ -181,8 +200,13 @@ tests.forEach(function(test) {
         //If cst is not null (no errors)
         if(result.cst) {
             //Test Parse output
-            it(test.describe, ()=> {
+            it(test.describe + " CST ", ()=> {
                 expect(result.cst.toString()).to.deep.equal(test.result);
+            });
+        }
+        if(result.ast && test.ast) {
+            it(test.describe + " AST", ()=> {
+                expect(result.ast.toString()).to.deep.equal(test.ast);
             });
         }
         //Optional Error test

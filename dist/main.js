@@ -33,7 +33,9 @@ function main(sourceArg, filePath) {
         if (tree.e) {
             console.log(tree.e);
         }
-        console.log(tree.log);
+        if (tree.ast) {
+            console.log(tree.ast.toString());
+        }
     }
     return sourceProgram;
 }

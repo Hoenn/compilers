@@ -45,6 +45,9 @@ var SyntaxTree = /** @class */ (function () {
         expand(this.root, 0);
         return result;
     };
+    SyntaxTree.prototype.clean = function () {
+        this.root = this.root.children[0];
+    };
     return SyntaxTree;
 }());
 exports.SyntaxTree = SyntaxTree;

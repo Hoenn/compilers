@@ -44,6 +44,9 @@ export class SyntaxTree {
         expand(this.root, 0);
         return result;
     }
+    clean() {
+        this.root = this.root.children[0];
+    }
     
 }
 export class Node {

@@ -5,21 +5,25 @@ import {Symbol} from './Symbol';
 export class Parser {
 
     cst: SyntaxTree;
+    ast: SyntaxTree;
     tokens : Token[];
     log : string[];
     symbolTable: Symbol[];
+    currentString: string;
 
     constructor(tokens: Token[]) {
         //Add initial program token, make root node
         this.cst = new SyntaxTree(new Node("Root"));
+        this.ast = new SyntaxTree(new Node("Root"));
         this.tokens = tokens;
         this.log = [];
         this.symbolTable = [];
+        this.currentString = "";
     }
-    parse() : {log: string[], cst:SyntaxTree | null, st: Symbol[] | null, e: Alert |undefined }{
+    parse() : {log: string[], cst:SyntaxTree | null, ast: SyntaxTree|null, st: Symbol[] | null, e: Alert |undefined }{
         let err = this.parseProgram();
         if(err) {
-            return {log: this.log, cst: null, st: null,  e: err};
+            return {log: this.log, cst: null, ast:null, st: null,  e: err};
         }
         //If there are more tokens
         if(this.tokens.length > 0) {
@@ -32,10 +36,11 @@ export class Parser {
             }
         }
         if(err) {
-            return {log: this.log, cst: null, st: null, e: err};
+            return {log: this.log, cst: null, ast:null, st: null, e: err};
         }
 
-        return {log: this.log, cst: this.cst, st: this.symbolTable, e: undefined};
+        this.ast.clean();
+        return {log: this.log, cst: this.cst, ast: this.ast, st: this.symbolTable, e: undefined};
     }
     parseProgram()  {
         this.emit("program");
@@ -55,6 +60,7 @@ export class Parser {
     parseBlock() {
         this.emit("block");
         this.addBranch("Block");
+        this.addASTBranch("Block");
         let error = this.consume(["{"], TokenType.LBracket);
         if(error) {
             return error;
@@ -68,6 +74,7 @@ export class Parser {
             return error;
         }
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
     }
     parseStatementList(): Alert | undefined {
         this.addBranch("StatementList");
@@ -141,6 +148,7 @@ export class Parser {
     parsePrint() {
         this.emit("print statement");
         this.addBranch("PrintStatement");
+        this.addASTBranch("Print");
         let err = this.consume(["print"], "print");
         if(err) {
             return err;
@@ -157,11 +165,13 @@ export class Parser {
             return err;
         }
 
-        this.cst.moveCurrentUp();
+       this.cst.moveCurrentUp();
+       this.ast.moveCurrentUp();
     }
     parseAssignment() {
         this.emit("assignment statement");
         this.addBranch("AssignmentStatement");
+        this.addASTBranch("Assignment");
         let err = this.parseId();
         if(err){
             return err;
@@ -175,11 +185,13 @@ export class Parser {
             return err;
         }
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
 
     }
     parseIf() {
         this.emit("if statement");
         this.addBranch("IfStatement");
+        this.addASTBranch("If");
         let err = this.consume([TokenRegex.If], "if");
         if (err) {
             return err;
@@ -193,10 +205,12 @@ export class Parser {
             return err;
         }
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
     }
     parseWhile() {
         this.emit("while statement");
         this.addBranch("WhileStatement");
+        this.addASTBranch("While");
         let err = this.consume(["while"], "while");
         if(err) {
             return err;
@@ -210,10 +224,12 @@ export class Parser {
             return err;
         }
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
     }
     parseVarDecl() {
         this.emit("variable declaration");
         this.addBranch("VarDeclStatement");
+        this.addASTBranch("VarDecl");
         let type = this.tokens[0].value;
         let err = this.parseType();
         if(err) {
@@ -228,6 +244,7 @@ export class Parser {
         this.log.push("Adding "+type+" "+id+" to Symbol Table");
         this.symbolTable.push(new Symbol(id, type, line));
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
     }
     parseExpr() {
         this.emit("expression");
@@ -270,13 +287,13 @@ export class Parser {
     parseIntExpr(): Alert|undefined{
         this.emit("int expression");
         this.addBranch("IntExpr");
-        let err = this.consume([TokenRegex.Digit], "Digit");
+        let err = this.consume([TokenRegex.Digit], "Digit", true);
         if(err){
             return err;
         }
         let nToken = this.tokens[0].kind;
         if(nToken == TokenType.IntOp){
-            err = this.consume([TokenRegex.IntOp], "Plus");
+            err = this.consume([TokenRegex.IntOp], "Plus", true);
             if(err) {
                 return err;
             }
@@ -302,7 +319,7 @@ export class Parser {
             if(err) {
                 return err;
             }
-            err = this.consume([TokenRegex.BoolOp], "boolean operation");
+            err = this.consume([TokenRegex.BoolOp], "boolean operation", true);
             if(err) {
                 return err;
             }
@@ -315,7 +332,7 @@ export class Parser {
                 return err;
             }
         } else if(nToken.kind == TokenType.BoolLiteral) {
-            err = this.consume([TokenRegex.BoolLiteral], "boolean literal");
+            err = this.consume([TokenRegex.BoolLiteral], "boolean literal", true);
             if(err) {
                 return err;
             }
@@ -325,6 +342,7 @@ export class Parser {
         this.cst.moveCurrentUp();
     }
     parseStringExpr() {
+        this.currentString = "";
         this.addBranch("StringExpr");
         this.emit("string expression");
 
@@ -340,6 +358,8 @@ export class Parser {
         if(err){
             return err;
         }
+        this.ast.addLeafNode(new Node(this.currentString));
+        this.ast.moveCurrentUp();
         this.cst.moveCurrentUp();
     }
     parseCharList(): Alert |undefined {
@@ -349,8 +369,10 @@ export class Parser {
         let err;
         //Check for character
         if(nToken.value.match(TokenRegex.Char)) {
+            this.currentString += nToken.value;
             err = this.consume([TokenRegex.Char], "lower case character");
         } else if(nToken.value == ' '){ //And space
+            this.currentString += nToken.value;
             err = this.consume([" "], "space");
         } else {
             //Lambda production for empty charlist"
@@ -369,7 +391,7 @@ export class Parser {
     parseId() {
         this.addBranch("Id");
         this.emit("id");
-        let err = this.consume([TokenRegex.Id], "Id");
+        let err = this.consume([TokenRegex.Id], "Id", true);
         if (err) {
             return err;
         }
@@ -378,7 +400,7 @@ export class Parser {
     parseType() {
         this.addBranch("Type");
         this.emit("type");
-        let err = this.consume([TokenRegex.Type], "int|boolean|string type");
+        let err = this.consume([TokenRegex.Type], "int|boolean|string type", true);
         if(err){
             return err;
         }
@@ -387,11 +409,14 @@ export class Parser {
     //search[] may contain string | RegExp
     //want:string is needed for error reporting in case a list of
     //  possible input is being searched for
-    consume(search:string[] | RegExp[], want: string): Alert |undefined { 
+    consume(search:string[] | RegExp[], want: string, ast ? : boolean): Alert |undefined { 
         let cToken = this.tokens.shift();
         if(cToken) {
             for(var exp of search){
                 if(cToken.value.match(exp)){
+                    if(ast) {
+                        this.ast.addLeafNode(new Node(cToken.value));
+                    }
                     this.cst.addLeafNode(new Node(cToken.value));
                     return undefined;
                 }
@@ -409,6 +434,9 @@ export class Parser {
     }
     addBranch(nodeName: string) {
         this.cst.addBranchNode(new Node(nodeName));
+    }
+    addASTBranch(nodeName: string) {
+        this.ast.addBranchNode(new Node(nodeName));
     }
     moveUp() {
         this.cst.moveCurrentUp();

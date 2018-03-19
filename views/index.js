@@ -188,14 +188,16 @@ var Parser = /** @class */ (function () {
     function Parser(tokens) {
         //Add initial program token, make root node
         this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Root"));
+        this.ast = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Root"));
         this.tokens = tokens;
         this.log = [];
         this.symbolTable = [];
+        this.currentString = "";
     }
     Parser.prototype.parse = function () {
         var err = this.parseProgram();
         if (err) {
-            return { log: this.log, cst: null, st: null, e: err };
+            return { log: this.log, cst: null, ast: null, st: null, e: err };
         }
         //If there are more tokens
         if (this.tokens.length > 0) {
@@ -209,9 +211,10 @@ var Parser = /** @class */ (function () {
             }
         }
         if (err) {
-            return { log: this.log, cst: null, st: null, e: err };
+            return { log: this.log, cst: null, ast: null, st: null, e: err };
         }
-        return { log: this.log, cst: this.cst, st: this.symbolTable, e: undefined };
+        this.ast.clean();
+        return { log: this.log, cst: this.cst, ast: this.ast, st: this.symbolTable, e: undefined };
     };
     Parser.prototype.parseProgram = function () {
         this.emit("program");
@@ -230,6 +233,7 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parseBlock = function () {
         this.emit("block");
         this.addBranch("Block");
+        this.addASTBranch("Block");
         var error = this.consume(["{"], Token_1.TokenType.LBracket);
         if (error) {
             return error;
@@ -243,6 +247,7 @@ var Parser = /** @class */ (function () {
             return error;
         }
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
     };
     Parser.prototype.parseStatementList = function () {
         this.addBranch("StatementList");
@@ -314,6 +319,7 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parsePrint = function () {
         this.emit("print statement");
         this.addBranch("PrintStatement");
+        this.addASTBranch("Print");
         var err = this.consume(["print"], "print");
         if (err) {
             return err;
@@ -330,10 +336,12 @@ var Parser = /** @class */ (function () {
             return err;
         }
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
     };
     Parser.prototype.parseAssignment = function () {
         this.emit("assignment statement");
         this.addBranch("AssignmentStatement");
+        this.addASTBranch("Assignment");
         var err = this.parseId();
         if (err) {
             return err;
@@ -347,10 +355,12 @@ var Parser = /** @class */ (function () {
             return err;
         }
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
     };
     Parser.prototype.parseIf = function () {
         this.emit("if statement");
         this.addBranch("IfStatement");
+        this.addASTBranch("If");
         var err = this.consume([Token_1.TokenRegex.If], "if");
         if (err) {
             return err;
@@ -364,10 +374,12 @@ var Parser = /** @class */ (function () {
             return err;
         }
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
     };
     Parser.prototype.parseWhile = function () {
         this.emit("while statement");
         this.addBranch("WhileStatement");
+        this.addASTBranch("While");
         var err = this.consume(["while"], "while");
         if (err) {
             return err;
@@ -381,10 +393,12 @@ var Parser = /** @class */ (function () {
             return err;
         }
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
     };
     Parser.prototype.parseVarDecl = function () {
         this.emit("variable declaration");
         this.addBranch("VarDeclStatement");
+        this.addASTBranch("VarDecl");
         var type = this.tokens[0].value;
         var err = this.parseType();
         if (err) {
@@ -399,6 +413,7 @@ var Parser = /** @class */ (function () {
         this.log.push("Adding " + type + " " + id + " to Symbol Table");
         this.symbolTable.push(new Symbol_1.Symbol(id, type, line));
         this.cst.moveCurrentUp();
+        this.ast.moveCurrentUp();
     };
     Parser.prototype.parseExpr = function () {
         this.emit("expression");
@@ -439,13 +454,13 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parseIntExpr = function () {
         this.emit("int expression");
         this.addBranch("IntExpr");
-        var err = this.consume([Token_1.TokenRegex.Digit], "Digit");
+        var err = this.consume([Token_1.TokenRegex.Digit], "Digit", true);
         if (err) {
             return err;
         }
         var nToken = this.tokens[0].kind;
         if (nToken == Token_1.TokenType.IntOp) {
-            err = this.consume([Token_1.TokenRegex.IntOp], "Plus");
+            err = this.consume([Token_1.TokenRegex.IntOp], "Plus", true);
             if (err) {
                 return err;
             }
@@ -470,7 +485,7 @@ var Parser = /** @class */ (function () {
             if (err) {
                 return err;
             }
-            err = this.consume([Token_1.TokenRegex.BoolOp], "boolean operation");
+            err = this.consume([Token_1.TokenRegex.BoolOp], "boolean operation", true);
             if (err) {
                 return err;
             }
@@ -484,7 +499,7 @@ var Parser = /** @class */ (function () {
             }
         }
         else if (nToken.kind == Token_1.TokenType.BoolLiteral) {
-            err = this.consume([Token_1.TokenRegex.BoolLiteral], "boolean literal");
+            err = this.consume([Token_1.TokenRegex.BoolLiteral], "boolean literal", true);
             if (err) {
                 return err;
             }
@@ -495,6 +510,7 @@ var Parser = /** @class */ (function () {
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseStringExpr = function () {
+        this.currentString = "";
         this.addBranch("StringExpr");
         this.emit("string expression");
         var err = this.consume(['"'], "open quote");
@@ -509,6 +525,8 @@ var Parser = /** @class */ (function () {
         if (err) {
             return err;
         }
+        this.ast.addLeafNode(new SyntaxTree_1.Node(this.currentString));
+        this.ast.moveCurrentUp();
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseCharList = function () {
@@ -518,9 +536,11 @@ var Parser = /** @class */ (function () {
         var err;
         //Check for character
         if (nToken.value.match(Token_1.TokenRegex.Char)) {
+            this.currentString += nToken.value;
             err = this.consume([Token_1.TokenRegex.Char], "lower case character");
         }
         else if (nToken.value == ' ') {
+            this.currentString += nToken.value;
             err = this.consume([" "], "space");
         }
         else {
@@ -539,7 +559,7 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parseId = function () {
         this.addBranch("Id");
         this.emit("id");
-        var err = this.consume([Token_1.TokenRegex.Id], "Id");
+        var err = this.consume([Token_1.TokenRegex.Id], "Id", true);
         if (err) {
             return err;
         }
@@ -548,7 +568,7 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parseType = function () {
         this.addBranch("Type");
         this.emit("type");
-        var err = this.consume([Token_1.TokenRegex.Type], "int|boolean|string type");
+        var err = this.consume([Token_1.TokenRegex.Type], "int|boolean|string type", true);
         if (err) {
             return err;
         }
@@ -557,12 +577,15 @@ var Parser = /** @class */ (function () {
     //search[] may contain string | RegExp
     //want:string is needed for error reporting in case a list of
     //  possible input is being searched for
-    Parser.prototype.consume = function (search, want) {
+    Parser.prototype.consume = function (search, want, ast) {
         var cToken = this.tokens.shift();
         if (cToken) {
             for (var _i = 0, search_1 = search; _i < search_1.length; _i++) {
                 var exp = search_1[_i];
                 if (cToken.value.match(exp)) {
+                    if (ast) {
+                        this.ast.addLeafNode(new SyntaxTree_1.Node(cToken.value));
+                    }
                     this.cst.addLeafNode(new SyntaxTree_1.Node(cToken.value));
                     return undefined;
                 }
@@ -579,6 +602,9 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.addBranch = function (nodeName) {
         this.cst.addBranchNode(new SyntaxTree_1.Node(nodeName));
+    };
+    Parser.prototype.addASTBranch = function (nodeName) {
+        this.ast.addBranchNode(new SyntaxTree_1.Node(nodeName));
     };
     Parser.prototype.moveUp = function () {
         this.cst.moveCurrentUp();
@@ -650,6 +676,9 @@ var SyntaxTree = /** @class */ (function () {
         }
         expand(this.root, 0);
         return result;
+    };
+    SyntaxTree.prototype.clean = function () {
+        this.root = this.root.children[0];
     };
     return SyntaxTree;
 }());

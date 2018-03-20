@@ -1,5 +1,5 @@
 import {TokenType, Token, TokenRegex} from './Token';
-import {SyntaxTree, Node} from './SyntaxTree';
+import {SyntaxTree, Node, AbstractNode, ConcreteNode} from './SyntaxTree';
 import {Alert, error, warning} from './Alert';
 import {Symbol} from './Symbol';
 export class Parser {
@@ -9,17 +9,15 @@ export class Parser {
     tokens : Token[];
     log : string[];
     symbolTable: Symbol[];
-    scopeLevel : number;
     currentString: string;
 
     constructor(tokens: Token[]) {
         //Add initial program token, make root node
-        this.cst = new SyntaxTree(new Node("Root"));
-        this.ast = new SyntaxTree(new Node("Root"));
+        this.cst = new SyntaxTree(new ConcreteNode("Root"));
+        this.ast = new SyntaxTree(new AbstractNode("Root", -1));
         this.tokens = tokens;
         this.log = [];
         this.symbolTable = [];
-        this.scopeLevel = -1;
         this.currentString = "";
     }
     parse() : {log: string[], cst:SyntaxTree | null, ast: SyntaxTree|null, st: Symbol[] | null, e: Alert |undefined }{
@@ -62,8 +60,7 @@ export class Parser {
     parseBlock() {
         this.emit("block");
         this.addBranch("Block");
-        this.addASTBranch("Block");
-        this.scopeLevel++;
+        this.addASTBranch("Block", this.tokens[0].lineNum);
         let error = this.consume(["{"], TokenType.LBracket);
         if(error) {
             return error;
@@ -76,7 +73,6 @@ export class Parser {
         if(error) {
             return error;
         }
-        this.scopeLevel--;
         this.cst.moveCurrentUp();
         this.ast.moveCurrentUp();
     }
@@ -152,7 +148,7 @@ export class Parser {
     parsePrint() {
         this.emit("print statement");
         this.addBranch("PrintStatement");
-        this.addASTBranch("Print");
+        this.addASTBranch("Print", this.tokens[0].lineNum);
         let err = this.consume(["print"], "print");
         if(err) {
             return err;
@@ -175,7 +171,7 @@ export class Parser {
     parseAssignment() {
         this.emit("assignment statement");
         this.addBranch("AssignmentStatement");
-        this.addASTBranch("Assignment");
+        this.addASTBranch("Assignment", this.tokens[0].lineNum);
         let err = this.parseId();
         if(err){
             return err;
@@ -195,7 +191,7 @@ export class Parser {
     parseIf() {
         this.emit("if statement");
         this.addBranch("IfStatement");
-        this.addASTBranch("If");
+        this.addASTBranch("If", this.tokens[0].lineNum);
         let err = this.consume([TokenRegex.If], "if");
         if (err) {
             return err;
@@ -214,7 +210,7 @@ export class Parser {
     parseWhile() {
         this.emit("while statement");
         this.addBranch("WhileStatement");
-        this.addASTBranch("While");
+        this.addASTBranch("While", this.tokens[0].lineNum);
         let err = this.consume(["while"], "while");
         if(err) {
             return err;
@@ -233,7 +229,7 @@ export class Parser {
     parseVarDecl() {
         this.emit("variable declaration");
         this.addBranch("VarDeclStatement");
-        this.addASTBranch("VarDecl");
+        this.addASTBranch("VarDecl", this.tokens[0].lineNum);
         let type = this.tokens[0].value;
         let err = this.parseType();
         if(err) {
@@ -246,7 +242,7 @@ export class Parser {
             return err;
         }
         this.log.push("Adding "+type+" "+id+" to Symbol Table");
-        this.symbolTable.push(new Symbol(id, type, this.scopeLevel, line));
+        this.symbolTable.push(new Symbol(id, type, line));
         this.cst.moveCurrentUp();
         this.ast.moveCurrentUp();
     }
@@ -349,6 +345,7 @@ export class Parser {
         this.currentString = "";
         this.addBranch("StringExpr");
         this.emit("string expression");
+        let lineNum = this.tokens[0].lineNum;
 
         let err = this.consume(['"'], "open quote");
         if(err){
@@ -362,7 +359,7 @@ export class Parser {
         if(err){
             return err;
         }
-        this.ast.addLeafNode(new Node(this.currentString));
+        this.ast.addLeafNode(new AbstractNode(this.currentString, lineNum));
         this.ast.moveCurrentUp();
         this.cst.moveCurrentUp();
     }
@@ -419,9 +416,9 @@ export class Parser {
             for(var exp of search){
                 if(cToken.value.match(exp)){
                     if(ast) {
-                        this.ast.addLeafNode(new Node(cToken.value));
+                        this.ast.addLeafNode(new AbstractNode(cToken.value, cToken.lineNum));
                     }
-                    this.cst.addLeafNode(new Node(cToken.value));
+                    this.cst.addLeafNode(new ConcreteNode(cToken.value));
                     return undefined;
                 }
             }
@@ -437,10 +434,10 @@ export class Parser {
         this.log.push("Parsing "+s);
     }
     addBranch(nodeName: string) {
-        this.cst.addBranchNode(new Node(nodeName));
+        this.cst.addBranchNode(new ConcreteNode(nodeName));
     }
-    addASTBranch(nodeName: string) {
-        this.ast.addBranchNode(new Node(nodeName));
+    addASTBranch(nodeName: string, lineNum:number) {
+        this.ast.addBranchNode(new AbstractNode(nodeName, lineNum));
     }
     moveUp() {
         this.cst.moveCurrentUp();

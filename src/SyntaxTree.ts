@@ -49,7 +49,7 @@ export class SyntaxTree {
     }
     
 }
-export class Node {
+export abstract class Node {
     name: string;
     parent: Node | null;
     children: Node[];
@@ -61,5 +61,18 @@ export class Node {
     }
     addChild(n: Node) {
         this.children.push(n);
+    }
+
+}
+export class ConcreteNode extends Node {
+    constructor(n: string) {
+        super(n);
+    }
+}
+export class AbstractNode extends Node {
+    lineNum: number;
+    constructor(n:string, l:number) {
+        super(n);
+        this.lineNum = l;
     }
 }

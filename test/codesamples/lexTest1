@@ -1,10 +1,8 @@
 {
-    int x
-    {
-        int y
-        if true {
-            int a
-        }
-    }
-    int z
+    boolean x
+
+    x = 1 + x
+    x = (true == true)
+    x = 1+ x
+    x = (true == true)
 }$

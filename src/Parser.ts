@@ -287,13 +287,18 @@ export class Parser {
     parseIntExpr(): Alert|undefined{
         this.emit("int expression");
         this.addBranch("IntExpr");
+        //If this is an addition expression, add the plus
+        //node so that Digit terminals will be children
+        if(this.tokens[1].kind == TokenType.IntOp){
+            this.addASTBranch("+", this.tokens[0].lineNum);
+        }
         let err = this.consume([TokenRegex.Digit], "Digit", true);
         if(err){
             return err;
         }
         let nToken = this.tokens[0].kind;
         if(nToken == TokenType.IntOp){
-            err = this.consume([TokenRegex.IntOp], "Plus", true);
+            err = this.consume([TokenRegex.IntOp], "Plus");
             if(err) {
                 return err;
             }
@@ -301,7 +306,7 @@ export class Parser {
             if(err) {
                 return err;
             }
-            
+            this.ast.moveCurrentUp();
         }
         this.cst.moveCurrentUp();
     }
@@ -311,6 +316,8 @@ export class Parser {
         let err;
         let nToken = this.tokens[0];
         if(nToken.kind == TokenType.LParen) {
+
+            this.addASTBranch("==", nToken.lineNum);
             err = this.consume(["[(]"], TokenType.LParen);
             if(err) {
                 return err;
@@ -319,7 +326,7 @@ export class Parser {
             if(err) {
                 return err;
             }
-            err = this.consume([TokenRegex.BoolOp], "boolean operation", true);
+            err = this.consume([TokenRegex.BoolOp], "boolean operation");
             if(err) {
                 return err;
             }
@@ -331,6 +338,7 @@ export class Parser {
             if(err) {
                 return err;
             }
+            this.ast.moveCurrentUp();
         } else if(nToken.kind == TokenType.BoolLiteral) {
             err = this.consume([TokenRegex.BoolLiteral], "boolean literal", true);
             if(err) {

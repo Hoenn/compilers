@@ -274,13 +274,18 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parseIntExpr = function () {
         this.emit("int expression");
         this.addBranch("IntExpr");
+        //If this is an addition expression, add the plus
+        //node so that Digit terminals will be children
+        if (this.tokens[1].kind == Token_1.TokenType.IntOp) {
+            this.addASTBranch("+", this.tokens[0].lineNum);
+        }
         var err = this.consume([Token_1.TokenRegex.Digit], "Digit", true);
         if (err) {
             return err;
         }
         var nToken = this.tokens[0].kind;
         if (nToken == Token_1.TokenType.IntOp) {
-            err = this.consume([Token_1.TokenRegex.IntOp], "Plus", true);
+            err = this.consume([Token_1.TokenRegex.IntOp], "Plus");
             if (err) {
                 return err;
             }
@@ -288,6 +293,7 @@ var Parser = /** @class */ (function () {
             if (err) {
                 return err;
             }
+            this.ast.moveCurrentUp();
         }
         this.cst.moveCurrentUp();
     };
@@ -297,6 +303,7 @@ var Parser = /** @class */ (function () {
         var err;
         var nToken = this.tokens[0];
         if (nToken.kind == Token_1.TokenType.LParen) {
+            this.addASTBranch("==", nToken.lineNum);
             err = this.consume(["[(]"], Token_1.TokenType.LParen);
             if (err) {
                 return err;
@@ -305,7 +312,7 @@ var Parser = /** @class */ (function () {
             if (err) {
                 return err;
             }
-            err = this.consume([Token_1.TokenRegex.BoolOp], "boolean operation", true);
+            err = this.consume([Token_1.TokenRegex.BoolOp], "boolean operation");
             if (err) {
                 return err;
             }
@@ -317,6 +324,7 @@ var Parser = /** @class */ (function () {
             if (err) {
                 return err;
             }
+            this.ast.moveCurrentUp();
         }
         else if (nToken.kind == Token_1.TokenType.BoolLiteral) {
             err = this.consume([Token_1.TokenRegex.BoolLiteral], "boolean literal", true);

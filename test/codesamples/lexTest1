@@ -1,6 +1,6 @@
 {
     boolean x
-
+    print(1 + 2+ "def")
     x = 1 + "abc"
     x = (true == true)
     x = 1+ x

@@ -1,7 +1,7 @@
 {
     boolean x
 
-    x = 1 + x
+    x = 1 + "abc"
     x = (true == true)
     x = 1+ x
     x = (true == true)

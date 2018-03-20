@@ -355,7 +355,6 @@ var Parser = /** @class */ (function () {
             return err;
         }
         this.ast.addLeafNode(new SyntaxTree_1.AbstractNode(this.currentString, lineNum));
-        this.ast.moveCurrentUp();
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseCharList = function () {

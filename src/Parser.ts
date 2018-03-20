@@ -368,7 +368,6 @@ export class Parser {
             return err;
         }
         this.ast.addLeafNode(new AbstractNode(this.currentString, lineNum));
-        this.ast.moveCurrentUp();
         this.cst.moveCurrentUp();
     }
     parseCharList(): Alert |undefined {

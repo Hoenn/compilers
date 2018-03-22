@@ -1,11 +1,11 @@
 export class SymbolTree { 
-    current: SymbolNode;
-    root: SymbolNode;
-    constructor(n : SymbolNode) {
+    current: ScopeNode;
+    root: ScopeNode;
+    constructor(n : ScopeNode) {
         this.root = n;
         this.current = this.root;
     }
-    addBranchNode(n: SymbolNode) {
+    addBranchNode(n: ScopeNode) {
         //Maybe refactor to construct a node here
         //Set the parent of new Node
         n.parent = this.current;
@@ -14,7 +14,7 @@ export class SymbolTree {
         //Update current to new node
         this.current = n;
     }
-    addLeafNode(n: SymbolNode) {
+    addLeafNode(n: ScopeNode) {
         n.parent = this.current;
         this.current.addChild(n);
     }
@@ -26,7 +26,7 @@ export class SymbolTree {
     }
     toString() : string {
         let result = "";
-        function expand(node:SymbolNode, depth: number) {
+        function expand(node: ScopeNode, depth: number) {
             for(let id in node.stash) {
                 //Indent in
                 for(let i = 0; i < depth; i++){
@@ -47,21 +47,47 @@ export class SymbolTree {
         return result;
     }
 }
-export class SymbolNode {
-    parent: SymbolNode | null;
-    init: boolean;
-    used: boolean;
-    children: SymbolNode[];
-    stash: {[key:string]: {"type": string, "line": number}};
+export class ScopeNode {
+    parent: ScopeNode | null;
+    children: ScopeNode[];
+    stash: {[key:string]: {"type": string, "line": number, "init": boolean, "used": boolean}};
 
     constructor(){
-        this.init = false;
-        this.used = false;
         this.stash = {};
         this.children = [];
         this.parent = null;
     }
-    addChild(n: SymbolNode) {
+    addChild(n: ScopeNode) {
         this.children.push(n);
+    }
+    addStash(id: string, t: string, l: number): boolean{
+        if(this.stash[id]) {
+            //Collision
+            return false;
+        } else {
+            this.stash[id] = {"type": t, "line": l, "init": false, "used": false};
+            return true;
+        }
+    }
+    stashEntryToString(id: string): string {
+        let entry = this.stash[id];
+        if(!entry)
+            return "";
+        return entry.type + " " +id+" on line: "+ entry.line;
+    }
+    initStashed(id:string): boolean{
+        let entry = this.stash[id];
+        if(!entry)
+            return false;
+        entry.init = true;
+        return true;
+    }
+    usedStashed(id:string): boolean {
+        let entry = this.stash[id];
+        if(!entry)
+            return false;
+        entry.used = true;
+        return true;
+
     }
 }

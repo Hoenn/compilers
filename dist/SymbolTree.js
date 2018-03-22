@@ -50,17 +50,45 @@ var SymbolTree = /** @class */ (function () {
     return SymbolTree;
 }());
 exports.SymbolTree = SymbolTree;
-var SymbolNode = /** @class */ (function () {
-    function SymbolNode() {
-        this.init = false;
-        this.used = false;
+var ScopeNode = /** @class */ (function () {
+    function ScopeNode() {
         this.stash = {};
         this.children = [];
         this.parent = null;
     }
-    SymbolNode.prototype.addChild = function (n) {
+    ScopeNode.prototype.addChild = function (n) {
         this.children.push(n);
     };
-    return SymbolNode;
+    ScopeNode.prototype.addStash = function (id, t, l) {
+        if (this.stash[id]) {
+            //Collision
+            return false;
+        }
+        else {
+            this.stash[id] = { "type": t, "line": l, "init": false, "used": false };
+            return true;
+        }
+    };
+    ScopeNode.prototype.stashEntryToString = function (id) {
+        var entry = this.stash[id];
+        if (!entry)
+            return "";
+        return entry.type + " " + id + " on line: " + entry.line;
+    };
+    ScopeNode.prototype.initStashed = function (id) {
+        var entry = this.stash[id];
+        if (!entry)
+            return false;
+        entry.init = true;
+        return true;
+    };
+    ScopeNode.prototype.usedStashed = function (id) {
+        var entry = this.stash[id];
+        if (!entry)
+            return false;
+        entry.used = true;
+        return true;
+    };
+    return ScopeNode;
 }());
-exports.SymbolNode = SymbolNode;
+exports.ScopeNode = ScopeNode;

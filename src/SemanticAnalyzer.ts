@@ -153,28 +153,30 @@ export class SemanticAnalyzer {
     emit(s: string) {
         this.log.push("Analyzing "+s);
     }
+    
     checkForUnusedVariables(n: ScopeNode):string[] {
-        let unused:string[] = [];
-        console.log(n);
-        if(n.children.length == 0){
-            return unused.concat(this.checkForUnusedVariablesHelper(n));
-        } else {
-            for(let i = 0; i < n.children.length; i++) {
-               unused.concat(this.checkForUnusedVariables(n.children[i]));
-
+       let unused: string[] = [];
+       
+       let traverse =(node: ScopeNode) => {
+            unused = unused.concat(this.checkForUnusedVariablesHelper(node));
+            if(node.children.length > 0){
+                for(let i = 0; i < node.children.length; i++) {
+                    traverse(node.children[i]);
+                }
             }
-        }
-        return unused;
+       } 
+       traverse(n);
+       return unused;
         
     }
     checkForUnusedVariablesHelper(n : ScopeNode): string[] {
-        let unused = [];
+        let arr = [];
         //Check current scope node
         for(let id in n.stash){
             if(!n.stash[id].used) {
-                unused.push(n.stashEntryToString(id));
+                arr.push(n.stashEntryToString(id));
             }
         }
-        return unused;
+        return arr;
     }
 }

@@ -155,27 +155,28 @@ var SemanticAnalyzer = /** @class */ (function () {
         this.log.push("Analyzing " + s);
     };
     SemanticAnalyzer.prototype.checkForUnusedVariables = function (n) {
+        var _this = this;
         var unused = [];
-        console.log(n);
-        if (n.children.length == 0) {
-            return unused.concat(this.checkForUnusedVariablesHelper(n));
-        }
-        else {
-            for (var i = 0; i < n.children.length; i++) {
-                unused.concat(this.checkForUnusedVariables(n.children[i]));
+        var traverse = function (node) {
+            unused = unused.concat(_this.checkForUnusedVariablesHelper(node));
+            if (node.children.length > 0) {
+                for (var i = 0; i < node.children.length; i++) {
+                    traverse(node.children[i]);
+                }
             }
-        }
+        };
+        traverse(n);
         return unused;
     };
     SemanticAnalyzer.prototype.checkForUnusedVariablesHelper = function (n) {
-        var unused = [];
+        var arr = [];
         //Check current scope node
         for (var id in n.stash) {
             if (!n.stash[id].used) {
-                unused.push(n.stashEntryToString(id));
+                arr.push(n.stashEntryToString(id));
             }
         }
-        return unused;
+        return arr;
     };
     return SemanticAnalyzer;
 }());

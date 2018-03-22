@@ -1,4 +1,13 @@
 {
-    boolean a
-    print(1+ 2 + 3 + 4 + a)
+    int y
+   {
+       int x
+       {
+           int b
+       }
+   }
+   {
+       int a
+   }
+   int z
 }$

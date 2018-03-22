@@ -11,24 +11,6 @@ var SemanticAnalyzer = /** @class */ (function () {
         //Ensure current is set to root
         this.ast.current = this.ast.root;
         this.analyzeNext(this.ast.root);
-        /**
-         * Construct the symbol tree by doing a pass on the AST
-         * While doing so we can
-         * Via Nodes
-         * Any:
-         *  Undeclared Variable
-         *  Mark variables as used in the symbol tree
-         * Assignment:
-         *  Mark variables as initialized
-         *  Type Check
-         * Plus:
-         *  Type Check
-         * VarDecl:
-         *  Redeclared Variable
-         *
-         *
-         *
-         */
         //Pass the symbol tree for unused variables
         this.emit("Unused " + this.checkForUnusedVariables(this.st.root).join(","));
         return { ast: this.ast, st: this.st, log: this.log };
@@ -52,6 +34,10 @@ var SemanticAnalyzer = /** @class */ (function () {
             }
             case "Assignment": {
                 this.analyzeAssignment(n);
+                break;
+            }
+            case "While": {
+                this.analyzeWhile(n);
                 break;
             }
             default: return;
@@ -78,6 +64,8 @@ var SemanticAnalyzer = /** @class */ (function () {
     };
     SemanticAnalyzer.prototype.analyzePrint = function (n) {
         this.emit("Print");
+        //Type checking will throw errors about undeclared variables within
+        //any Expr
         if (!this.typeCheck(n.children[0], "")) {
             this.emit("type mismatch");
         }
@@ -102,9 +90,15 @@ var SemanticAnalyzer = /** @class */ (function () {
             //Error instead;
         }
     };
+    SemanticAnalyzer.prototype.analyzeWhile = function (n) {
+    };
     SemanticAnalyzer.prototype.typeCheck = function (n, type) {
         //Must be a terminal symbol
         if (n.children.length == 0) {
+            //0-9: int
+            //true || false: boolean
+            //[a-z] length >1 : string
+            //[a-z]: id of some type
             if (parseInt(n.name)) {
                 return type == "int";
             }
@@ -127,6 +121,10 @@ var SemanticAnalyzer = /** @class */ (function () {
             }
         }
         else {
+            //If only valid non terminals (branches) in AST 
+            //are IntOp and BoolOp nodes, their children must
+            //match in type completely so we no longer need
+            //the original type parameter
             if (n.name == "+") {
                 return this.typeCheck(n.children[0], "int") && this.typeCheck(n.children[1], "int");
             }
@@ -139,30 +137,35 @@ var SemanticAnalyzer = /** @class */ (function () {
         var current = this.st.current;
         while (current != null) {
             if (current.stash[id]) {
+                //If checking the type of some variable, it must
+                //be in a context that indicates it's being used
                 current.usedStashed(id);
                 return current.stash[id].type;
             }
             current = current.parent;
         }
+        //If we dont find the variable up the SymbolTree
         //Undeclared variable error
         return null;
     };
     SemanticAnalyzer.prototype.analyzeExpr = function (n) {
+        //Likely not needed
     };
     SemanticAnalyzer.prototype.emit = function (s) {
         this.log.push("Analyzing " + s);
     };
     SemanticAnalyzer.prototype.checkForUnusedVariables = function (n) {
         var unused = [];
+        console.log(n);
         if (n.children.length == 0) {
             return unused.concat(this.checkForUnusedVariablesHelper(n));
         }
         else {
             for (var i = 0; i < n.children.length; i++) {
-                return unused.concat(this.checkForUnusedVariablesHelper(n.children[i]));
+                unused.concat(this.checkForUnusedVariables(n.children[i]));
             }
         }
-        return [];
+        return unused;
     };
     SemanticAnalyzer.prototype.checkForUnusedVariablesHelper = function (n) {
         var unused = [];

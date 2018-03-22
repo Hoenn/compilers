@@ -69,6 +69,8 @@ export class SemanticAnalyzer {
     }
     analyzePrint(n: Node) {
         this.emit("Print");
+        //Type checking will throw errors about undeclared variables within
+        //any Expr
         if(!this.typeCheck(n.children[0], "")) {
             this.emit("type mismatch");
         }
@@ -97,6 +99,10 @@ export class SemanticAnalyzer {
     typeCheck(n: Node, type: string): boolean {
         //Must be a terminal symbol
         if(n.children.length == 0) {
+            //0-9: int
+            //true || false: boolean
+            //[a-z] length >1 : string
+            //[a-z]: id of some type
             if(parseInt(n.name)){
                 return type == "int";
             } else if(n.name == "true" || n.name == "false") {
@@ -114,6 +120,10 @@ export class SemanticAnalyzer {
                 }
             }
         } else {
+            //If only valid non terminals (branches) in AST 
+            //are IntOp and BoolOp nodes, their children must
+            //match in type completely so we no longer need
+            //the original type parameter
             if(n.name == "+"){
                 return this.typeCheck(n.children[0], "int") && this.typeCheck(n.children[1], "int");
             } else { // == !=
@@ -123,32 +133,38 @@ export class SemanticAnalyzer {
     }
 
     typeOf(id: string): string|null {
-        let current: ScopeNode|null = this.st.current;
+        let current: ScopeNode|null = this.st.current
         while(current != null){
             if(current.stash[id]){
+                //If checking the type of some variable, it must
+                //be in a context that indicates it's being used
                 current.usedStashed(id);
                 return current.stash[id].type;
             }
             current = current.parent;
         }
+        //If we dont find the variable up the SymbolTree
         //Undeclared variable error
         return null;
     }
     analyzeExpr(n: Node) {
+        //Likely not needed
     }
     emit(s: string) {
         this.log.push("Analyzing "+s);
     }
     checkForUnusedVariables(n: ScopeNode):string[] {
         let unused:string[] = [];
+        console.log(n);
         if(n.children.length == 0){
             return unused.concat(this.checkForUnusedVariablesHelper(n));
         } else {
             for(let i = 0; i < n.children.length; i++) {
-                return unused.concat(this.checkForUnusedVariablesHelper(n.children[i]));
+               unused.concat(this.checkForUnusedVariables(n.children[i]));
+
             }
         }
-        return [];
+        return unused;
         
     }
     checkForUnusedVariablesHelper(n : ScopeNode): string[] {

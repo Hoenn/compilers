@@ -1,5 +1,6 @@
 import { Lexer } from './Lexer';
 import { Parser } from './Parser';
+import { SemanticAnalyzer} from './SemanticAnalyzer';
 
 import fs = require('fs');
 import util = require('util');
@@ -35,6 +36,11 @@ export function main(sourceArg: string, filePath?: boolean) {
         }
         if(tree.ast) {
             console.log(tree.ast.toString());
+            let s = new SemanticAnalyzer(tree.ast);
+            let analysis = s.analyze();
+            console.log(analysis.log);
+            console.log(analysis.st.toString());
+
         }
     }
     

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Lexer_1 = require("./Lexer");
 var Parser_1 = require("./Parser");
+var SemanticAnalyzer_1 = require("./SemanticAnalyzer");
 var fs = require("fs");
 function main(sourceArg, filePath) {
     var sourceProgram;
@@ -35,6 +36,10 @@ function main(sourceArg, filePath) {
         }
         if (tree.ast) {
             console.log(tree.ast.toString());
+            var s = new SemanticAnalyzer_1.SemanticAnalyzer(tree.ast);
+            var analysis = s.analyze();
+            console.log(analysis.log);
+            console.log(analysis.st.toString());
         }
     }
     return sourceProgram;

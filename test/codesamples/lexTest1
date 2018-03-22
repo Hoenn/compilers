@@ -1,8 +1,4 @@
 {
-    boolean x
-    print(1 + 2+ "def")
-    x = 1 + "abc"
-    x = (true == true)
-    x = 1+ x
-    x = (true == true)
+    boolean a
+    print(1+ 2 + 3 + 4 + a)
 }$

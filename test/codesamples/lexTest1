@@ -1,13 +1,15 @@
 {
-    int y
-   {
+    int x
+   while (true == x) {
        int x
-       {
-           int b
-       }
+
    }
-   {
-       int a
+   if true {
+       int y
+       y = 3
+          if (true == y) {
+       
+   
    }
-   int z
+}
 }$

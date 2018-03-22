@@ -40,6 +40,10 @@ var SemanticAnalyzer = /** @class */ (function () {
                 this.analyzeWhile(n);
                 break;
             }
+            case "If": {
+                this.analyzeIf(n);
+                break;
+            }
             default: return;
         }
     };
@@ -71,6 +75,7 @@ var SemanticAnalyzer = /** @class */ (function () {
         }
     };
     SemanticAnalyzer.prototype.analyzeAssignment = function (n) {
+        this.emit("Assignment");
         var id = n.children[0].name;
         var found = this.st.current.stash[id];
         if (found) {
@@ -91,6 +96,20 @@ var SemanticAnalyzer = /** @class */ (function () {
         }
     };
     SemanticAnalyzer.prototype.analyzeWhile = function (n) {
+        this.emit("While");
+        var boolExpr = n.children[0];
+        if (!this.typeCheck(boolExpr, "boolean")) {
+            this.emit("type mismatch");
+        }
+        this.analyzeBlock(n.children[1]);
+    };
+    SemanticAnalyzer.prototype.analyzeIf = function (n) {
+        this.emit("If");
+        var boolExpr = n.children[0];
+        if (!this.typeCheck(boolExpr, "boolean")) {
+            this.emit("type mismatch");
+        }
+        this.analyzeBlock(n.children[1]);
     };
     SemanticAnalyzer.prototype.typeCheck = function (n, type) {
         //Must be a terminal symbol

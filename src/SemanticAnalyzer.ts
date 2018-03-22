@@ -45,6 +45,10 @@ export class SemanticAnalyzer {
                 this.analyzeWhile(n);
                 break;
             }
+            case "If": {
+                this.analyzeIf(n);
+                break;
+            }
             default: return;
         }
     }
@@ -76,6 +80,7 @@ export class SemanticAnalyzer {
         }
     }
     analyzeAssignment(n: Node) {
+        this.emit("Assignment");
         let id = n.children[0].name;
         let found = this.st.current.stash[id];
         if(found){
@@ -94,7 +99,21 @@ export class SemanticAnalyzer {
         }
     }
     analyzeWhile(n: Node) {
+        this.emit("While");
+        let boolExpr = n.children[0];
+        if(!this.typeCheck(boolExpr, "boolean")){
+            this.emit("type mismatch");
+        }
+        this.analyzeBlock(n.children[1]);
 
+    }
+    analyzeIf(n: Node) {
+        this.emit("If");
+        let boolExpr = n.children[0];
+        if(!this.typeCheck(boolExpr, "boolean")){
+            this.emit("type mismatch");
+        }
+        this.analyzeBlock(n.children[1]);
     }
     typeCheck(n: Node, type: string): boolean {
         //Must be a terminal symbol

@@ -20,7 +20,7 @@ var SemanticAnalyzer = /** @class */ (function () {
         return { ast: this.ast, st: this.st, log: this.log, warnings: this.warnings, error: err };
     };
     SemanticAnalyzer.prototype.analyzeNext = function (n) {
-        var err = null;
+        var err;
         switch (n.name) {
             case "Block": {
                 err = this.analyzeBlock(n);
@@ -56,7 +56,7 @@ var SemanticAnalyzer = /** @class */ (function () {
     SemanticAnalyzer.prototype.analyzeBlock = function (n) {
         this.emit("Block");
         //Add new scope level
-        var err = null;
+        var err;
         this.st.addBranchNode(new SymbolTree_1.ScopeNode());
         for (var i = 0; i < n.children.length; i++) {
             err = this.analyzeNext(n.children[i]);
@@ -72,7 +72,7 @@ var SemanticAnalyzer = /** @class */ (function () {
         var type = n.children[0].name;
         var id = n.children[1].name;
         var success = this.st.current.addStash(id, type, n.lineNum ? n.lineNum : -1);
-        var err = null;
+        var err;
         if (!success) {
             this.emit("Redeclared variable");
             err = Alert_1.error("Redeclared variable: " + id + " on line " + n.lineNum);
@@ -143,28 +143,30 @@ var SemanticAnalyzer = /** @class */ (function () {
         this.analyzeBlock(n.children[1]);
         return err;
     };
-    SemanticAnalyzer.prototype.typeCheck = function (n, type) {
+    SemanticAnalyzer.prototype.typeCheck = function (n, expected) {
         //Must be a terminal symbol
         if (n.children.length == 0) {
             //0-9: int
             //true || false: boolean
             //[a-z] length >1 : string
             //[a-z]: id of some type
+            //If types do match, return undefined, if not return an error indicating
+            //the expected and actual types
             var actual = this.typeOf(n.name);
             if (actual == "int") {
-                return (type == "int" ? null : this.typeMismatch(n, type, "int"));
+                return (expected == "int" ? undefined : this.typeMismatch(n, expected, "int"));
             }
             else if (actual == "boolean") {
-                return (type == "boolean" ? null : this.typeMismatch(n, type, "boolean"));
+                return (expected == "boolean" ? undefined : this.typeMismatch(n, expected, "boolean"));
             }
             else if (actual == "string") {
-                return (type == "string" ? null : this.typeMismatch(n, type, "string"));
+                return (expected == "string" ? undefined : this.typeMismatch(n, expected, "string"));
             }
             else {
                 //Must be id
                 var idType = this.typeOfId(n);
                 if (typeof (idType) == "string") {
-                    return (type == idType ? null : this.typeMismatch(n, type, idType));
+                    return (expected == idType ? undefined : this.typeMismatch(n, expected, idType));
                 }
                 else {
                     this.emit("Undeclared variable");
@@ -177,7 +179,7 @@ var SemanticAnalyzer = /** @class */ (function () {
             //are IntOp and BoolOp nodes, their children must
             //match in type completely so we no longer need
             //the original type parameter
-            var err = null;
+            var err = void 0;
             if (n.name == "+") {
                 err = this.typeCheck(n.children[0], "int");
                 if (err) {

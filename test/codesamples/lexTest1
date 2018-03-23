@@ -1,6 +1,13 @@
 {
   int a
-  if(true ==(true == false)) {
-
+  boolean b
+  {
+      string c
+      a = 5
+      b = true /*no comment*/
+      c = "inta"
+      print(c)
   }
+  print(b)
+  print(a)
 }

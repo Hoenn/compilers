@@ -90,7 +90,16 @@ export class SemanticAnalyzer {
         this.emit("Print");
         //Type checking will throw errors about undeclared variables within
         //any Expr
-        let err = this.typeCheck(n.children[0], "")
+        let type = this.typeOf(n.children[0].name);
+        if(type == "id"){
+            let temp = this.typeOfId(n.children[0]);
+            if(typeof(temp) == "string"){
+                type = temp;
+            } else {
+                return temp;
+            }
+        }
+        let err = this.typeCheck(n.children[0], type )
         if(err) {
             this.emit("type mismatch");
         }
@@ -99,20 +108,16 @@ export class SemanticAnalyzer {
     analyzeAssignment(n: Node): Alert | null {
         this.emit("Assignment");
         let id = n.children[0].name;
-        let found = this.st.current.stash[id];
-        let err = null;
-        if(found){
+        let type = this.typeOfId(n.children[0]);
+        if(typeof(type) == "string"){
             this.emit("Initialized Variable")
             this.st.current.initStashed(id);
         } else {
-            this.emit("Undeclared variable")
-            err = error("Undeclared variable "+id+" on line "+n.lineNum);
+            return type;
         }
-        if(err) {
-            return err;
-        }
+     
         let expr = n.children[1];
-        err = this.typeCheck(expr, found.type);
+        let err = this.typeCheck(expr, type );
         if(err) {
             this.emit("Type mismatch")
             return err;
@@ -152,16 +157,17 @@ export class SemanticAnalyzer {
             //true || false: boolean
             //[a-z] length >1 : string
             //[a-z]: id of some type
-            if(parseInt(n.name)){
+            let actual = this.typeOf(n.name);
+            if(actual == "int"){
                 return (type == "int" ? null : this.typeMismatch(n, type, "int"));
-            } else if(n.name == "true" || n.name == "false") {
+            } else if(actual == "boolean") {
                 return (type == "boolean" ? null : this.typeMismatch(n, type, "boolean"));
-            } else if(n.name.length > 1) {
+            } else if(actual == "string") {
                 return (type == "string" ? null : this.typeMismatch(n, type, "string"));
             } else {
                 //Must be id
-                let idType = this.typeOf(n.name);
-                if(idType) {
+                let idType = this.typeOfId(n);
+                if(typeof(idType) == "string") {
                     return (type == idType ? null : this.typeMismatch(n, type, idType));
                 } else {
                     this.emit("Undeclared variable")
@@ -190,8 +196,19 @@ export class SemanticAnalyzer {
                 return err;
         }
     }
-
-    typeOf(id: string): string|null {
+    typeOf(token: string) :string {
+        if(parseInt(token)){
+            return "int";
+        } else if(token =="true" || token == "false") {
+            return "boolean";
+        } else if(token.length > 1) {
+            return "string";
+        } else {
+            return "id";
+        }
+    }
+    typeOfId(n: Node): string|Alert {
+        let id = n.name
         let current: ScopeNode|null = this.st.current
         while(current != null){
             if(current.stash[id]){
@@ -204,7 +221,7 @@ export class SemanticAnalyzer {
         }
         //If we dont find the variable up the SymbolTree
         //Undeclared variable error
-        return null;
+        return error("Undeclared variable: "+n.name+" on line: "+n.lineNum);
     }
     analyzeExpr(n: Node) {
         //Likely not needed

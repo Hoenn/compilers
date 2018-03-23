@@ -14,7 +14,9 @@ var SemanticAnalyzer = /** @class */ (function () {
         this.ast.current = this.ast.root;
         var err = this.analyzeNext(this.ast.root);
         //Pass the symbol tree for unused variables
-        this.warnings = this.warnings.concat(this.checkForUnusedVariables(this.st.root));
+        if (!err) {
+            this.warnings = this.warnings.concat(this.checkForUnusedVariables(this.st.root));
+        }
         return { ast: this.ast, st: this.st, log: this.log, warnings: this.warnings, error: err };
     };
     SemanticAnalyzer.prototype.analyzeNext = function (n) {
@@ -81,7 +83,17 @@ var SemanticAnalyzer = /** @class */ (function () {
         this.emit("Print");
         //Type checking will throw errors about undeclared variables within
         //any Expr
-        var err = this.typeCheck(n.children[0], "");
+        var type = this.typeOf(n.children[0].name);
+        if (type == "id") {
+            var temp = this.typeOfId(n.children[0]);
+            if (typeof (temp) == "string") {
+                type = temp;
+            }
+            else {
+                return temp;
+            }
+        }
+        var err = this.typeCheck(n.children[0], type);
         if (err) {
             this.emit("type mismatch");
         }
@@ -90,21 +102,16 @@ var SemanticAnalyzer = /** @class */ (function () {
     SemanticAnalyzer.prototype.analyzeAssignment = function (n) {
         this.emit("Assignment");
         var id = n.children[0].name;
-        var found = this.st.current.stash[id];
-        var err = null;
-        if (found) {
+        var type = this.typeOfId(n.children[0]);
+        if (typeof (type) == "string") {
             this.emit("Initialized Variable");
             this.st.current.initStashed(id);
         }
         else {
-            this.emit("Undeclared variable");
-            err = Alert_1.error("Undeclared variable " + id + " on line " + n.lineNum);
-        }
-        if (err) {
-            return err;
+            return type;
         }
         var expr = n.children[1];
-        err = this.typeCheck(expr, found.type);
+        var err = this.typeCheck(expr, type);
         if (err) {
             this.emit("Type mismatch");
             return err;
@@ -143,19 +150,20 @@ var SemanticAnalyzer = /** @class */ (function () {
             //true || false: boolean
             //[a-z] length >1 : string
             //[a-z]: id of some type
-            if (parseInt(n.name)) {
+            var actual = this.typeOf(n.name);
+            if (actual == "int") {
                 return (type == "int" ? null : this.typeMismatch(n, type, "int"));
             }
-            else if (n.name == "true" || n.name == "false") {
+            else if (actual == "boolean") {
                 return (type == "boolean" ? null : this.typeMismatch(n, type, "boolean"));
             }
-            else if (n.name.length > 1) {
+            else if (actual == "string") {
                 return (type == "string" ? null : this.typeMismatch(n, type, "string"));
             }
             else {
                 //Must be id
-                var idType = this.typeOf(n.name);
-                if (idType) {
+                var idType = this.typeOfId(n);
+                if (typeof (idType) == "string") {
                     return (type == idType ? null : this.typeMismatch(n, type, idType));
                 }
                 else {
@@ -187,7 +195,22 @@ var SemanticAnalyzer = /** @class */ (function () {
             return err;
         }
     };
-    SemanticAnalyzer.prototype.typeOf = function (id) {
+    SemanticAnalyzer.prototype.typeOf = function (token) {
+        if (parseInt(token)) {
+            return "int";
+        }
+        else if (token == "true" || token == "false") {
+            return "boolean";
+        }
+        else if (token.length > 1) {
+            return "string";
+        }
+        else {
+            return "id";
+        }
+    };
+    SemanticAnalyzer.prototype.typeOfId = function (n) {
+        var id = n.name;
         var current = this.st.current;
         while (current != null) {
             if (current.stash[id]) {
@@ -200,7 +223,7 @@ var SemanticAnalyzer = /** @class */ (function () {
         }
         //If we dont find the variable up the SymbolTree
         //Undeclared variable error
-        return null;
+        return Alert_1.error("Undeclared variable: " + n.name + " on line: " + n.lineNum);
     };
     SemanticAnalyzer.prototype.analyzeExpr = function (n) {
         //Likely not needed

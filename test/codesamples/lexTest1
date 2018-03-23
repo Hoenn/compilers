@@ -1,4 +1,6 @@
 {
-    int x
-    x = true
-}$
+  int a
+  if(true ==(true == false)) {
+
+  }
+}

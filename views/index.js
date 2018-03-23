@@ -187,8 +187,8 @@ var Symbol_1 = require("./Symbol");
 var Parser = /** @class */ (function () {
     function Parser(tokens) {
         //Add initial program token, make root node
-        this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.ConcreteNode("Root"));
-        this.ast = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.AbstractNode("Root", -1));
+        this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Root"));
+        this.ast = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Root", -1));
         this.tokens = tokens;
         this.log = [];
         this.symbolTable = [];
@@ -534,7 +534,7 @@ var Parser = /** @class */ (function () {
         if (err) {
             return err;
         }
-        this.ast.addLeafNode(new SyntaxTree_1.AbstractNode(this.currentString, lineNum));
+        this.ast.addLeafNode(new SyntaxTree_1.Node(this.currentString, lineNum));
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseCharList = function () {
@@ -592,9 +592,9 @@ var Parser = /** @class */ (function () {
                 var exp = search_1[_i];
                 if (cToken.value.match(exp)) {
                     if (ast) {
-                        this.ast.addLeafNode(new SyntaxTree_1.AbstractNode(cToken.value, cToken.lineNum));
+                        this.ast.addLeafNode(new SyntaxTree_1.Node(cToken.value, cToken.lineNum));
                     }
-                    this.cst.addLeafNode(new SyntaxTree_1.ConcreteNode(cToken.value));
+                    this.cst.addLeafNode(new SyntaxTree_1.Node(cToken.value));
                     return undefined;
                 }
             }
@@ -609,10 +609,10 @@ var Parser = /** @class */ (function () {
         this.log.push("Parsing " + s);
     };
     Parser.prototype.addBranch = function (nodeName) {
-        this.cst.addBranchNode(new SyntaxTree_1.ConcreteNode(nodeName));
+        this.cst.addBranchNode(new SyntaxTree_1.Node(nodeName));
     };
     Parser.prototype.addASTBranch = function (nodeName, lineNum) {
-        this.ast.addBranchNode(new SyntaxTree_1.AbstractNode(nodeName, lineNum));
+        this.ast.addBranchNode(new SyntaxTree_1.Node(nodeName, lineNum));
     };
     Parser.prototype.moveUp = function () {
         this.cst.moveCurrentUp();
@@ -639,16 +639,6 @@ exports.Symbol = Symbol;
 
 },{}],5:[function(require,module,exports){
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 var SyntaxTree = /** @class */ (function () {
     function SyntaxTree(n) {
@@ -702,10 +692,11 @@ var SyntaxTree = /** @class */ (function () {
 }());
 exports.SyntaxTree = SyntaxTree;
 var Node = /** @class */ (function () {
-    function Node(n) {
+    function Node(n, line) {
         this.name = n;
         this.parent = null;
         this.children = [];
+        (line ? this.lineNum = line : undefined);
     }
     Node.prototype.addChild = function (n) {
         this.children.push(n);
@@ -713,24 +704,6 @@ var Node = /** @class */ (function () {
     return Node;
 }());
 exports.Node = Node;
-var ConcreteNode = /** @class */ (function (_super) {
-    __extends(ConcreteNode, _super);
-    function ConcreteNode(n) {
-        return _super.call(this, n) || this;
-    }
-    return ConcreteNode;
-}(Node));
-exports.ConcreteNode = ConcreteNode;
-var AbstractNode = /** @class */ (function (_super) {
-    __extends(AbstractNode, _super);
-    function AbstractNode(n, l) {
-        var _this = _super.call(this, n) || this;
-        _this.lineNum = l;
-        return _this;
-    }
-    return AbstractNode;
-}(Node));
-exports.AbstractNode = AbstractNode;
 
 },{}],6:[function(require,module,exports){
 "use strict";

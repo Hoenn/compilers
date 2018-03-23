@@ -69,11 +69,11 @@ var SemanticAnalyzer = /** @class */ (function () {
         this.emit("VarDecl");
         var type = n.children[0].name;
         var id = n.children[1].name;
-        var success = this.st.current.addStash(id, type, 0);
+        var success = this.st.current.addStash(id, type, n.lineNum ? n.lineNum : -1);
         var err = null;
         if (!success) {
             this.emit("Redeclared variable");
-            err = Alert_1.error("Redeclared variable: " + id + " on line " + this.st.current.stash[id].line);
+            err = Alert_1.error("Redeclared variable: " + id + " on line " + n.lineNum);
         }
         return err;
     };
@@ -98,7 +98,7 @@ var SemanticAnalyzer = /** @class */ (function () {
         }
         else {
             this.emit("Undeclared variable");
-            err = Alert_1.error("Undeclared variable " + id + " on line 0");
+            err = Alert_1.error("Undeclared variable " + id + " on line " + n.lineNum);
         }
         if (err) {
             return err;
@@ -144,7 +144,6 @@ var SemanticAnalyzer = /** @class */ (function () {
             //[a-z] length >1 : string
             //[a-z]: id of some type
             if (parseInt(n.name)) {
-                //Add line numbers to nodes
                 return (type == "int" ? null : this.typeMismatch(n, type, "int"));
             }
             else if (n.name == "true" || n.name == "false") {
@@ -161,7 +160,7 @@ var SemanticAnalyzer = /** @class */ (function () {
                 }
                 else {
                     this.emit("Undeclared variable");
-                    return Alert_1.error("Undeclared variable: " + n.name + " on line: 0");
+                    return Alert_1.error("Undeclared variable: " + n.name + " on line: " + n.lineNum);
                 }
             }
         }
@@ -211,7 +210,7 @@ var SemanticAnalyzer = /** @class */ (function () {
     };
     SemanticAnalyzer.prototype.typeMismatch = function (n, expected, actual) {
         //Add line num to nodes
-        return Alert_1.error("Type mismatch on: 0 expected: " + expected + " but got: " + actual);
+        return Alert_1.error("Type mismatch on line: " + n.lineNum + " expected: " + expected + " but got: " + actual);
     };
     SemanticAnalyzer.prototype.checkForUnusedVariables = function (n) {
         var _this = this;

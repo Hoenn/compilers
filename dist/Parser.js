@@ -7,8 +7,8 @@ var Symbol_1 = require("./Symbol");
 var Parser = /** @class */ (function () {
     function Parser(tokens) {
         //Add initial program token, make root node
-        this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.ConcreteNode("Root"));
-        this.ast = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.AbstractNode("Root", -1));
+        this.cst = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Root"));
+        this.ast = new SyntaxTree_1.SyntaxTree(new SyntaxTree_1.Node("Root", -1));
         this.tokens = tokens;
         this.log = [];
         this.symbolTable = [];
@@ -354,7 +354,7 @@ var Parser = /** @class */ (function () {
         if (err) {
             return err;
         }
-        this.ast.addLeafNode(new SyntaxTree_1.AbstractNode(this.currentString, lineNum));
+        this.ast.addLeafNode(new SyntaxTree_1.Node(this.currentString, lineNum));
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseCharList = function () {
@@ -412,9 +412,9 @@ var Parser = /** @class */ (function () {
                 var exp = search_1[_i];
                 if (cToken.value.match(exp)) {
                     if (ast) {
-                        this.ast.addLeafNode(new SyntaxTree_1.AbstractNode(cToken.value, cToken.lineNum));
+                        this.ast.addLeafNode(new SyntaxTree_1.Node(cToken.value, cToken.lineNum));
                     }
-                    this.cst.addLeafNode(new SyntaxTree_1.ConcreteNode(cToken.value));
+                    this.cst.addLeafNode(new SyntaxTree_1.Node(cToken.value));
                     return undefined;
                 }
             }
@@ -429,10 +429,10 @@ var Parser = /** @class */ (function () {
         this.log.push("Parsing " + s);
     };
     Parser.prototype.addBranch = function (nodeName) {
-        this.cst.addBranchNode(new SyntaxTree_1.ConcreteNode(nodeName));
+        this.cst.addBranchNode(new SyntaxTree_1.Node(nodeName));
     };
     Parser.prototype.addASTBranch = function (nodeName, lineNum) {
-        this.ast.addBranchNode(new SyntaxTree_1.AbstractNode(nodeName, lineNum));
+        this.ast.addBranchNode(new SyntaxTree_1.Node(nodeName, lineNum));
     };
     Parser.prototype.moveUp = function () {
         this.cst.moveCurrentUp();

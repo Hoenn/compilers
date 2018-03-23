@@ -1,5 +1,5 @@
 import {TokenType, Token, TokenRegex} from './Token';
-import {SyntaxTree, Node, AbstractNode, ConcreteNode} from './SyntaxTree';
+import {SyntaxTree, Node} from './SyntaxTree';
 import {Alert, error, warning} from './Alert';
 import {Symbol} from './Symbol';
 export class Parser {
@@ -13,8 +13,8 @@ export class Parser {
 
     constructor(tokens: Token[]) {
         //Add initial program token, make root node
-        this.cst = new SyntaxTree(new ConcreteNode("Root"));
-        this.ast = new SyntaxTree(new AbstractNode("Root", -1));
+        this.cst = new SyntaxTree(new Node("Root"));
+        this.ast = new SyntaxTree(new Node("Root", -1));
         this.tokens = tokens;
         this.log = [];
         this.symbolTable = [];
@@ -367,7 +367,7 @@ export class Parser {
         if(err){
             return err;
         }
-        this.ast.addLeafNode(new AbstractNode(this.currentString, lineNum));
+        this.ast.addLeafNode(new Node(this.currentString, lineNum));
         this.cst.moveCurrentUp();
     }
     parseCharList(): Alert |undefined {
@@ -423,9 +423,9 @@ export class Parser {
             for(var exp of search){
                 if(cToken.value.match(exp)){
                     if(ast) {
-                        this.ast.addLeafNode(new AbstractNode(cToken.value, cToken.lineNum));
+                        this.ast.addLeafNode(new Node(cToken.value, cToken.lineNum));
                     }
-                    this.cst.addLeafNode(new ConcreteNode(cToken.value));
+                    this.cst.addLeafNode(new Node(cToken.value));
                     return undefined;
                 }
             }
@@ -441,10 +441,10 @@ export class Parser {
         this.log.push("Parsing "+s);
     }
     addBranch(nodeName: string) {
-        this.cst.addBranchNode(new ConcreteNode(nodeName));
+        this.cst.addBranchNode(new Node(nodeName));
     }
     addASTBranch(nodeName: string, lineNum:number) {
-        this.ast.addBranchNode(new AbstractNode(nodeName, lineNum));
+        this.ast.addBranchNode(new Node(nodeName, lineNum));
     }
     moveUp() {
         this.cst.moveCurrentUp();

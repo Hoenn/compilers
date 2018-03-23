@@ -1,4 +1,4 @@
-import {SyntaxTree, AbstractNode, Node} from "./SyntaxTree";
+import {SyntaxTree, Node} from "./SyntaxTree";
 import {SymbolTree, ScopeNode} from "./SymbolTree";
 import {Alert, error, warning} from "./Alert";
 
@@ -20,7 +20,9 @@ export class SemanticAnalyzer {
         let err = this.analyzeNext(this.ast.root);
 
         //Pass the symbol tree for unused variables
-        this.warnings = this.warnings.concat(this.checkForUnusedVariables(this.st.root));
+        if(!err) {
+            this.warnings = this.warnings.concat(this.checkForUnusedVariables(this.st.root));
+        }
         return {ast:this.ast, st: this.st, log: this.log, warnings: this.warnings, error: err};
     }
     analyzeNext(n: Node): Alert | null {
@@ -75,11 +77,11 @@ export class SemanticAnalyzer {
         this.emit("VarDecl");
         let type = n.children[0].name;
         let id = n.children[1].name;
-        let success = this.st.current.addStash(id, type, 0);
+        let success = this.st.current.addStash(id, type, n.lineNum? n.lineNum: -1);
         let err = null;
         if(!success) {
             this.emit("Redeclared variable");
-            err = error("Redeclared variable: "+id+" on line "+this.st.current.stash[id].line);
+            err = error("Redeclared variable: "+id+" on line "+n.lineNum);
 
         }
         return err;
@@ -104,7 +106,7 @@ export class SemanticAnalyzer {
             this.st.current.initStashed(id);
         } else {
             this.emit("Undeclared variable")
-            err = error("Undeclared variable "+id+" on line 0");
+            err = error("Undeclared variable "+id+" on line "+n.lineNum);
         }
         if(err) {
             return err;
@@ -151,7 +153,6 @@ export class SemanticAnalyzer {
             //[a-z] length >1 : string
             //[a-z]: id of some type
             if(parseInt(n.name)){
-                //Add line numbers to nodes
                 return (type == "int" ? null : this.typeMismatch(n, type, "int"));
             } else if(n.name == "true" || n.name == "false") {
                 return (type == "boolean" ? null : this.typeMismatch(n, type, "boolean"));
@@ -164,7 +165,7 @@ export class SemanticAnalyzer {
                     return (type == idType ? null : this.typeMismatch(n, type, idType));
                 } else {
                     this.emit("Undeclared variable")
-                    return error("Undeclared variable: "+n.name+" on line: 0");
+                    return error("Undeclared variable: "+n.name+" on line: "+n.lineNum);
                 }
             }
         } else {
@@ -213,7 +214,7 @@ export class SemanticAnalyzer {
     }
     typeMismatch(n: Node, expected: string, actual: string): Alert {
         //Add line num to nodes
-        return error("Type mismatch on: 0 expected: "+expected+" but got: "+actual);
+        return error("Type mismatch on line: "+n.lineNum+ " expected: "+expected+" but got: "+actual);
     }
     
     checkForUnusedVariables(n: ScopeNode):Alert[] {

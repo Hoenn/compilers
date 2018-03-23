@@ -40,6 +40,8 @@ function main(sourceArg, filePath) {
             var analysis = s.analyze();
             console.log(analysis.log);
             console.log(analysis.st.toString());
+            console.log(analysis.warnings);
+            console.log(analysis.error);
         }
     }
     return sourceProgram;

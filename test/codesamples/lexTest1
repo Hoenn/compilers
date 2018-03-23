@@ -1,15 +1,6 @@
 {
-    int x
-   while (true == x) {
-       int x
-
-   }
-   if true {
-       int y
-       y = 3
-          if (true == y) {
-       
-   
-   }
-}
+    int x 
+    x =1 
+    string y
+    y = 1
 }$

@@ -40,6 +40,8 @@ export function main(sourceArg: string, filePath?: boolean) {
             let analysis = s.analyze();
             console.log(analysis.log);
             console.log(analysis.st.toString());
+            console.log(analysis.warnings);
+            console.log(analysis.error);
 
         }
     }

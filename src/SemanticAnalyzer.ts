@@ -85,7 +85,7 @@ export class SemanticAnalyzer {
         let err;
         if(!success) {
             this.emit("Found redeclared variable in same scope");
-            err = error("Redeclared variable: "+id+" on line "+n.lineNum);
+            err = error("Redeclared variable: "+id+" on line: "+n.lineNum);
 
         }
         this.emit("Adding "+id+" to current scope");
@@ -211,9 +211,9 @@ export class SemanticAnalyzer {
         }
     }
     typeOf(token: string) :string {
-        if(parseInt(token)){
+        if(parseInt(token) || token=="+"){
             return "int";
-        } else if(token =="true" || token == "false") {
+        } else if(token =="true" || token == "false"|| token == "==" || token == "!=") {
             return "boolean";
         } else if(token.length > 1) {
             return "string";
@@ -281,7 +281,11 @@ export class SemanticAnalyzer {
         //Check current scope node
         for(let id in n.stash){
             if(!n.stash[id].used) {
-                arr.push(warning("Unused variable: "+n.stashEntryToString(id)));
+                if(n.stash[id].init) {
+                    arr.push(warning("Initialized but unused variable: "+n.stashEntryToString(id)));
+                } else {
+                    arr.push(warning("Unused variable: "+n.stashEntryToString(id)));
+                }
             }
         }
         return arr;

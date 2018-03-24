@@ -79,7 +79,7 @@ var SemanticAnalyzer = /** @class */ (function () {
         var err;
         if (!success) {
             this.emit("Found redeclared variable in same scope");
-            err = Alert_1.error("Redeclared variable: " + id + " on line " + n.lineNum);
+            err = Alert_1.error("Redeclared variable: " + id + " on line: " + n.lineNum);
         }
         this.emit("Adding " + id + " to current scope");
         return err;
@@ -98,6 +98,7 @@ var SemanticAnalyzer = /** @class */ (function () {
                 return temp;
             }
         }
+        console.log(type);
         var err = this.typeCheck(n.children[0], type, true);
         if (err) {
             this.emit("Found type mismatch");
@@ -193,6 +194,7 @@ var SemanticAnalyzer = /** @class */ (function () {
             //match in type completely so we no longer need
             //the original type parameter
             var err = void 0;
+            console.log(n);
             if (n.name == "+") {
                 err = this.typeCheck(n.children[0], "int", used);
                 if (err) {
@@ -211,10 +213,10 @@ var SemanticAnalyzer = /** @class */ (function () {
         }
     };
     SemanticAnalyzer.prototype.typeOf = function (token) {
-        if (parseInt(token)) {
+        if (parseInt(token) || token == "+") {
             return "int";
         }
-        else if (token == "true" || token == "false") {
+        else if (token == "true" || token == "false" || token == "==" || token == "!=") {
             return "boolean";
         }
         else if (token.length > 1) {
@@ -283,7 +285,12 @@ var SemanticAnalyzer = /** @class */ (function () {
         //Check current scope node
         for (var id in n.stash) {
             if (!n.stash[id].used) {
-                arr.push(Alert_1.warning("Unused variable: " + n.stashEntryToString(id)));
+                if (n.stash[id].init) {
+                    arr.push(Alert_1.warning("Initialized but unused variable: " + n.stashEntryToString(id)));
+                }
+                else {
+                    arr.push(Alert_1.warning("Unused variable: " + n.stashEntryToString(id)));
+                }
             }
         }
         return arr;

@@ -98,7 +98,6 @@ var SemanticAnalyzer = /** @class */ (function () {
                 return temp;
             }
         }
-        console.log(type);
         var err = this.typeCheck(n.children[0], type, true);
         if (err) {
             this.emit("Found type mismatch");
@@ -194,7 +193,6 @@ var SemanticAnalyzer = /** @class */ (function () {
             //match in type completely so we no longer need
             //the original type parameter
             var err = void 0;
-            console.log(n);
             if (n.name == "+") {
                 err = this.typeCheck(n.children[0], "int", used);
                 if (err) {

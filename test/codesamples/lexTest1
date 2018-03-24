@@ -1,13 +1,7 @@
 {
-  int a
-  boolean b
+  int  x
   {
-      string c
-      a = 5
-      b = true /*no comment*/
-      c = "inta"
-      print(c)
+    int y
   }
-  print(b)
-  print(a)
+  print(y)
 }

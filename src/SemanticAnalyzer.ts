@@ -21,6 +21,7 @@ export class SemanticAnalyzer {
 
         //Pass the symbol tree for unused variables
         if(!err) {
+            this.emit("Checking for unused variables");
             this.warnings = this.warnings.concat(this.checkForUnusedVariables(this.st.root));
         }
         return {ast:this.ast, st: this.st, log: this.log, warnings: this.warnings, error: err};
@@ -54,15 +55,15 @@ export class SemanticAnalyzer {
             }
             default: {
                 //Should not reach here
-                this.emit("Should not reach here");
             }
         }
         return err;
     }
     analyzeBlock(n: Node): Alert | undefined {
-        this.emit("Block");
+        this.emit("Analyzing Block");
         //Add new scope level
         let err;
+        this.emit("Adding new scope level to SymbolTree")
         this.st.addBranchNode(new ScopeNode());
         for(let i = 0; i < n.children.length; i++) {
             err = this.analyzeNext(n.children[i]);
@@ -70,69 +71,73 @@ export class SemanticAnalyzer {
                 break;
             }
         }
-        this.st.moveCurrentUp();
+        if(!err) {
+            this.emit("Moving current Scope up one level")
+            this.st.moveCurrentUp();
+        }
         return err;
     }
     analyzeVarDecl(n: Node):Alert | undefined {
-        this.emit("VarDecl");
+        this.emit("Analyzing VarDecl");
         let type = n.children[0].name;
         let id = n.children[1].name;
         let success = this.st.current.addStash(id, type, n.lineNum? n.lineNum: -1);
         let err;
         if(!success) {
-            this.emit("Redeclared variable");
+            this.emit("Found redeclared variable in same scope");
             err = error("Redeclared variable: "+id+" on line "+n.lineNum);
 
         }
+        this.emit("Adding "+id+" to current scope");
         return err;
     }
     analyzePrint(n: Node): Alert | undefined {
-        this.emit("Print");
+        this.emit("Analyzing Print");
         //Type checking will throw errors about undeclared variables within
         //any Expr
         let type = this.typeOf(n.children[0].name);
         if(type == "id"){
-            let temp = this.typeOfId(n.children[0]);
+            let temp = this.typeOfId(n.children[0], true);
             if(typeof(temp) == "string"){
                 type = temp;
             } else {
                 return temp;
             }
         }
-        let err = this.typeCheck(n.children[0], type )
+        let err = this.typeCheck(n.children[0], type, true)
         if(err) {
-            this.emit("type mismatch");
+            this.emit("Found type mismatch");
         }
         return err;
     }
     analyzeAssignment(n: Node): Alert | undefined {
-        this.emit("Assignment");
+        this.emit("Analyzing Assignment");
         let id = n.children[0].name;
-        let type = this.typeOfId(n.children[0]);
+        let type = this.typeOfId(n.children[0], false);
+        //type: string | Alert
         if(typeof(type) == "string"){
-            this.emit("Initialized Variable")
+            this.emit("Initialized Variable " +id)
             this.st.current.initStashed(id);
         } else {
             return type;
         }
      
         let expr = n.children[1];
-        let err = this.typeCheck(expr, type );
+        let err = this.typeCheck(expr, type, true);
         if(err) {
-            this.emit("Type mismatch")
+            this.emit("Found type mismatch")
             return err;
         } else {
             this.emit("Types match");
-            
         }
         return err;
     }
     analyzeWhile(n: Node): Alert | undefined {
-        this.emit("While");
+        this.emit("Analyzing While");
         let boolExpr = n.children[0];
-        let err = this.typeCheck(boolExpr, "boolean");
+        let err = this.typeCheck(boolExpr, "boolean", true);
         if(err){
-            this.emit("type mismatch");
+            this.emit("Found type mismatch");
             return err;
         }
         this.analyzeBlock(n.children[1]);
@@ -140,17 +145,22 @@ export class SemanticAnalyzer {
 
     }
     analyzeIf(n: Node): Alert|undefined {
-        this.emit("If");
+        this.emit("Analyzing If");
         let boolExpr = n.children[0];
-        let err = this.typeCheck(boolExpr, "boolean");
+        let err = this.typeCheck(boolExpr, "boolean", true);
         if(err){
-            this.emit("type mismatch");
+            this.emit("Found type mismatch");
             return err;
         }
         this.analyzeBlock(n.children[1]);
         return err;
     }
-    typeCheck(n: Node, expected: string): Alert | undefined {
+    /**
+     * @param n The node containing expression to be evaluated against
+     * @param expected The expected type of expression in n
+     * @param used A flag to mark n as used if it is an id
+     */
+    typeCheck(n: Node, expected: string, used: boolean): Alert | undefined {
         //Must be a terminal symbol
         if(n.children.length == 0) {
             //0-9: int
@@ -168,11 +178,13 @@ export class SemanticAnalyzer {
                 return (expected == "string" ? undefined : this.typeMismatch(n, expected, "string"));
             } else {
                 //Must be id
-                let idType = this.typeOfId(n);
+                let idType = this.typeOfId(n, used);
+                //idType:string|Alert
                 if(typeof(idType) == "string") {
+                    this.warnIfNotInitialized(n);
                     return (expected == idType ? undefined : this.typeMismatch(n, expected, idType));
                 } else {
-                    this.emit("Undeclared variable")
+                    this.emit("Found undeclared variable")
                     return error("Undeclared variable: "+n.name+" on line: "+n.lineNum);
                 }
             }
@@ -183,17 +195,17 @@ export class SemanticAnalyzer {
             //the original type parameter
             let err;
             if(n.name == "+"){
-                err = this.typeCheck(n.children[0], "int");
+                err = this.typeCheck(n.children[0], "int", used);
                 if(err){
                     return err;
                 }
-                err = this.typeCheck(n.children[1], "int");
+                err = this.typeCheck(n.children[1], "int", used);
             } else { // == !=
-                err = this.typeCheck(n.children[0], "boolean");
+                err = this.typeCheck(n.children[0], "boolean", used);
                 if(err) {
                     return err;
                 }
-                err = this.typeCheck(n.children[1], "boolean");
+                err = this.typeCheck(n.children[1], "boolean", used);
             }
                 return err;
         }
@@ -209,14 +221,16 @@ export class SemanticAnalyzer {
             return "id";
         }
     }
-    typeOfId(n: Node): string|Alert {
+    typeOfId(n: Node, used: boolean): string|Alert {
         let id = n.name
         let current: ScopeNode|null = this.st.current
         while(current != null){
             if(current.stash[id]){
                 //If checking the type of some variable, it must
                 //be in a context that indicates it's being used
-                current.usedStashed(id);
+                if(used){
+                    current.usedStashed(id);
+                }
                 return current.stash[id].type;
             }
             current = current.parent;
@@ -229,13 +243,24 @@ export class SemanticAnalyzer {
         //Likely not needed
     }
     emit(s: string) {
-        this.log.push("Analyzing "+s);
+        this.log.push(s);
     }
     typeMismatch(n: Node, expected: string, actual: string): Alert {
         //Add line num to nodes
         return error("Type mismatch on line: "+n.lineNum+ " expected: "+expected+" but got: "+actual);
     }
-    
+    //Adds a warning for use of uninitialized variable
+    warnIfNotInitialized(n: Node) {
+        let id = n.name;
+        let current: ScopeNode | null = this.st.current;
+        while(current != null) {
+            if(current.stash[id] && !current.stash[id].init){
+                this.warnings.push(warning("Use of uninitialized variable: "+n.name+" on line: "+n.lineNum));
+                return;
+            }
+            current = current.parent;
+        }
+    }
     checkForUnusedVariables(n: ScopeNode):Alert[] {
        let unused: Alert[] = [];
        

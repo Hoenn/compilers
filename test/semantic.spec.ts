@@ -172,6 +172,12 @@ const tests = [
         "describe": "Type mismatch within If BoolExp bool literal and 'true'",
         "warnings": [],
         "error": typeMismatch(1, "boolean", "string")
+    },
+    {
+        "test": '{int x x = 0}$',
+        "describe": "Assign int to 0 to ensure 0 doesn't catch a falsy if statement in type checker",
+        "warnings": [], //Ignore warnings
+        "error": undefined
     }
 ]
 

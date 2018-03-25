@@ -1,4 +1,9 @@
 {
-    string a
-    a = true
+    int x
+    x = 0
+    {
+        int x
+        
+    }
+   
 }$

@@ -32,12 +32,11 @@ export class SymbolTree {
                 for(let i = 0; i < depth; i++){
                     result+="-";
                 }
+                result+= " ";
                 let v = node.stash[id];
                 result += id+" type: "+v.type+" line: "+v.line+"\n";
             }
-            if(node.children.length === 0){
-                result+="\n";
-            } else {
+            if(node.children.length !== 0){
                 for(let i = 0; i < node.children.length; i ++){
                     expand(node.children[i], depth+1);
                 }

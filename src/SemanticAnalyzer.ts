@@ -208,7 +208,7 @@ export class SemanticAnalyzer {
         if(n.isString) {
             return "string";
         }
-        else if(parseInt(token) || token=="+"){
+        else if(!isNaN(parseInt(token)) || token=="+"){
             return "int";
         } else if(token =="true" || token == "false") {
             return "boolean";

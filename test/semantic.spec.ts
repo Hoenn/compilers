@@ -87,7 +87,7 @@ const tests = [
         "test": "{int x if(x == true) {} }$",
         "describe": "Type mismatch inside If bool compare",
         "warnings": [],
-        "error": typeMismatch(1, "boolean", "int")
+        "error": typeMismatch(1, "int", "boolean")
     },
     {
         "test": "{if(true == (false != (true == true))){}}$",
@@ -129,7 +129,7 @@ const tests = [
         "test": "{int x boolean y if(x != y){}}$",
         "describe": "Type mismatch If BoolExp with two variables",
         "warnings": [], //Ignore warnings
-        "error": typeMismatch(1, "boolean", "int")
+        "error": typeMismatch(1, "int", "boolean")
     },
     {
         "test": "{print(1 + 2 + 3 + x)}$",
@@ -148,6 +148,18 @@ const tests = [
         "describe": "Type mismatch in nested addition print",
         "warnings": [],
         "error": typeMismatch(1, "int", "string")
+    },
+    {
+        "test": '{boolean x int y if true { print((x == y)) } }$',
+        "describe": "Type mismatch within child scope of If in a print",
+        "warnings": [], //Ignore warnings
+        "error": typeMismatch(1, "boolean", "int")
+    },
+    {
+        "test": '{boolean x string y while true { print((x != y)) } }$',
+        "describe": "Type mismatch within child scope of While in a print",
+        "warnings": [], //Ignore warnings
+        "error": typeMismatch(1, "boolean", "string")
     }
 ]
 

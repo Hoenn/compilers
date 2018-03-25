@@ -62,14 +62,11 @@ var SemanticAnalyzer = /** @class */ (function () {
         for (var i = 0; i < n.children.length; i++) {
             err = this.analyzeNext(n.children[i]);
             if (err) {
-                break;
+                return err;
             }
         }
-        if (!err) {
-            this.emit("Moving current Scope up one level");
-            this.st.moveCurrentUp();
-        }
-        return err;
+        this.emit("Moving current Scope up one level");
+        this.st.moveCurrentUp();
     };
     SemanticAnalyzer.prototype.analyzeVarDecl = function (n) {
         this.emit("Analyzing VarDecl");
@@ -88,15 +85,9 @@ var SemanticAnalyzer = /** @class */ (function () {
         this.emit("Analyzing Print");
         //Type checking will throw errors about undeclared variables within
         //any Expr
-        var type = this.typeOf(n.children[0].name);
-        if (type == "id") {
-            var temp = this.typeOfId(n.children[0], true);
-            if (typeof (temp) == "string") {
-                type = temp;
-            }
-            else {
-                return temp;
-            }
+        var type = this.typeOf(n.children[0], false);
+        if (typeof (type) != "string") {
+            return type;
         }
         var err = this.typeCheck(n.children[0], type, true);
         if (err) {
@@ -135,7 +126,7 @@ var SemanticAnalyzer = /** @class */ (function () {
             this.emit("Found type mismatch");
             return err;
         }
-        this.analyzeBlock(n.children[1]);
+        err = this.analyzeBlock(n.children[1]);
         return err;
     };
     SemanticAnalyzer.prototype.analyzeIf = function (n) {
@@ -146,7 +137,7 @@ var SemanticAnalyzer = /** @class */ (function () {
             this.emit("Found type mismatch");
             return err;
         }
-        this.analyzeBlock(n.children[1]);
+        err = this.analyzeBlock(n.children[1]);
         return err;
     };
     /**
@@ -163,7 +154,7 @@ var SemanticAnalyzer = /** @class */ (function () {
             //[a-z]: id of some type
             //If types do match, return undefined, if not return an error indicating
             //the expected and actual types
-            var actual = this.typeOf(n.name);
+            var actual = this.typeOf(n, used);
             if (actual == "int") {
                 return (expected == "int" ? undefined : this.typeMismatch(n, expected, "int"));
             }
@@ -201,27 +192,38 @@ var SemanticAnalyzer = /** @class */ (function () {
                 err = this.typeCheck(n.children[1], "int", used);
             }
             else {
-                err = this.typeCheck(n.children[0], "boolean", used);
-                if (err) {
-                    return err;
+                var type = this.typeOf(n.children[0], used);
+                if (typeof (type) != "string") {
+                    return type;
                 }
-                err = this.typeCheck(n.children[1], "boolean", used);
+                err = this.typeCheck(n.children[1], type, used);
             }
             return err;
         }
     };
-    SemanticAnalyzer.prototype.typeOf = function (token) {
+    SemanticAnalyzer.prototype.typeOf = function (n, used) {
+        var token = n.name;
         if (parseInt(token) || token == "+") {
             return "int";
         }
-        else if (token == "true" || token == "false" || token == "==" || token == "!=") {
+        else if (token == "true" || token == "false") {
+            return "boolean";
+        }
+        else if (token == "==" || token == "!=") {
+            var t1 = this.typeOf(n.children[0], used);
+            var t2 = this.typeOf(n.children[1], used);
+            if (t1 != t2) {
+                if (typeof (t1) == "string" && typeof (t2) == "string") {
+                    return this.typeMismatch(n, t1, t2);
+                }
+            }
             return "boolean";
         }
         else if (token.length > 1) {
             return "string";
         }
         else {
-            return "id";
+            return this.typeOfId(n, used);
         }
     };
     SemanticAnalyzer.prototype.typeOfId = function (n, used) {
@@ -233,6 +235,7 @@ var SemanticAnalyzer = /** @class */ (function () {
                 //be in a context that indicates it's being used
                 if (used) {
                     current.usedStashed(id);
+                    this.warnIfNotInitialized(n);
                 }
                 return current.stash[id].type;
             }

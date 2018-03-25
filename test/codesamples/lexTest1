@@ -1,3 +1,13 @@
 {
- print("abc")
-}
+    int a
+    a = 4
+    boolean b
+    b = true
+    boolean c
+    string d
+    d = "there is no spoon"
+    c = (d != "there is a spoon")
+    if(c == (false != (b == (true == (a == 3+1))))) {
+        print((b != d))
+    }
+}$

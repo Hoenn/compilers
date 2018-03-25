@@ -68,14 +68,11 @@ export class SemanticAnalyzer {
         for(let i = 0; i < n.children.length; i++) {
             err = this.analyzeNext(n.children[i]);
             if(err) {
-                break;
+                return err;
             }
         }
-        if(!err) {
-            this.emit("Moving current Scope up one level")
-            this.st.moveCurrentUp();
-        }
-        return err;
+        this.emit("Moving current Scope up one level")
+        this.st.moveCurrentUp();
     }
     analyzeVarDecl(n: Node):Alert | undefined {
         this.emit("Analyzing VarDecl");
@@ -95,15 +92,11 @@ export class SemanticAnalyzer {
         this.emit("Analyzing Print");
         //Type checking will throw errors about undeclared variables within
         //any Expr
-        let type = this.typeOf(n.children[0].name);
-        if(type == "id"){
-            let temp = this.typeOfId(n.children[0], true);
-            if(typeof(temp) == "string"){
-                type = temp;
-            } else {
-                return temp;
-            }
+        let type = this.typeOf(n.children[0], false);
+        if(typeof(type) != "string"){
+            return type;
         }
+        
         let err = this.typeCheck(n.children[0], type, true)
         if(err) {
             this.emit("Found type mismatch");
@@ -140,7 +133,7 @@ export class SemanticAnalyzer {
             this.emit("Found type mismatch");
             return err;
         }
-        this.analyzeBlock(n.children[1]);
+        err = this.analyzeBlock(n.children[1]);
         return err;
 
     }
@@ -152,7 +145,7 @@ export class SemanticAnalyzer {
             this.emit("Found type mismatch");
             return err;
         }
-        this.analyzeBlock(n.children[1]);
+        err = this.analyzeBlock(n.children[1]);
         return err;
     }
     /**
@@ -169,7 +162,7 @@ export class SemanticAnalyzer {
             //[a-z]: id of some type
             //If types do match, return undefined, if not return an error indicating
             //the expected and actual types
-            let actual = this.typeOf(n.name);
+            let actual = this.typeOf(n, used);
             if(actual == "int"){
                 return (expected == "int" ? undefined : this.typeMismatch(n, expected, "int"));
             } else if(actual == "boolean") {
@@ -201,24 +194,36 @@ export class SemanticAnalyzer {
                 }
                 err = this.typeCheck(n.children[1], "int", used);
             } else { // == !=
-                err = this.typeCheck(n.children[0], "boolean", used);
-                if(err) {
-                    return err;
+                let type = this.typeOf(n.children[0], used);
+                if(typeof(type) != "string") {
+                    return type;
                 }
-                err = this.typeCheck(n.children[1], "boolean", used);
+                err = this.typeCheck(n.children[1], type, used);
             }
                 return err;
         }
     }
-    typeOf(token: string) :string {
+    typeOf(n: Node, used: boolean) :string | Alert {
+        let token = n.name
         if(parseInt(token) || token=="+"){
             return "int";
-        } else if(token =="true" || token == "false"|| token == "==" || token == "!=") {
+        } else if(token =="true" || token == "false") {
             return "boolean";
+        } else if(token == "==" || token =="!=") {
+            let t1 = this.typeOf(n.children[0], used);
+            let t2 = this.typeOf(n.children[1], used);
+            if(t1 != t2){
+                if(typeof(t1) == "string" && typeof(t2) == "string"){
+                    return this.typeMismatch(n, t1, t2);
+                }
+            }
+            return "boolean";
+
+            
         } else if(token.length > 1) {
             return "string";
         } else {
-            return "id";
+            return this.typeOfId(n, used);
         }
     }
     typeOfId(n: Node, used: boolean): string|Alert {
@@ -230,6 +235,7 @@ export class SemanticAnalyzer {
                 //be in a context that indicates it's being used
                 if(used){
                     current.usedStashed(id);
+                    this.warnIfNotInitialized(n);
                 }
                 return current.stash[id].type;
             }

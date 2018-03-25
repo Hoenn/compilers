@@ -160,6 +160,18 @@ const tests = [
         "describe": "Type mismatch within child scope of While in a print",
         "warnings": [], //Ignore warnings
         "error": typeMismatch(1, "boolean", "string")
+    },
+    {
+        "test": '{int a print((a == "a"))}$',
+        "describe": "Type mismatch on comparison with id and 1 letter string",
+        "warnings": [], //Ignore warnings
+        "error": typeMismatch(1, "int", "string")
+    },
+    {
+        "test": '{ if (true == "true"){}}$',
+        "describe": "Type mismatch within If BoolExp bool literal and 'true'",
+        "warnings": [],
+        "error": typeMismatch(1, "boolean", "string")
     }
 ]
 

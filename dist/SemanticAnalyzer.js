@@ -203,7 +203,10 @@ var SemanticAnalyzer = /** @class */ (function () {
     };
     SemanticAnalyzer.prototype.typeOf = function (n, used) {
         var token = n.name;
-        if (parseInt(token) || token == "+") {
+        if (n.isString) {
+            return "string";
+        }
+        else if (parseInt(token) || token == "+") {
             return "int";
         }
         else if (token == "true" || token == "false") {
@@ -218,9 +221,6 @@ var SemanticAnalyzer = /** @class */ (function () {
                 }
             }
             return "boolean";
-        }
-        else if (token.length > 1) {
-            return "string";
         }
         else {
             return this.typeOfId(n, used);

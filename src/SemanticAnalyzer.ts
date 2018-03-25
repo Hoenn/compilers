@@ -205,7 +205,10 @@ export class SemanticAnalyzer {
     }
     typeOf(n: Node, used: boolean) :string | Alert {
         let token = n.name
-        if(parseInt(token) || token=="+"){
+        if(n.isString) {
+            return "string";
+        }
+        else if(parseInt(token) || token=="+"){
             return "int";
         } else if(token =="true" || token == "false") {
             return "boolean";
@@ -218,10 +221,6 @@ export class SemanticAnalyzer {
                 }
             }
             return "boolean";
-
-            
-        } else if(token.length > 1) {
-            return "string";
         } else {
             return this.typeOfId(n, used);
         }

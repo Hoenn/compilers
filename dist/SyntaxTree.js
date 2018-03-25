@@ -52,11 +52,12 @@ var SyntaxTree = /** @class */ (function () {
 }());
 exports.SyntaxTree = SyntaxTree;
 var Node = /** @class */ (function () {
-    function Node(n, line) {
+    function Node(n, line, isString) {
         this.name = n;
         this.parent = null;
         this.children = [];
         (line ? this.lineNum = line : undefined);
+        (isString ? this.isString = isString : undefined);
     }
     Node.prototype.addChild = function (n) {
         this.children.push(n);

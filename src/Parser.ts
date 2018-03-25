@@ -367,7 +367,7 @@ export class Parser {
         if(err){
             return err;
         }
-        this.ast.addLeafNode(new Node(this.currentString, lineNum));
+        this.ast.addLeafNode(new Node(this.currentString, lineNum, true));
         this.cst.moveCurrentUp();
     }
     parseCharList(): Alert |undefined {

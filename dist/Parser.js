@@ -354,7 +354,7 @@ var Parser = /** @class */ (function () {
         if (err) {
             return err;
         }
-        this.ast.addLeafNode(new SyntaxTree_1.Node(this.currentString, lineNum));
+        this.ast.addLeafNode(new SyntaxTree_1.Node(this.currentString, lineNum, true));
         this.cst.moveCurrentUp();
     };
     Parser.prototype.parseCharList = function () {

@@ -817,8 +817,16 @@ var SemanticAnalyzer = /** @class */ (function () {
             }
             else {
                 var type = this.typeOf(n.children[0], used);
+                //There was an error
                 if (typeof (type) != "string") {
                     return type;
+                }
+                var type2 = this.typeOf(n.children[1], used);
+                if (typeof (type2) != "string") {
+                    return type2;
+                }
+                if (type != type2) {
+                    return this.typeMismatch(n, type, type2);
                 }
                 err = this.typeCheck(n.children[1], type, used);
             }

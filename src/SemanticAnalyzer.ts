@@ -195,12 +195,20 @@ export class SemanticAnalyzer {
                 err = this.typeCheck(n.children[1], "int", used);
             } else { // == !=
                 let type = this.typeOf(n.children[0], used);
+                //There was an error
                 if(typeof(type) != "string") {
                     return type;
                 }
+                let type2 = this.typeOf(n.children[1], used);
+                if(typeof(type2) != "string") {
+                    return type2;
+                }
+                if(type != type2) {
+                    return this.typeMismatch(n, type, type2);
+                }
                 err = this.typeCheck(n.children[1], type, used);
             }
-                return err;
+            return err;
         }
     }
     typeOf(n: Node, used: boolean) :string | Alert {

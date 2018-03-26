@@ -1,9 +1,7 @@
 {
-    int x
-    x = 0
-    {
-        int x
+    string x
+    x = "abc"
+    if (true == (x == 9 + 1)) {
         
     }
-   
-}$
+}

@@ -178,6 +178,12 @@ const tests = [
         "describe": "Assign int to 0 to ensure 0 doesn't catch a falsy if statement in type checker",
         "warnings": [], //Ignore warnings
         "error": undefined
+    },
+    {
+        "test": '{string x if(true == (x == 9 + 1)) {}}$',
+        "describe": "Compare a string and addition within nested boolean comparison",
+        "warnings":[], //Ignore warnings
+        "error": typeMismatch(1, "string", "int")
     }
 ]
 

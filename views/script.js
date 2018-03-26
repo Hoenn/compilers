@@ -2,6 +2,7 @@ var example  = require('./examples');
 const programs = example.programs;
 const LexerModule = require('../dist/Lexer.js');
 const ParserModule = require('../dist/Parser.js');
+const SemanticAnalysisModule = require('../dist/SemanticAnalyzer.js');
 var editor;
 window.onload = function() {
     setupAceEditor();
@@ -27,7 +28,6 @@ compileCode = function() {
     let start =  window.performance.now();
 
     let lexedPgms = lexPgms(pgms);
-    console.log(lexedPgms);
     //lexedPrograms :: [{t:Token[], e:{lvl:string, msg:string} | null} | null]
     for(let i = 0; i < lexedPgms.length; i++) {
         //Program number text
@@ -65,12 +65,12 @@ compileCode = function() {
         if(lexedPgms[i].e && lexedPgms[i].e.lvl == 'error') {
             $('#parser-text').append("<i>Skipping Program "+(i+1)+" with lexical error <br/></i>");
             $('#parser-text').append("<br/>");
-            parsedPgms.push("lex");
+            parsedPgms.push("lexical");
             continue;
         }
 
         let parser = new ParserModule.Parser(lexedPgms[i].t);
-        //result :: {log: string[], cst:SyntaxTree | undefined,
+        //result :: {log: string[], cst:SyntaxTree | undefined, ast: SyntaxTree | undefined
         //           st:[Symbol]|undefined, e:{lvl:string, msg:string} | null} 
         result = parser.parse();
         let log = result.log;
@@ -85,7 +85,7 @@ compileCode = function() {
             logError("parser", errorMsg);
             $("#tab-head-three").addClass(statusColor(err.lvl));
             parsedPgms.push("parse");
-            break;
+            continue;
         } else {
             applyFilter($("#compile-img"), 'default');
             parsedPgms.push(result)
@@ -111,6 +111,69 @@ compileCode = function() {
     time = window.performance.now()-start;
 
     logOutput("parser", "[PARSER] => Completed in: "+time.toFixed(2)+" ms\n");
+
+    //Semantic Analysis
+    let analysedPgms = [];
+    console.log(parsedPgms);
+    $("#log-text").append("\nStarting Semantic Analysis...\n");
+    start = window.performance.now();
+    for(let currPgm = 0; currPgm < parsedPgms.length; currPgm++) {
+        $('#semantic-text').append("<i>Analyzing Program "+(currPgm+1)+"\n</i>");
+        if(parsedPgms[currPgm] == "parse" || parsedPgms[currPgm] == "lexical") {
+            $('#semantic-text').append("<i>Skipping Program "+(currPgm+1)+
+                " with "+parsedPgms[currPgm]+" error <br/></i>");
+            $("#semantic-text").append("</br>");
+            analysedPgms.push(parsedPgms[currPgm]);
+            continue;
+        }
+        let semanticAnalyzer = new SemanticAnalysisModule.SemanticAnalyzer(parsedPgms[currPgm].ast);
+        //result :: {ast:SyntaxTree, st: SymbolTree, log: string[], warnings: Alert[], error: Alert|undefined}
+        result = semanticAnalyzer.analyze();
+        let log = result.log;
+        for(let i = 0; i < log.length; i++) {
+            let text = "[SEMANTIC] => "+log[i]+"\n";
+            tabOutput("semantic", text);
+        }
+        let err = result.error;
+        if(err) {
+            let errorMsg = errorSpan("LEXER", err);
+            logError("semantic", errorMsg);
+            $("#tab-head-four").addClass(statusColor(err.lvl));
+            analysedPgms.push("semantic");
+            continue;
+        } else {
+            applyFilter($("#compile-img"), 'default');
+            analysedPgms.push(result);
+        }
+        let ast = result.ast;
+        if(ast) {
+            let lines = ast.toString().split("\n");
+            tabOutput("semantic", "\n[SEMANTIC] => Abstract Syntax Tree\n");
+            for(let i = 0; i < lines.length-1; i++){
+                tabOutput("semantic", "[SEMANTIC] => "+lines[i].toString()+"\n");
+            }
+        }
+        let st = result.st;
+        if(st) {
+            let lines = st.toString().split("\n");
+            tabOutput("semantic", "\n[SEMANTIC] => Symbol Tree\n");
+            for(let i =0; i < lines.length-1; i++) {
+                tabOutput("semantic", "[SEMANTIC] => "+lines[i].toString()+"\n");
+            }
+        }
+        let warnings = result.warnings; 
+        if(warnings.length > 0) {
+            for(let i = 0; i < warnings.length; i ++) {
+                let warningMsg = errorSpan("SEMANTIC", warnings[i]);
+                logError("semantic", warningMsg);
+            }
+            //Just add color to tab head one time
+            $("#tab-head-four").addClass(statusColor(warnings[0].lvl));
+        }
+        tabOutput("semantic", "\n");
+    }
+    time = window.performance.now()-start;
+    logOutput("semantic", "[SEMANTIC] => Completed in: "+time.toFixed(2)+" ms\n");
     //Go back to editor when complete
     editor.focus();
 }
@@ -206,6 +269,11 @@ clearTabsAndErrors = function(){
     //Parser
     $("#parser-text").html("");
     $("#tab-head-three").removeClass( function(index, className) {
+        return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
+    });
+    //Semantic
+    $("#semantic-text").html("");
+    $("#tab-head-four").removeClass(function(index, className) {
         return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
     });
 }

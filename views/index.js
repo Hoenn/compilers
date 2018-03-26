@@ -177,7 +177,7 @@ var Lexer = /** @class */ (function () {
 }());
 exports.Lexer = Lexer;
 
-},{"./Alert":1,"./Token":6}],3:[function(require,module,exports){
+},{"./Alert":1,"./Token":8}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token_1 = require("./Token");
@@ -621,7 +621,310 @@ var Parser = /** @class */ (function () {
 }());
 exports.Parser = Parser;
 
-},{"./Alert":1,"./Symbol":4,"./SyntaxTree":5,"./Token":6}],4:[function(require,module,exports){
+},{"./Alert":1,"./Symbol":5,"./SyntaxTree":7,"./Token":8}],4:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var SymbolTree_1 = require("./SymbolTree");
+var Alert_1 = require("./Alert");
+var SemanticAnalyzer = /** @class */ (function () {
+    function SemanticAnalyzer(ast) {
+        this.ast = ast;
+        this.st = new SymbolTree_1.SymbolTree(new SymbolTree_1.ScopeNode());
+        this.log = [];
+        this.warnings = [];
+    }
+    SemanticAnalyzer.prototype.analyze = function () {
+        //Ensure current is set to root
+        this.ast.current = this.ast.root;
+        var err = this.analyzeNext(this.ast.root);
+        //Pass the symbol tree for unused variables
+        if (!err) {
+            this.emit("Checking for unused variables");
+            this.warnings = this.warnings.concat(this.checkForUnusedVariables(this.st.root));
+        }
+        return { ast: this.ast, st: this.st, log: this.log, warnings: this.warnings, error: err };
+    };
+    SemanticAnalyzer.prototype.analyzeNext = function (n) {
+        var err;
+        switch (n.name) {
+            case "Block": {
+                err = this.analyzeBlock(n);
+                break;
+            }
+            case "VarDecl": {
+                err = this.analyzeVarDecl(n);
+                break;
+            }
+            case "Print": {
+                err = this.analyzePrint(n);
+                break;
+            }
+            case "Assignment": {
+                err = this.analyzeAssignment(n);
+                break;
+            }
+            case "While": {
+                err = this.analyzeWhile(n);
+                break;
+            }
+            case "If": {
+                err = this.analyzeIf(n);
+                break;
+            }
+            default: {
+                //Should not reach here
+            }
+        }
+        return err;
+    };
+    SemanticAnalyzer.prototype.analyzeBlock = function (n) {
+        this.emit("Analyzing Block");
+        //Add new scope level
+        var err;
+        this.emit("Adding new scope level to SymbolTree");
+        this.st.addBranchNode(new SymbolTree_1.ScopeNode());
+        for (var i = 0; i < n.children.length; i++) {
+            err = this.analyzeNext(n.children[i]);
+            if (err) {
+                return err;
+            }
+        }
+        this.emit("Moving current Scope up one level");
+        this.st.moveCurrentUp();
+    };
+    SemanticAnalyzer.prototype.analyzeVarDecl = function (n) {
+        this.emit("Analyzing VarDecl");
+        var type = n.children[0].name;
+        var id = n.children[1].name;
+        var success = this.st.current.addStash(id, type, n.lineNum ? n.lineNum : -1);
+        var err;
+        if (!success) {
+            this.emit("Found redeclared variable in same scope");
+            err = Alert_1.error("Redeclared variable: " + id + " on line: " + n.lineNum);
+        }
+        this.emit("Adding " + id + " to current scope");
+        return err;
+    };
+    SemanticAnalyzer.prototype.analyzePrint = function (n) {
+        this.emit("Analyzing Print");
+        //Type checking will throw errors about undeclared variables within
+        //any Expr
+        var type = this.typeOf(n.children[0], false);
+        if (typeof (type) != "string") {
+            return type;
+        }
+        var err = this.typeCheck(n.children[0], type, true);
+        if (err) {
+            this.emit("Found type mismatch");
+        }
+        return err;
+    };
+    SemanticAnalyzer.prototype.analyzeAssignment = function (n) {
+        this.emit("Analyzing Assignment");
+        var id = n.children[0].name;
+        var type = this.typeOfId(n.children[0], false);
+        //type: string | Alert
+        if (typeof (type) == "string") {
+            this.emit("Initialized Variable " + id);
+            this.st.current.initStashed(id);
+        }
+        else {
+            return type;
+        }
+        var expr = n.children[1];
+        var err = this.typeCheck(expr, type, true);
+        if (err) {
+            this.emit("Found type mismatch");
+            return err;
+        }
+        else {
+            this.emit("Types match");
+        }
+        return err;
+    };
+    SemanticAnalyzer.prototype.analyzeWhile = function (n) {
+        this.emit("Analyzing While");
+        var boolExpr = n.children[0];
+        var err = this.typeCheck(boolExpr, "boolean", true);
+        if (err) {
+            this.emit("Found type mismatch");
+            return err;
+        }
+        err = this.analyzeBlock(n.children[1]);
+        return err;
+    };
+    SemanticAnalyzer.prototype.analyzeIf = function (n) {
+        this.emit("Analyzing If");
+        var boolExpr = n.children[0];
+        var err = this.typeCheck(boolExpr, "boolean", true);
+        if (err) {
+            this.emit("Found type mismatch");
+            return err;
+        }
+        err = this.analyzeBlock(n.children[1]);
+        return err;
+    };
+    /**
+     * @param n The node containing expression to be evaluated against
+     * @param expected The expected type of expression in n
+     * @param used A flag to mark n as used if it is an id
+     */
+    SemanticAnalyzer.prototype.typeCheck = function (n, expected, used) {
+        //Must be a terminal symbol
+        if (n.children.length == 0) {
+            //0-9: int
+            //true || false: boolean
+            //[a-z] length >1 : string
+            //[a-z]: id of some type
+            //If types do match, return undefined, if not return an error indicating
+            //the expected and actual types
+            var actual = this.typeOf(n, used);
+            if (actual == "int") {
+                return (expected == "int" ? undefined : this.typeMismatch(n, expected, "int"));
+            }
+            else if (actual == "boolean") {
+                return (expected == "boolean" ? undefined : this.typeMismatch(n, expected, "boolean"));
+            }
+            else if (actual == "string") {
+                return (expected == "string" ? undefined : this.typeMismatch(n, expected, "string"));
+            }
+            else {
+                //Must be id
+                var idType = this.typeOfId(n, used);
+                //idType:string|Alert
+                if (typeof (idType) == "string") {
+                    this.warnIfNotInitialized(n);
+                    return (expected == idType ? undefined : this.typeMismatch(n, expected, idType));
+                }
+                else {
+                    this.emit("Found undeclared variable");
+                    return Alert_1.error("Undeclared variable: " + n.name + " on line: " + n.lineNum);
+                }
+            }
+        }
+        else {
+            //If only valid non terminals (branches) in AST 
+            //are IntOp and BoolOp nodes, their children must
+            //match in type completely so we no longer need
+            //the original type parameter
+            var err = void 0;
+            if (n.name == "+") {
+                err = this.typeCheck(n.children[0], "int", used);
+                if (err) {
+                    return err;
+                }
+                err = this.typeCheck(n.children[1], "int", used);
+            }
+            else {
+                var type = this.typeOf(n.children[0], used);
+                if (typeof (type) != "string") {
+                    return type;
+                }
+                err = this.typeCheck(n.children[1], type, used);
+            }
+            return err;
+        }
+    };
+    SemanticAnalyzer.prototype.typeOf = function (n, used) {
+        var token = n.name;
+        if (n.isString) {
+            return "string";
+        }
+        else if (!isNaN(parseInt(token)) || token == "+") {
+            return "int";
+        }
+        else if (token == "true" || token == "false") {
+            return "boolean";
+        }
+        else if (token == "==" || token == "!=") {
+            var t1 = this.typeOf(n.children[0], used);
+            var t2 = this.typeOf(n.children[1], used);
+            if (t1 != t2) {
+                if (typeof (t1) == "string" && typeof (t2) == "string") {
+                    return this.typeMismatch(n, t1, t2);
+                }
+            }
+            return "boolean";
+        }
+        else {
+            return this.typeOfId(n, used);
+        }
+    };
+    SemanticAnalyzer.prototype.typeOfId = function (n, used) {
+        var id = n.name;
+        var current = this.st.current;
+        while (current != null) {
+            if (current.stash[id]) {
+                //If checking the type of some variable, it must
+                //be in a context that indicates it's being used
+                if (used) {
+                    current.usedStashed(id);
+                    this.warnIfNotInitialized(n);
+                }
+                return current.stash[id].type;
+            }
+            current = current.parent;
+        }
+        //If we dont find the variable up the SymbolTree
+        //Undeclared variable error
+        return Alert_1.error("Undeclared variable: " + n.name + " on line: " + n.lineNum);
+    };
+    SemanticAnalyzer.prototype.analyzeExpr = function (n) {
+        //Likely not needed
+    };
+    SemanticAnalyzer.prototype.emit = function (s) {
+        this.log.push(s);
+    };
+    SemanticAnalyzer.prototype.typeMismatch = function (n, expected, actual) {
+        //Add line num to nodes
+        return Alert_1.error("Type mismatch on line: " + n.lineNum + " expected: " + expected + " but got: " + actual);
+    };
+    //Adds a warning for use of uninitialized variable
+    SemanticAnalyzer.prototype.warnIfNotInitialized = function (n) {
+        var id = n.name;
+        var current = this.st.current;
+        while (current != null) {
+            if (current.stash[id] && !current.stash[id].init) {
+                this.warnings.push(Alert_1.warning("Use of uninitialized variable: " + n.name + " on line: " + n.lineNum));
+                return;
+            }
+            current = current.parent;
+        }
+    };
+    SemanticAnalyzer.prototype.checkForUnusedVariables = function (n) {
+        var _this = this;
+        var unused = [];
+        var traverse = function (node) {
+            unused = unused.concat(_this.checkForUnusedVariablesHelper(node));
+            if (node.children.length > 0) {
+                for (var i = 0; i < node.children.length; i++) {
+                    traverse(node.children[i]);
+                }
+            }
+        };
+        traverse(n);
+        return unused;
+    };
+    SemanticAnalyzer.prototype.checkForUnusedVariablesHelper = function (n) {
+        var arr = [];
+        //Check current scope node
+        for (var id in n.stash) {
+            if (!n.stash[id].used) {
+                if (n.stash[id].init) {
+                    arr.push(Alert_1.warning("Initialized but unused variable: " + n.stashEntryToString(id)));
+                }
+                else {
+                    arr.push(Alert_1.warning("Unused variable: " + n.stashEntryToString(id)));
+                }
+            }
+        }
+        return arr;
+    };
+    return SemanticAnalyzer;
+}());
+exports.SemanticAnalyzer = SemanticAnalyzer;
+
+},{"./Alert":1,"./SymbolTree":6}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Symbol = /** @class */ (function () {
@@ -637,7 +940,101 @@ var Symbol = /** @class */ (function () {
 }());
 exports.Symbol = Symbol;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var SymbolTree = /** @class */ (function () {
+    function SymbolTree(n) {
+        this.root = n;
+        this.current = this.root;
+    }
+    SymbolTree.prototype.addBranchNode = function (n) {
+        //Maybe refactor to construct a node here
+        //Set the parent of new Node
+        n.parent = this.current;
+        //Add new node to current child list
+        this.current.addChild(n);
+        //Update current to new node
+        this.current = n;
+    };
+    SymbolTree.prototype.addLeafNode = function (n) {
+        n.parent = this.current;
+        this.current.addChild(n);
+    };
+    SymbolTree.prototype.moveCurrentUp = function () {
+        //If it has a parent move it up
+        if (this.current.parent) {
+            this.current = this.current.parent;
+        }
+    };
+    SymbolTree.prototype.toString = function () {
+        var result = "";
+        function expand(node, depth) {
+            for (var id in node.stash) {
+                //Indent in
+                for (var i = 0; i < depth; i++) {
+                    result += "-";
+                }
+                result += " ";
+                var v = node.stash[id];
+                result += id + " type: " + v.type + " line: " + v.line + "\n";
+            }
+            if (node.children.length !== 0) {
+                for (var i = 0; i < node.children.length; i++) {
+                    expand(node.children[i], depth + 1);
+                }
+            }
+        }
+        expand(this.root, 0);
+        return result;
+    };
+    return SymbolTree;
+}());
+exports.SymbolTree = SymbolTree;
+var ScopeNode = /** @class */ (function () {
+    function ScopeNode() {
+        this.stash = {};
+        this.children = [];
+        this.parent = null;
+    }
+    ScopeNode.prototype.addChild = function (n) {
+        this.children.push(n);
+    };
+    ScopeNode.prototype.addStash = function (id, t, l) {
+        if (this.stash[id]) {
+            //Collision
+            return false;
+        }
+        else {
+            this.stash[id] = { "type": t, "line": l, "init": false, "used": false };
+            return true;
+        }
+    };
+    ScopeNode.prototype.stashEntryToString = function (id) {
+        var entry = this.stash[id];
+        if (!entry)
+            return "";
+        return entry.type + " " + id + " on line: " + entry.line;
+    };
+    ScopeNode.prototype.initStashed = function (id) {
+        var entry = this.stash[id];
+        if (!entry)
+            return false;
+        entry.init = true;
+        return true;
+    };
+    ScopeNode.prototype.usedStashed = function (id) {
+        var entry = this.stash[id];
+        if (!entry)
+            return false;
+        entry.used = true;
+        return true;
+    };
+    return ScopeNode;
+}());
+exports.ScopeNode = ScopeNode;
+
+},{}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var SyntaxTree = /** @class */ (function () {
@@ -706,7 +1103,7 @@ var Node = /** @class */ (function () {
 }());
 exports.Node = Node;
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Token = /** @class */ (function () {
@@ -776,7 +1173,7 @@ exports.TokenRegex = {
     IntOp: new RegExp(/(\+)/)
 };
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 const programs = [
 {
     "name": "Example",
@@ -924,11 +1321,12 @@ module.exports = {
     programs: programs
 }
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var example  = require('./examples');
 const programs = example.programs;
 const LexerModule = require('../dist/Lexer.js');
 const ParserModule = require('../dist/Parser.js');
+const SemanticAnalysisModule = require('../dist/SemanticAnalyzer.js');
 var editor;
 window.onload = function() {
     setupAceEditor();
@@ -954,7 +1352,6 @@ compileCode = function() {
     let start =  window.performance.now();
 
     let lexedPgms = lexPgms(pgms);
-    console.log(lexedPgms);
     //lexedPrograms :: [{t:Token[], e:{lvl:string, msg:string} | null} | null]
     for(let i = 0; i < lexedPgms.length; i++) {
         //Program number text
@@ -992,12 +1389,12 @@ compileCode = function() {
         if(lexedPgms[i].e && lexedPgms[i].e.lvl == 'error') {
             $('#parser-text').append("<i>Skipping Program "+(i+1)+" with lexical error <br/></i>");
             $('#parser-text').append("<br/>");
-            parsedPgms.push("lex");
+            parsedPgms.push("lexical");
             continue;
         }
 
         let parser = new ParserModule.Parser(lexedPgms[i].t);
-        //result :: {log: string[], cst:SyntaxTree | undefined,
+        //result :: {log: string[], cst:SyntaxTree | undefined, ast: SyntaxTree | undefined
         //           st:[Symbol]|undefined, e:{lvl:string, msg:string} | null} 
         result = parser.parse();
         let log = result.log;
@@ -1012,7 +1409,7 @@ compileCode = function() {
             logError("parser", errorMsg);
             $("#tab-head-three").addClass(statusColor(err.lvl));
             parsedPgms.push("parse");
-            break;
+            continue;
         } else {
             applyFilter($("#compile-img"), 'default');
             parsedPgms.push(result)
@@ -1038,6 +1435,69 @@ compileCode = function() {
     time = window.performance.now()-start;
 
     logOutput("parser", "[PARSER] => Completed in: "+time.toFixed(2)+" ms\n");
+
+    //Semantic Analysis
+    let analysedPgms = [];
+    console.log(parsedPgms);
+    $("#log-text").append("\nStarting Semantic Analysis...\n");
+    start = window.performance.now();
+    for(let currPgm = 0; currPgm < parsedPgms.length; currPgm++) {
+        $('#semantic-text').append("<i>Analyzing Program "+(currPgm+1)+"\n</i>");
+        if(parsedPgms[currPgm] == "parse" || parsedPgms[currPgm] == "lexical") {
+            $('#semantic-text').append("<i>Skipping Program "+(currPgm+1)+
+                " with "+parsedPgms[currPgm]+" error <br/></i>");
+            $("#semantic-text").append("</br>");
+            analysedPgms.push(parsedPgms[currPgm]);
+            continue;
+        }
+        let semanticAnalyzer = new SemanticAnalysisModule.SemanticAnalyzer(parsedPgms[currPgm].ast);
+        //result :: {ast:SyntaxTree, st: SymbolTree, log: string[], warnings: Alert[], error: Alert|undefined}
+        result = semanticAnalyzer.analyze();
+        let log = result.log;
+        for(let i = 0; i < log.length; i++) {
+            let text = "[SEMANTIC] => "+log[i]+"\n";
+            tabOutput("semantic", text);
+        }
+        let err = result.error;
+        if(err) {
+            let errorMsg = errorSpan("LEXER", err);
+            logError("semantic", errorMsg);
+            $("#tab-head-four").addClass(statusColor(err.lvl));
+            analysedPgms.push("semantic");
+            continue;
+        } else {
+            applyFilter($("#compile-img"), 'default');
+            analysedPgms.push(result);
+        }
+        let ast = result.ast;
+        if(ast) {
+            let lines = ast.toString().split("\n");
+            tabOutput("semantic", "\n[SEMANTIC] => Abstract Syntax Tree\n");
+            for(let i = 0; i < lines.length-1; i++){
+                tabOutput("semantic", "[SEMANTIC] => "+lines[i].toString()+"\n");
+            }
+        }
+        let st = result.st;
+        if(st) {
+            let lines = st.toString().split("\n");
+            tabOutput("semantic", "\n[SEMANTIC] => Symbol Tree\n");
+            for(let i =0; i < lines.length-1; i++) {
+                tabOutput("semantic", "[SEMANTIC] => "+lines[i].toString()+"\n");
+            }
+        }
+        let warnings = result.warnings; 
+        if(warnings.length > 0) {
+            for(let i = 0; i < warnings.length; i ++) {
+                let warningMsg = errorSpan("SEMANTIC", warnings[i]);
+                logError("semantic", warningMsg);
+            }
+            //Just add color to tab head one time
+            $("#tab-head-four").addClass(statusColor(warnings[0].lvl));
+        }
+        tabOutput("semantic", "\n");
+    }
+    time = window.performance.now()-start;
+    logOutput("semantic", "[SEMANTIC] => Completed in: "+time.toFixed(2)+" ms\n");
     //Go back to editor when complete
     editor.focus();
 }
@@ -1135,6 +1595,11 @@ clearTabsAndErrors = function(){
     $("#tab-head-three").removeClass( function(index, className) {
         return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
     });
+    //Semantic
+    $("#semantic-text").html("");
+    $("#tab-head-four").removeClass(function(index, className) {
+        return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
+    });
 }
 
 loadProgram = function(index) {
@@ -1202,4 +1667,4 @@ setupProgramList = function() {
 
 }
 
-},{"../dist/Lexer.js":2,"../dist/Parser.js":3,"./examples":7}]},{},[8]);
+},{"../dist/Lexer.js":2,"../dist/Parser.js":3,"../dist/SemanticAnalyzer.js":4,"./examples":9}]},{},[10]);

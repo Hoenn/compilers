@@ -277,7 +277,7 @@ var Parser = /** @class */ (function () {
         //If this is an addition expression, add the plus
         //node so that Digit terminals will be children
         if (this.tokens[1].kind == Token_1.TokenType.IntOp) {
-            this.addASTBranch("+", this.tokens[0].lineNum);
+            this.addASTBranch("Plus", this.tokens[0].lineNum);
         }
         var err = this.consume([Token_1.TokenRegex.Digit], "Digit", true);
         if (err) {
@@ -303,7 +303,9 @@ var Parser = /** @class */ (function () {
         var err;
         var nToken = this.tokens[0];
         if (nToken.kind == Token_1.TokenType.LParen) {
-            this.addASTBranch("==", nToken.lineNum);
+            //Replace the name of this node once it has been evaluated
+            this.addASTBranch("?", nToken.lineNum);
+            var boolOpNode = this.ast.current;
             err = this.consume(["[(]"], Token_1.TokenType.LParen);
             if (err) {
                 return err;
@@ -311,6 +313,12 @@ var Parser = /** @class */ (function () {
             err = this.parseExpr();
             if (err) {
                 return err;
+            }
+            if (this.tokens[0].value == "==") {
+                boolOpNode.name = "EqualTo";
+            }
+            else {
+                boolOpNode.name = "NotEqualTo";
             }
             err = this.consume([Token_1.TokenRegex.BoolOp], "boolean operation");
             if (err) {

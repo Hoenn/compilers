@@ -185,7 +185,7 @@ var SemanticAnalyzer = /** @class */ (function () {
             //match in type completely so we no longer need
             //the original type parameter
             var err = void 0;
-            if (n.name == "+") {
+            if (n.name == "Plus") {
                 err = this.typeCheck(n.children[0], "int", used);
                 if (err) {
                     return err;
@@ -215,13 +215,13 @@ var SemanticAnalyzer = /** @class */ (function () {
         if (n.isString) {
             return "string";
         }
-        else if (!isNaN(parseInt(token)) || token == "+") {
+        else if (!isNaN(parseInt(token)) || token == "Plus") {
             return "int";
         }
         else if (token == "true" || token == "false") {
             return "boolean";
         }
-        else if (token == "==" || token == "!=") {
+        else if (token == "EqualTo" || token == "NotEqualTo") {
             var t1 = this.typeOf(n.children[0], used);
             var t2 = this.typeOf(n.children[1], used);
             if (t1 != t2) {

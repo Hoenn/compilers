@@ -457,7 +457,7 @@ var Parser = /** @class */ (function () {
         //If this is an addition expression, add the plus
         //node so that Digit terminals will be children
         if (this.tokens[1].kind == Token_1.TokenType.IntOp) {
-            this.addASTBranch("+", this.tokens[0].lineNum);
+            this.addASTBranch("Plus", this.tokens[0].lineNum);
         }
         var err = this.consume([Token_1.TokenRegex.Digit], "Digit", true);
         if (err) {
@@ -483,7 +483,9 @@ var Parser = /** @class */ (function () {
         var err;
         var nToken = this.tokens[0];
         if (nToken.kind == Token_1.TokenType.LParen) {
-            this.addASTBranch("==", nToken.lineNum);
+            //Replace the name of this node once it has been evaluated
+            this.addASTBranch("?", nToken.lineNum);
+            var boolOpNode = this.ast.current;
             err = this.consume(["[(]"], Token_1.TokenType.LParen);
             if (err) {
                 return err;
@@ -491,6 +493,12 @@ var Parser = /** @class */ (function () {
             err = this.parseExpr();
             if (err) {
                 return err;
+            }
+            if (this.tokens[0].value == "==") {
+                boolOpNode.name = "EqualTo";
+            }
+            else {
+                boolOpNode.name = "NotEqualTo";
             }
             err = this.consume([Token_1.TokenRegex.BoolOp], "boolean operation");
             if (err) {
@@ -809,7 +817,7 @@ var SemanticAnalyzer = /** @class */ (function () {
             //match in type completely so we no longer need
             //the original type parameter
             var err = void 0;
-            if (n.name == "+") {
+            if (n.name == "Plus") {
                 err = this.typeCheck(n.children[0], "int", used);
                 if (err) {
                     return err;
@@ -839,13 +847,13 @@ var SemanticAnalyzer = /** @class */ (function () {
         if (n.isString) {
             return "string";
         }
-        else if (!isNaN(parseInt(token)) || token == "+") {
+        else if (!isNaN(parseInt(token)) || token == "Plus") {
             return "int";
         }
         else if (token == "true" || token == "false") {
             return "boolean";
         }
-        else if (token == "==" || token == "!=") {
+        else if (token == "EqualTo" || token == "NotEqualTo") {
             var t1 = this.typeOf(n.children[0], used);
             var t2 = this.typeOf(n.children[1], used);
             if (t1 != t2) {

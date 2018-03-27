@@ -27,23 +27,31 @@ export class SymbolTree {
     toString() : string {
         let result = "";
         function expand(node: ScopeNode, depth: number) {
+            for(let i=0; i < depth; i++) {
+                result+=" ";
+            }
+            result+="+\n"
             for(let id in node.stash) {
                 //Indent in
                 for(let i = 0; i < depth; i++){
-                    result+="-";
+                    result+=" ";
                 }
-                result+= " ";
+                result+= "| ";
                 let v = node.stash[id];
                 result += id+" type: "+v.type+" line: "+v.line+"\n";
             }
             if(node.children.length !== 0){
                 for(let i = 0; i < node.children.length; i ++){
                     expand(node.children[i], depth+1);
+
                 }
             }
         }
         expand(this.root, 0);
         return result;
+    }
+    clean() {
+        this.root = this.root.children[0];
     }
 }
 export class ScopeNode {

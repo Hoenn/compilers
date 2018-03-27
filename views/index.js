@@ -642,6 +642,7 @@ var SemanticAnalyzer = /** @class */ (function () {
             this.emit("Checking for unused variables");
             this.warnings = this.warnings.concat(this.checkForUnusedVariables(this.st.root));
         }
+        this.st.clean();
         return { ast: this.ast, st: this.st, log: this.log, warnings: this.warnings, error: err };
     };
     SemanticAnalyzer.prototype.analyzeNext = function (n) {
@@ -978,12 +979,16 @@ var SymbolTree = /** @class */ (function () {
     SymbolTree.prototype.toString = function () {
         var result = "";
         function expand(node, depth) {
+            for (var i = 0; i < depth; i++) {
+                result += " ";
+            }
+            result += "+\n";
             for (var id in node.stash) {
                 //Indent in
                 for (var i = 0; i < depth; i++) {
-                    result += "-";
+                    result += " ";
                 }
-                result += " ";
+                result += "| ";
                 var v = node.stash[id];
                 result += id + " type: " + v.type + " line: " + v.line + "\n";
             }
@@ -995,6 +1000,9 @@ var SymbolTree = /** @class */ (function () {
         }
         expand(this.root, 0);
         return result;
+    };
+    SymbolTree.prototype.clean = function () {
+        this.root = this.root.children[0];
     };
     return SymbolTree;
 }());

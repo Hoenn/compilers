@@ -1,7 +1,8 @@
+/*Full Grammar*/
 {
-    string x
-    x = "abc"
-    if (true == (x == 9 + 1)) {
+    int x
+    int y
+    while (x != y) {
         
     }
-}
+}$

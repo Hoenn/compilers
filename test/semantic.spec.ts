@@ -126,6 +126,12 @@ const tests = [
         "error": undefined
     },
     {
+        "test": "{int x int y while( x!= y) {} }$",
+        "describe": "Types match While BoolExp with two int variables",
+        "warnings": [], //Ignore warnings
+        "error": undefined
+    },
+    {
         "test": "{int x boolean y if(x != y){}}$",
         "describe": "Type mismatch If BoolExp with two variables",
         "warnings": [], //Ignore warnings
@@ -180,7 +186,7 @@ const tests = [
         "error": undefined
     },
     {
-        "test": '{string x if(true == (x == 9 + 1)) {}}$',
+        "test": '{string x if(true != (x == 9 + 1)) {}}$',
         "describe": "Compare a string and addition within nested boolean comparison",
         "warnings":[], //Ignore warnings
         "error": typeMismatch(1, "string", "int")
@@ -194,7 +200,8 @@ tests.forEach(function(test) {
         let parse = P.parse();
         let SA = new SemanticAnalyzer(parse.ast);
         let result = SA.analyze();
-        if(test.error) {
+        console.log(result.error);
+        if(result.error) {
             it('Should report: '+test.error.lvl+': '+test.error.msg, () => {
                 expect(result.error).to.deep.equal(test.error);
             });

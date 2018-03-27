@@ -18,6 +18,7 @@ var SemanticAnalyzer = /** @class */ (function () {
             this.emit("Checking for unused variables");
             this.warnings = this.warnings.concat(this.checkForUnusedVariables(this.st.root));
         }
+        this.st.clean();
         return { ast: this.ast, st: this.st, log: this.log, warnings: this.warnings, error: err };
     };
     SemanticAnalyzer.prototype.analyzeNext = function (n) {

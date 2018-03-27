@@ -147,7 +147,7 @@ const tests = [
         "test": "{int x print(1 + 2 +3 +x)}$",
         "describe": "Types match in nested addition print",
         "warnings": [warning("Use of uninitialized variable: x on line: 1")],
-        "error": undefined
+        "error": undefined 
     },
     {
         "test": '{string x x ="abc" print(1 + 2 + 3 + x)}$',
@@ -200,8 +200,7 @@ tests.forEach(function(test) {
         let parse = P.parse();
         let SA = new SemanticAnalyzer(parse.ast);
         let result = SA.analyze();
-        console.log(result.error);
-        if(result.error) {
+        if(test.error || result.error) {
             it('Should report: '+test.error.lvl+': '+test.error.msg, () => {
                 expect(result.error).to.deep.equal(test.error);
             });

@@ -1484,7 +1484,7 @@ compileCode = function() {
         }
         let err = result.error;
         if(err) {
-            let errorMsg = errorSpan("LEXER", err);
+            let errorMsg = errorSpan("SEMANTIC", err);
             logError("semantic", errorMsg);
             $("#tab-head-four").addClass(statusColor(err.lvl));
             analysedPgms.push("semantic");

@@ -1,6 +1,10 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+function isAlert(a) {
+    return a.lvl !== undefined;
+}
+exports.isAlert = isAlert;
 function error(errMsg, lineNum) {
     return { lvl: "error", msg: errMsg + (lineNum ? " on line " + lineNum : "") };
 }
@@ -719,7 +723,7 @@ var SemanticAnalyzer = /** @class */ (function () {
         //Type checking will throw errors about undeclared variables within
         //any Expr
         var type = this.typeOf(n.children[0], false);
-        if (typeof (type) != "string") {
+        if (Alert_1.isAlert(type)) {
             return type;
         }
         var err = this.typeCheck(n.children[0], type, true);
@@ -733,13 +737,11 @@ var SemanticAnalyzer = /** @class */ (function () {
         var id = n.children[0].name;
         var type = this.typeOfId(n.children[0], false);
         //type: string | Alert
-        if (typeof (type) == "string") {
-            this.emit("Initialized Variable " + id);
-            this.st.current.initStashed(id);
-        }
-        else {
+        if (Alert_1.isAlert(type)) {
             return type;
         }
+        this.emit("Initialized Variable " + id);
+        this.st.current.initStashed(id);
         var expr = n.children[1];
         var err = this.typeCheck(expr, type, true);
         if (err) {
@@ -801,14 +803,12 @@ var SemanticAnalyzer = /** @class */ (function () {
                 //Must be id
                 var idType = this.typeOfId(n, used);
                 //idType:string|Alert
-                if (typeof (idType) == "string") {
-                    this.warnIfNotInitialized(n);
-                    return (expected == idType ? undefined : this.typeMismatch(n, expected, idType));
-                }
-                else {
+                if (Alert_1.isAlert(idType)) {
                     this.emit("Found undeclared variable");
                     return Alert_1.error("Undeclared variable: " + n.name + " on line: " + n.lineNum);
                 }
+                this.warnIfNotInitialized(n);
+                return (expected == idType ? undefined : this.typeMismatch(n, expected, idType));
             }
         }
         else {
@@ -827,11 +827,11 @@ var SemanticAnalyzer = /** @class */ (function () {
             else {
                 var type = this.typeOf(n.children[0], used);
                 //There was an error
-                if (typeof (type) != "string") {
+                if (Alert_1.isAlert(type)) {
                     return type;
                 }
                 var type2 = this.typeOf(n.children[1], used);
-                if (typeof (type2) != "string") {
+                if (Alert_1.isAlert(type2)) {
                     return type2;
                 }
                 if (type != type2) {
@@ -855,11 +855,15 @@ var SemanticAnalyzer = /** @class */ (function () {
         }
         else if (token == "EqualTo" || token == "NotEqualTo") {
             var t1 = this.typeOf(n.children[0], used);
+            if (Alert_1.isAlert(t1)) {
+                return t1;
+            }
             var t2 = this.typeOf(n.children[1], used);
+            if (Alert_1.isAlert(t2)) {
+                return t2;
+            }
             if (t1 != t2) {
-                if (typeof (t1) == "string" && typeof (t2) == "string") {
-                    return this.typeMismatch(n, t1, t2);
-                }
+                return this.typeMismatch(n, t1, t2);
             }
             return "boolean";
         }
@@ -1571,7 +1575,7 @@ const filters = {
     "default": "hue-rotate(0deg)"
 }
 applyFilter = function(element, color) {
-    $(element).css("filter", randomFilter()).delay(750).queue(function(next) {
+    $(element).css("filter", randomFilter()).delay(250).queue(function(next) {
             $(this).css("filter", filters[color]);
             next();
     });

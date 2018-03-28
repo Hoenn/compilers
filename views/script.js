@@ -223,7 +223,7 @@ const filters = {
     "default": "hue-rotate(0deg)"
 }
 applyFilter = function(element, color) {
-    $(element).css("filter", randomFilter()).delay(750).queue(function(next) {
+    $(element).css("filter", randomFilter()).delay(250).queue(function(next) {
             $(this).css("filter", filters[color]);
             next();
     });

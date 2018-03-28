@@ -1,5 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+function isAlert(a) {
+    return a.lvl !== undefined;
+}
+exports.isAlert = isAlert;
 function error(errMsg, lineNum) {
     return { lvl: "error", msg: errMsg + (lineNum ? " on line " + lineNum : "") };
 }

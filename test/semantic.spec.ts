@@ -180,7 +180,7 @@ const tests = [
         "error": typeMismatch(1, "boolean", "string")
     },
     {
-        "test": '{int x x = 0}$',
+        "test": '{int x x= 0}$',
         "describe": "Assign int to 0 to ensure 0 doesn't catch a falsy if statement in type checker",
         "warnings": [], //Ignore warnings
         "error": undefined
@@ -201,9 +201,19 @@ tests.forEach(function(test) {
         let SA = new SemanticAnalyzer(parse.ast);
         let result = SA.analyze();
         if(test.error || result.error) {
-            it('Should report: '+test.error.lvl+': '+test.error.msg, () => {
-                expect(result.error).to.deep.equal(test.error);
-            });
+            if(!test.error && result.error) {
+                it('Result reported: '+result.error.lvl+': '+result.error.msg,()=>{
+                   throw new Error("Resulting error undefined in test.error");
+                })
+            } else if(test.error && !result.error){
+                it('Did not report expected error '+test.error.lvl+": "+test.error.msg, () => {
+                    throw new Error("Error defined in test.error but not found in result")
+                })
+            } else {
+                it('Should report: '+test.error.lvl+': '+test.error.msg, () => {
+                    expect(result.error).to.deep.equal(test.error);
+                });
+            }
         } else {
             it('Should report: no errors', () => {
                 expect(result.error).to.deep.equal(undefined);

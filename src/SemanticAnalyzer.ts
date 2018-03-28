@@ -1,6 +1,6 @@
 import {SyntaxTree, Node} from "./SyntaxTree";
 import {SymbolTree, ScopeNode} from "./SymbolTree";
-import {Alert, error, warning} from "./Alert";
+import {Alert, isAlert, error, warning} from "./Alert";
 
 export class SemanticAnalyzer {
     ast: SyntaxTree;
@@ -94,7 +94,7 @@ export class SemanticAnalyzer {
         //Type checking will throw errors about undeclared variables within
         //any Expr
         let type = this.typeOf(n.children[0], false);
-        if(typeof(type) != "string"){
+        if(isAlert(type)){
             return type;
         }
         
@@ -109,13 +109,13 @@ export class SemanticAnalyzer {
         let id = n.children[0].name;
         let type = this.typeOfId(n.children[0], false);
         //type: string | Alert
-        if(typeof(type) == "string"){
-            this.emit("Initialized Variable " +id)
-            this.st.current.initStashed(id);
-        } else {
+        if(isAlert(type)){
             return type;
-        }
+        }  
      
+        this.emit("Initialized Variable " +id)
+        this.st.current.initStashed(id);
+
         let expr = n.children[1];
         let err = this.typeCheck(expr, type, true);
         if(err) {
@@ -174,13 +174,13 @@ export class SemanticAnalyzer {
                 //Must be id
                 let idType = this.typeOfId(n, used);
                 //idType:string|Alert
-                if(typeof(idType) == "string") {
-                    this.warnIfNotInitialized(n);
-                    return (expected == idType ? undefined : this.typeMismatch(n, expected, idType));
-                } else {
+                if(isAlert(idType)) {
                     this.emit("Found undeclared variable")
                     return error("Undeclared variable: "+n.name+" on line: "+n.lineNum);
                 }
+                this.warnIfNotInitialized(n);
+                return (expected == idType ? undefined : this.typeMismatch(n, expected, idType));
+                
             }
         } else {
             //If only valid non terminals (branches) in AST 
@@ -197,11 +197,11 @@ export class SemanticAnalyzer {
             } else { // == !=
                 let type = this.typeOf(n.children[0], used);
                 //There was an error
-                if(typeof(type) != "string") {
+                if(isAlert(type)) {
                     return type;
                 }
                 let type2 = this.typeOf(n.children[1], used);
-                if(typeof(type2) != "string") {
+                if(isAlert(type2)) {
                     return type2;
                 }
                 if(type != type2) {
@@ -223,11 +223,15 @@ export class SemanticAnalyzer {
             return "boolean";
         } else if(token == "EqualTo" || token =="NotEqualTo") {
             let t1 = this.typeOf(n.children[0], used);
+            if(isAlert(t1)){
+                return t1;
+            }
             let t2 = this.typeOf(n.children[1], used);
+            if(isAlert(t2)){
+                return t2;
+            }
             if(t1 != t2){
-                if(typeof(t1) == "string" && typeof(t2) == "string"){
-                    return this.typeMismatch(n, t1, t2);
-                }
+                return this.typeMismatch(n, t1, t2);
             }
             return "boolean";
         } else {

@@ -190,6 +190,18 @@ const tests = [
         "describe": "Compare a string and addition within nested boolean comparison",
         "warnings":[], //Ignore warnings
         "error": typeMismatch(1, "string", "int")
+    },
+    {
+        "test": '{int a string b b ="bee" { int b b = 1 a = b print(b) print(a) } print(b) }$',
+        "describe": "Initialize var in a child scope that was redeclared within same scope",
+        "warnings": [], //No warnings, important!
+        "error": undefined
+    },
+    {
+        "test": '{int a{ boolean b {string c {a = 5 b = false c = "inta"} print(c)}print(b)}print(a)}$',
+        "describe": "Initialize variables in lowest child scope, no warnings when used properly in upper scopes",
+        "warnings": [], //No warnings, important!
+        "error": undefined,
     }
 ]
 

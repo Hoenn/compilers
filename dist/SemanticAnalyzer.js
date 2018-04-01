@@ -105,7 +105,6 @@ var SemanticAnalyzer = /** @class */ (function () {
             return type;
         }
         this.emit("Initialized Variable " + id);
-        this.st.current.initStashed(id);
         this.initVariable(id);
         var expr = n.children[1];
         var err = this.typeCheck(expr, type, true);

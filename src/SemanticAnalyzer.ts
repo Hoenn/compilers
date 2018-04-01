@@ -114,7 +114,6 @@ export class SemanticAnalyzer {
         }  
      
         this.emit("Initialized Variable " +id)
-        this.st.current.initStashed(id);
         this.initVariable(id);
 
         let expr = n.children[1];

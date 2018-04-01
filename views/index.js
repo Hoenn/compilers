@@ -742,6 +742,7 @@ var SemanticAnalyzer = /** @class */ (function () {
         }
         this.emit("Initialized Variable " + id);
         this.st.current.initStashed(id);
+        this.initVariable(id);
         var expr = n.children[1];
         var err = this.typeCheck(expr, type, true);
         if (err) {
@@ -912,6 +913,16 @@ var SemanticAnalyzer = /** @class */ (function () {
             current = current.parent;
         }
     };
+    SemanticAnalyzer.prototype.initVariable = function (id) {
+        var current = this.st.current;
+        while (current != null) {
+            if (current.stash[id]) {
+                current.stash[id].init = true;
+                return;
+            }
+            current = current.parent;
+        }
+    };
     SemanticAnalyzer.prototype.checkForUnusedVariables = function (n) {
         var _this = this;
         var unused = [];
@@ -1002,7 +1013,7 @@ var SymbolTree = /** @class */ (function () {
                 }
                 result += "| ";
                 var v = node.stash[id];
-                result += id + " type: " + v.type + " line: " + v.line + "\n";
+                result += id + " type: " + v.type + " line: " + v.line + " init " + v.init + " used " + v.used + "\n";
             }
             if (node.children.length !== 0) {
                 for (var i = 0; i < node.children.length; i++) {

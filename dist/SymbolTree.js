@@ -38,7 +38,7 @@ var SymbolTree = /** @class */ (function () {
                 }
                 result += "| ";
                 var v = node.stash[id];
-                result += id + " type: " + v.type + " line: " + v.line + "\n";
+                result += id + " type: " + v.type + " line: " + v.line + " init " + v.init + " used " + v.used + "\n";
             }
             if (node.children.length !== 0) {
                 for (var i = 0; i < node.children.length; i++) {

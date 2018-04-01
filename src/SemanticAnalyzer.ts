@@ -115,6 +115,7 @@ export class SemanticAnalyzer {
      
         this.emit("Initialized Variable " +id)
         this.st.current.initStashed(id);
+        this.initVariable(id);
 
         let expr = n.children[1];
         let err = this.typeCheck(expr, type, true);
@@ -278,6 +279,17 @@ export class SemanticAnalyzer {
             }
             current = current.parent;
         }
+    }
+    initVariable(id: string) {
+        let current: ScopeNode | null = this.st.current;
+        while(current!= null) {
+            if(current.stash[id]){
+                current.stash[id].init = true;
+                return;
+            }
+            current = current.parent;
+        }
+
     }
     checkForUnusedVariables(n: ScopeNode):Alert[] {
        let unused: Alert[] = [];

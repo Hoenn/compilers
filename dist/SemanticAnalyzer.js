@@ -106,6 +106,7 @@ var SemanticAnalyzer = /** @class */ (function () {
         }
         this.emit("Initialized Variable " + id);
         this.st.current.initStashed(id);
+        this.initVariable(id);
         var expr = n.children[1];
         var err = this.typeCheck(expr, type, true);
         if (err) {
@@ -271,6 +272,16 @@ var SemanticAnalyzer = /** @class */ (function () {
         while (current != null) {
             if (current.stash[id] && !current.stash[id].init) {
                 this.warnings.push(Alert_1.warning("Use of uninitialized variable: " + n.name + " on line: " + n.lineNum));
+                return;
+            }
+            current = current.parent;
+        }
+    };
+    SemanticAnalyzer.prototype.initVariable = function (id) {
+        var current = this.st.current;
+        while (current != null) {
+            if (current.stash[id]) {
+                current.stash[id].init = true;
                 return;
             }
             current = current.parent;

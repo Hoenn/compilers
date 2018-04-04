@@ -34,7 +34,7 @@ var Generator = /** @class */ (function () {
     Generator.prototype.generate = function () {
         this.genNext(this.ast.root);
         //Backpatch static memory for tmp1 and tmp2
-        this.pushCode("break");
+        this.pushCode(ops.break);
         return { mCode: this.mCode, log: this.log, error: this.error };
     };
     Generator.prototype.genNext = function (n) {

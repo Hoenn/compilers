@@ -24,7 +24,7 @@ export class Generator {
     generate(): {mCode: string[], log: string[], error: Alert|undefined} {
         this.genNext(this.ast.root);
         //Backpatch static memory for tmp1 and tmp2
-        this.pushCode("break");
+        this.pushCode(ops.break);
         return {mCode:this.mCode, log: this.log, error: this.error};
     }
     genNext(n: Node) {

@@ -109,10 +109,13 @@ export class Generator {
         if(s.length == 1) {
             s = "0"+s;
         }
-        return s;
+        return s.toUpperCase();
 
     }
     replaceTemps(len: number) {
+        this.emit("Backpatching temporary storage address");
+        this.emit("tmp1 -> " + this.toHexString(len) + "00");
+        this.emit("tmp2 -> " + this.toHexString(len+1) + "00");
         let location = len;
         while(this.mCode.indexOf(this.tempb1) > 0) {
             let currIndex = this.mCode.indexOf(this.tempb1);

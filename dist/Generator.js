@@ -121,9 +121,12 @@ var Generator = /** @class */ (function () {
         if (s.length == 1) {
             s = "0" + s;
         }
-        return s;
+        return s.toUpperCase();
     };
     Generator.prototype.replaceTemps = function (len) {
+        this.emit("Backpatching temporary storage address");
+        this.emit("tmp1 -> " + this.toHexString(len) + "00");
+        this.emit("tmp2 -> " + this.toHexString(len + 1) + "00");
         var location = len;
         while (this.mCode.indexOf(this.tempb1) > 0) {
             var currIndex = this.mCode.indexOf(this.tempb1);

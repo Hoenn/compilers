@@ -33,8 +33,10 @@ var Generator = /** @class */ (function () {
     }
     Generator.prototype.generate = function () {
         this.genNext(this.ast.root);
-        //Backpatch static memory for tmp1 and tmp2
         this.pushCode(ops.break);
+        //Back patching temp variable locations
+        var lengthInBytes = this.mCode.length;
+        this.replaceTemps(lengthInBytes);
         return { mCode: this.mCode, log: this.log, error: this.error };
     };
     Generator.prototype.genNext = function (n) {
@@ -120,6 +122,22 @@ var Generator = /** @class */ (function () {
             s = "0" + s;
         }
         return s;
+    };
+    Generator.prototype.replaceTemps = function (len) {
+        var location = len;
+        while (this.mCode.indexOf(this.tempb1) > 0) {
+            var currIndex = this.mCode.indexOf(this.tempb1);
+            var currentByte = this.mCode[currIndex];
+            var nextByte = this.mCode[currIndex + 1];
+            if (nextByte == this.temp1b2) {
+                this.mCode[currIndex] = this.toHexString(location);
+                this.mCode[currIndex + 1] = "00";
+            }
+            else if (nextByte == this.temp2b2) {
+                this.mCode[currIndex] = this.toHexString(location + 1);
+                this.mCode[currIndex + 1] = "00";
+            }
+        }
     };
     Generator.prototype.emit = function (s) {
         this.log.push(s);

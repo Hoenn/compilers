@@ -23,8 +23,11 @@ export class Generator {
 
     generate(): {mCode: string[], log: string[], error: Alert|undefined} {
         this.genNext(this.ast.root);
-        //Backpatch static memory for tmp1 and tmp2
         this.pushCode(ops.break);
+        //Back patching temp variable locations
+        let lengthInBytes = this.mCode.length;
+        this.replaceTemps(lengthInBytes);
+        
         return {mCode:this.mCode, log: this.log, error: this.error};
     }
     genNext(n: Node) {
@@ -109,6 +112,22 @@ export class Generator {
         return s;
 
     }
+    replaceTemps(len: number) {
+        let location = len;
+        while(this.mCode.indexOf(this.tempb1) > 0) {
+            let currIndex = this.mCode.indexOf(this.tempb1);
+            let currentByte = this.mCode[currIndex];
+            let nextByte = this.mCode[currIndex+1];
+            if(nextByte == this.temp1b2) {
+                this.mCode[currIndex] = this.toHexString(location);
+                this.mCode[currIndex+1] = "00";
+            } else if (nextByte == this.temp2b2) {
+                this.mCode[currIndex] = this.toHexString(location+1);
+                this.mCode[currIndex+1] = "00";
+            }
+
+        }
+    }
     emit(s: string) {
         this.log.push(s);
     }
@@ -150,6 +169,4 @@ enum ops {
         branchNotEqual = "branchNotEq",
         incrementByte = "incrementByte",
         sysCall = "sysCall"
-
-
 }

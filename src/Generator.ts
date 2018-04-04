@@ -8,6 +8,10 @@ export class Generator {
     mCode: string[];
     log: string[];
     error: Alert | undefined;
+    readonly tempb1 = "tm";
+    readonly temp1b2 = "p1";
+    readonly temp2b2 = "p2";
+
     constructor(ast: SyntaxTree, st: SymbolTree) {
         this.ast = ast;
         this.st = st;
@@ -19,6 +23,7 @@ export class Generator {
 
     generate(): {mCode: string[], log: string[], error: Alert|undefined} {
         this.genNext(this.ast.root);
+        //Backpatch static memory for tmp1 and tmp2
         this.pushCode("break");
         return {mCode:this.mCode, log: this.log, error: this.error};
     }
@@ -32,6 +37,15 @@ export class Generator {
                 this.genPrint(n);
                 break;
             }
+            case "Plus": {
+                this.genPlus(n);
+                break;
+            }
+            default: {
+                //Check if int/bool/string literal here
+                this.genInt(n);
+                break;
+            }
         }
     }
     genBlock(n: Node) {
@@ -42,11 +56,30 @@ export class Generator {
     }
     genPrint(n: Node) {
         this.emit("Generating code: Print");
-        //Expect only one child that is an integer...
-        this.pushCode(["loadXConst", "01"]);
-        let val = n.children[0].name;
-        this.pushCode(["loadYConst", this.toHexString(val)])
-        this.pushCode("sysCall");
+        //handle strings
+        //handle ids
+        //handle integer|boolean const/expr
+            //By now child[0] can be int/bool const or int/bool expr
+        let child = n.children[0];
+        this.genNext(child);
+        this.pushCode([ops.loadXConst, "01"]);
+        this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
+        this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
+        this.pushCode(ops.sysCall);
+    }
+    genPlus(n: Node) {
+        this.emit("Generate code: Plus");
+        let left = n.children[0];
+        let right = n.children[1];
+        //Generate code for the right child 
+        this.genNext(right);
+        this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
+        this.pushCode([ops.loadAccConst,this.toHexString(left.name)]);
+        this.pushCode([ops.addWithCarry, this.tempb1, this.temp1b2]);
+    }
+    genInt(n: Node) {
+        this.emit("Generate code: int constant");
+        this.pushCode([ops.loadAccConst, this.toHexString(n.name)]);
     }
     pushCode(s: string | string[]) {
         if(typeof s == "string") {
@@ -79,6 +112,8 @@ export class Generator {
     emit(s: string) {
         this.log.push(s);
     }
+
+
     //name -> opcode
     readonly op: {[key:string]:string} =
     {
@@ -100,4 +135,21 @@ export class Generator {
         "sysCall":      "FF"
     }
     
+}
+enum ops {
+        loadAccConst = "loadAccConst",
+        loadAccMem = "loadAccMem",
+        storeAccMem = "storeAccMem",
+        addWithCarry = "addWithCarry",
+        loadXConst = "loadXConst",
+        loadYConst = "loadYConst",
+        loadYMem = "loadYMem",
+        noOp ="noOp",
+        break ="break",
+        compareEq ="compareEq",
+        branchNotEqual = "branchNotEq",
+        incrementByte = "incrementByte",
+        sysCall = "sysCall"
+
+
 }

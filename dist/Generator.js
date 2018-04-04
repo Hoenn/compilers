@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Generator = /** @class */ (function () {
     function Generator(ast, st) {
+        this.tempb1 = "tm";
+        this.temp1b2 = "p1";
+        this.temp2b2 = "p2";
         //name -> opcode
         this.op = {
             "loadAccConst": "A9",
@@ -30,6 +33,7 @@ var Generator = /** @class */ (function () {
     }
     Generator.prototype.generate = function () {
         this.genNext(this.ast.root);
+        //Backpatch static memory for tmp1 and tmp2
         this.pushCode("break");
         return { mCode: this.mCode, log: this.log, error: this.error };
     };
@@ -43,6 +47,15 @@ var Generator = /** @class */ (function () {
                 this.genPrint(n);
                 break;
             }
+            case "Plus": {
+                this.genPlus(n);
+                break;
+            }
+            default: {
+                //Check if int/bool/string literal here
+                this.genInt(n);
+                break;
+            }
         }
     };
     Generator.prototype.genBlock = function (n) {
@@ -53,11 +66,30 @@ var Generator = /** @class */ (function () {
     };
     Generator.prototype.genPrint = function (n) {
         this.emit("Generating code: Print");
-        //Expect only one child that is an integer...
-        this.pushCode(["loadXConst", "01"]);
-        var val = n.children[0].name;
-        this.pushCode(["loadYConst", this.toHexString(val)]);
-        this.pushCode("sysCall");
+        //handle strings
+        //handle ids
+        //handle integer|boolean const/expr
+        //By now child[0] can be int/bool const or int/bool expr
+        var child = n.children[0];
+        this.genNext(child);
+        this.pushCode([ops.loadXConst, "01"]);
+        this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
+        this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
+        this.pushCode(ops.sysCall);
+    };
+    Generator.prototype.genPlus = function (n) {
+        this.emit("Generate code: Plus");
+        var left = n.children[0];
+        var right = n.children[1];
+        //Generate code for the right child 
+        this.genNext(right);
+        this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
+        this.pushCode([ops.loadAccConst, this.toHexString(left.name)]);
+        this.pushCode([ops.addWithCarry, this.tempb1, this.temp1b2]);
+    };
+    Generator.prototype.genInt = function (n) {
+        this.emit("Generate code: int constant");
+        this.pushCode([ops.loadAccConst, this.toHexString(n.name)]);
     };
     Generator.prototype.pushCode = function (s) {
         if (typeof s == "string") {
@@ -95,3 +127,19 @@ var Generator = /** @class */ (function () {
     return Generator;
 }());
 exports.Generator = Generator;
+var ops;
+(function (ops) {
+    ops["loadAccConst"] = "loadAccConst";
+    ops["loadAccMem"] = "loadAccMem";
+    ops["storeAccMem"] = "storeAccMem";
+    ops["addWithCarry"] = "addWithCarry";
+    ops["loadXConst"] = "loadXConst";
+    ops["loadYConst"] = "loadYConst";
+    ops["loadYMem"] = "loadYMem";
+    ops["noOp"] = "noOp";
+    ops["break"] = "break";
+    ops["compareEq"] = "compareEq";
+    ops["branchNotEqual"] = "branchNotEq";
+    ops["incrementByte"] = "incrementByte";
+    ops["sysCall"] = "sysCall";
+})(ops || (ops = {}));

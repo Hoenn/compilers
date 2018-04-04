@@ -1,6 +1,7 @@
 import { Lexer } from './Lexer';
 import { Parser } from './Parser';
 import { SemanticAnalyzer} from './SemanticAnalyzer';
+import { Generator } from './Generator';
 
 import fs = require('fs');
 import util = require('util');
@@ -42,6 +43,17 @@ export function main(sourceArg: string, filePath?: boolean) {
             console.log(analysis.st.toString());
             console.log(analysis.warnings);
             console.log(analysis.error);
+            if(!analysis.error) {
+                let g = new Generator(analysis.ast, analysis.st);
+                let result = g.generate();
+                console.log(result.log);
+                let code = "";
+                for(let i = 0; i < result.mCode.length; i++) {
+                    code+= result.mCode[i]+" ";
+                }
+                console.log(code);
+            }
+
 
         }
     }

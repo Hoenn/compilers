@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Lexer_1 = require("./Lexer");
 var Parser_1 = require("./Parser");
 var SemanticAnalyzer_1 = require("./SemanticAnalyzer");
+var Generator_1 = require("./Generator");
 var fs = require("fs");
 function main(sourceArg, filePath) {
     var sourceProgram;
@@ -42,6 +43,16 @@ function main(sourceArg, filePath) {
             console.log(analysis.st.toString());
             console.log(analysis.warnings);
             console.log(analysis.error);
+            if (!analysis.error) {
+                var g = new Generator_1.Generator(analysis.ast, analysis.st);
+                var result = g.generate();
+                console.log(result.log);
+                var code = "";
+                for (var i = 0; i < result.mCode.length; i++) {
+                    code += result.mCode[i] + " ";
+                }
+                console.log(code);
+            }
         }
     }
     return sourceProgram;

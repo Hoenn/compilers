@@ -1,6 +1,7 @@
 import {SyntaxTree, Node} from "./SyntaxTree";
 import {SymbolTree, ScopeNode} from './SymbolTree';
 import {Alert, isAlert, error} from "./Alert";
+import {StaticDataTable} from "./StaticDataTable";
 
 export class Generator {
     ast: SyntaxTree;
@@ -8,6 +9,7 @@ export class Generator {
     mCode: string[];
     log: string[];
     error: Alert | undefined;
+    staticData: StaticDataTable;
     readonly tempb1 = "tm";
     readonly temp1b2 = "p1";
     readonly temp2b2 = "p2";
@@ -19,6 +21,7 @@ export class Generator {
         this.mCode = [];
         this.log = [];
         this.error = undefined;
+        this.staticData = new StaticDataTable();
     }
 
     generate(): {mCode: string[], log: string[], error: Alert|undefined} {
@@ -38,6 +41,10 @@ export class Generator {
             }
             case "Print": {
                 this.genPrint(n);
+                break;
+            }
+            case "VarDecl": {
+                //this.genVarDecl(n);
                 break;
             }
             case "Plus": {

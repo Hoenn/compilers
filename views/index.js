@@ -978,6 +978,8 @@ var SymbolTree = /** @class */ (function () {
     function SymbolTree(n) {
         this.root = n;
         this.current = this.root;
+        //Reset global node count on construction
+        count = 0;
     }
     SymbolTree.prototype.addBranchNode = function (n) {
         //Maybe refactor to construct a node here
@@ -1012,7 +1014,7 @@ var SymbolTree = /** @class */ (function () {
                 }
                 result += "| ";
                 var v = node.stash[id];
-                result += id + " type: " + v.type + " line: " + v.line + " init: " + v.init + " used: " + v.used + "\n";
+                result += id + " type: " + v.type + " line: " + v.line + " init: " + v.init + " used: " + v.used + " scopeId: " + v.scopeId + "\n";
             }
             if (node.children.length !== 0) {
                 for (var i = 0; i < node.children.length; i++) {
@@ -1029,11 +1031,13 @@ var SymbolTree = /** @class */ (function () {
     return SymbolTree;
 }());
 exports.SymbolTree = SymbolTree;
+var count = 0;
 var ScopeNode = /** @class */ (function () {
     function ScopeNode() {
         this.stash = {};
         this.children = [];
         this.parent = null;
+        this.scopeId = count++;
     }
     ScopeNode.prototype.addChild = function (n) {
         this.children.push(n);
@@ -1044,7 +1048,7 @@ var ScopeNode = /** @class */ (function () {
             return false;
         }
         else {
-            this.stash[id] = { "type": t, "line": l, "init": false, "used": false };
+            this.stash[id] = { "type": t, "line": l, "init": false, "used": false, "scopeId": this.scopeId };
             return true;
         }
     };

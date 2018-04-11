@@ -4,6 +4,8 @@ export class SymbolTree {
     constructor(n : ScopeNode) {
         this.root = n;
         this.current = this.root;
+        //Reset global node count on construction
+        count = 0;
     }
     addBranchNode(n: ScopeNode) {
         //Maybe refactor to construct a node here
@@ -38,7 +40,7 @@ export class SymbolTree {
                 }
                 result+= "| ";
                 let v = node.stash[id];
-                result += id+" type: "+v.type+" line: "+v.line+" init: "+v.init+" used: "+v.used+"\n";
+                result += id+" type: "+v.type+" line: "+v.line+" init: "+v.init+" used: "+v.used+" scopeId: "+v.scopeId+"\n";
             }
             if(node.children.length !== 0){
                 for(let i = 0; i < node.children.length; i ++){
@@ -54,15 +56,19 @@ export class SymbolTree {
         this.root = this.root.children[0];
     }
 }
+
+var count = 0;
 export class ScopeNode {
+    
     parent: ScopeNode | null;
     children: ScopeNode[];
-    stash: {[key:string]: {"type": string, "line": number, "init": boolean, "used": boolean}};
-
+    stash: {[key:string]: {"type": string, "line": number, "init": boolean, "used": boolean, "scopeId": number}};
+    scopeId: number;
     constructor(){
         this.stash = {};
         this.children = [];
         this.parent = null;
+        this.scopeId = count++;
     }
     addChild(n: ScopeNode) {
         this.children.push(n);
@@ -72,7 +78,7 @@ export class ScopeNode {
             //Collision
             return false;
         } else {
-            this.stash[id] = {"type": t, "line": l, "init": false, "used": false};
+            this.stash[id] = {"type": t, "line": l, "init": false, "used": false, "scopeId": this.scopeId };
             return true;
         }
     }

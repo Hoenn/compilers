@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var StaticDataTable_1 = require("./StaticDataTable");
 var Generator = /** @class */ (function () {
     function Generator(ast, st) {
         this.tempb1 = "tm";
@@ -30,6 +31,7 @@ var Generator = /** @class */ (function () {
         this.mCode = [];
         this.log = [];
         this.error = undefined;
+        this.staticData = new StaticDataTable_1.StaticDataTable();
     }
     Generator.prototype.generate = function () {
         this.genNext(this.ast.root);
@@ -47,6 +49,10 @@ var Generator = /** @class */ (function () {
             }
             case "Print": {
                 this.genPrint(n);
+                break;
+            }
+            case "Assignment": {
+                this.genAssignment(n);
                 break;
             }
             case "Plus": {
@@ -78,6 +84,8 @@ var Generator = /** @class */ (function () {
         this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
         this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
         this.pushCode(ops.sysCall);
+    };
+    Generator.prototype.genAssignment = function (n) {
     };
     Generator.prototype.genPlus = function (n) {
         this.emit("Generate code: Plus");

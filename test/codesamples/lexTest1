@@ -1,4 +1,17 @@
 {
-print(1 + 2 + 3)
-print(1+ 2+ 3)
+    int x
+    x = 0
+    {
+        int y
+        y = 2
+        {
+            int f
+        }
+        {
+            int g
+        }
+    }
+    int z
+
+    
 }

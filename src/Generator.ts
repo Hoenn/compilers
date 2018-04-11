@@ -10,6 +10,7 @@ export class Generator {
     log: string[];
     error: Alert | undefined;
     staticData: StaticDataTable;
+    currScopeId: number;
     readonly tempb1 = "tm";
     readonly temp1b2 = "p1";
     readonly temp2b2 = "p2";
@@ -22,10 +23,11 @@ export class Generator {
         this.log = [];
         this.error = undefined;
         this.staticData = new StaticDataTable();
+        this.currScopeId = -1;
     }
 
     generate(): {mCode: string[], log: string[], error: Alert|undefined} {
-        this.genNext(this.ast.root);
+        this.genNext(this.ast.root, 0);
         this.pushCode(ops.break);
         //Back patching temp variable locations
         let lengthInBytes = this.mCode.length;
@@ -33,66 +35,81 @@ export class Generator {
         
         return {mCode:this.mCode, log: this.log, error: this.error};
     }
-    genNext(n: Node) {
+    genNext(n: Node, scope:number){
         switch(n.name) {
             case "Block": {
                 this.genBlock(n);
                 break;
             }
             case "Print": {
-                this.genPrint(n);
+                this.genPrint(n, scope);
                 break;
             }
             case "VarDecl": {
-                this.genVarDecl(n);
+                this.genVarDecl(n, scope);
                 break;
             }
             case "Plus": {
-                this.genPlus(n);
+                this.genPlus(n, scope);
                 break;
             }
             default: {
-                //Check if int/bool/string literal here
-                this.genInt(n);
+                //AST leaf nodes
+                if(n.isString){
+                    //this.getString(n);
+                } else if(n.name.length == 1){ //identifier
+                   this.genIdentifier(n, scope);
+                } else if(n.name == "true" || n.name == "false") {
+                   //this.getBoolean(n);
+                } else {
+                    this.genInt(n);
+                }
                 break;
             }
         }
     }
     genBlock(n: Node) {
         this.emit("Generating code: Block");
+        let scope = this.currScopeId++;
         for(let i = 0; i < n.children.length; i++) {
-            this.genNext(n.children[i]);
+            this.genNext(n.children[i], scope);
         }
     }
-    genPrint(n: Node) {
+    genPrint(n: Node, scope: number) {
         this.emit("Generating code: Print");
         //handle strings
         //handle ids
         //handle integer|boolean const/expr
             //By now child[0] can be int/bool const or int/bool expr
         let child = n.children[0];
-        this.genNext(child);
+        this.genNext(child, scope);
         this.pushCode([ops.loadXConst, "01"]);
         this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
         this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
         this.pushCode(ops.sysCall);
     }
-    genVarDecl(n: Node) {
+    genVarDecl(n: Node, scope: number) {
         this.emit("Generating code: VarDecl");
         this.pushCode([ops.loadAccConst, "00"]);
-        let backPatchAddr = this.toHexString(this.staticData.add(n.children[1]));
+        let backPatchAddr = this.toHexString(this.staticData.add(n.children[1], scope));
         //TM 03
         this.pushCode([ops.storeAccMem, this.tempb1, backPatchAddr]);
     }
-    genPlus(n: Node) {
+    genPlus(n: Node, scope: number) {
         this.emit("Generate code: Plus");
         let left = n.children[0];
         let right = n.children[1];
         //Generate code for the right child 
-        this.genNext(right);
+        this.genNext(right, scope);
         this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
         this.pushCode([ops.loadAccConst,this.toHexString(left.name)]);
         this.pushCode([ops.addWithCarry, this.tempb1, this.temp1b2]);
+    }
+    genIdentifier(n: Node, scope: number) {
+        this.emit("Generate code: Identifier ("+n.name+")");
+        let idAddr = this.staticData.findAddr(n.name, scope);
+        let addrBytes = this.toHexString(idAddr);
+        this.pushCode([ops.loadAccMem, this.tempb1, addrBytes]);
     }
     genInt(n: Node) {
         this.emit("Generate code: int constant");
@@ -140,7 +157,7 @@ export class Generator {
         //Backpatch identifier variables
         this.emit("Backpatching static data addresses");
         for(let id in this.staticData.variables) {
-            let tempNumByte = this.toHexString(this.staticData.variables[id]);
+            let tempNumByte = this.toHexString(this.staticData.variables[id].addr);
             this.emit("tm"+tempNumByte+ " -> "+this.toHexString(location)+"00");
             this.replaceEndian(location, tempNumByte);
             location++;

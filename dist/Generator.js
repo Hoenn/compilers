@@ -32,76 +32,94 @@ var Generator = /** @class */ (function () {
         this.log = [];
         this.error = undefined;
         this.staticData = new StaticDataTable_1.StaticDataTable();
+        this.currScopeId = -1;
     }
     Generator.prototype.generate = function () {
-        this.genNext(this.ast.root);
+        this.genNext(this.ast.root, 0);
         this.pushCode(ops.break);
-        console.log(this.mCode);
         //Back patching temp variable locations
         var lengthInBytes = this.mCode.length;
         this.replaceTemps(lengthInBytes);
         return { mCode: this.mCode, log: this.log, error: this.error };
     };
-    Generator.prototype.genNext = function (n) {
+    Generator.prototype.genNext = function (n, scope) {
         switch (n.name) {
             case "Block": {
                 this.genBlock(n);
                 break;
             }
             case "Print": {
-                this.genPrint(n);
+                this.genPrint(n, scope);
                 break;
             }
             case "VarDecl": {
-                this.genVarDecl(n);
+                this.genVarDecl(n, scope);
                 break;
             }
             case "Plus": {
-                this.genPlus(n);
+                this.genPlus(n, scope);
                 break;
             }
             default: {
-                //Check if int/bool/string literal here
-                this.genInt(n);
+                //AST leaf nodes
+                if (n.isString) {
+                    //this.getString(n);
+                }
+                else if (n.name.length == 1) {
+                    this.genIdentifier(n, scope);
+                }
+                else if (n.name == "true" || n.name == "false") {
+                    //this.getBoolean(n);
+                }
+                else {
+                    this.genInt(n);
+                }
                 break;
             }
         }
     };
     Generator.prototype.genBlock = function (n) {
         this.emit("Generating code: Block");
+        var scope = this.currScopeId++;
         for (var i = 0; i < n.children.length; i++) {
-            this.genNext(n.children[i]);
+            this.genNext(n.children[i], scope);
         }
     };
-    Generator.prototype.genPrint = function (n) {
+    Generator.prototype.genPrint = function (n, scope) {
         this.emit("Generating code: Print");
         //handle strings
         //handle ids
         //handle integer|boolean const/expr
         //By now child[0] can be int/bool const or int/bool expr
         var child = n.children[0];
-        this.genNext(child);
+        this.genNext(child, scope);
         this.pushCode([ops.loadXConst, "01"]);
         this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
         this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
         this.pushCode(ops.sysCall);
     };
-    Generator.prototype.genVarDecl = function (n) {
+    Generator.prototype.genVarDecl = function (n, scope) {
         this.emit("Generating code: VarDecl");
         this.pushCode([ops.loadAccConst, "00"]);
-        var backPatchAddr = this.toHexString(this.staticData.add(n.children[1]));
+        var backPatchAddr = this.toHexString(this.staticData.add(n.children[1], scope));
         //TM 03
         this.pushCode([ops.storeAccMem, this.tempb1, backPatchAddr]);
     };
-    Generator.prototype.genPlus = function (n) {
+    Generator.prototype.genPlus = function (n, scope) {
         this.emit("Generate code: Plus");
         var left = n.children[0];
         var right = n.children[1];
         //Generate code for the right child 
-        this.genNext(right);
+        this.genNext(right, scope);
         this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
         this.pushCode([ops.loadAccConst, this.toHexString(left.name)]);
         this.pushCode([ops.addWithCarry, this.tempb1, this.temp1b2]);
+    };
+    Generator.prototype.genIdentifier = function (n, scope) {
+        this.emit("Generate code: Identifier (" + n.name + ")");
+        var idAddr = this.staticData.findAddr(n.name, scope);
+        var addrBytes = this.toHexString(idAddr);
+        this.pushCode([ops.loadAccMem, this.tempb1, addrBytes]);
     };
     Generator.prototype.genInt = function (n) {
         this.emit("Generate code: int constant");
@@ -147,11 +165,10 @@ var Generator = /** @class */ (function () {
         location++;
         this.replaceEndian(location, this.temp2b2);
         location++;
-        // location = location+2;
-        // //Backpatch identifier variables
+        //Backpatch identifier variables
         this.emit("Backpatching static data addresses");
         for (var id in this.staticData.variables) {
-            var tempNumByte = this.toHexString(this.staticData.variables[id]);
+            var tempNumByte = this.toHexString(this.staticData.variables[id].addr);
             this.emit("tm" + tempNumByte + " -> " + this.toHexString(location) + "00");
             this.replaceEndian(location, tempNumByte);
             location++;

@@ -6,11 +6,17 @@ var StaticDataTable = /** @class */ (function () {
         this.currentAddress = 3;
         this.variables = {};
     }
-    StaticDataTable.prototype.add = function (n) {
+    StaticDataTable.prototype.add = function (n, scope) {
+        var key = n.name + ":" + scope;
+        this.variables[key] = { scope: 0, addr: 0 };
+        this.variables[key].scope = scope;
         var addr = this.currentAddress;
-        this.variables[n.name] = this.currentAddress;
+        this.variables[key].addr = this.currentAddress;
         this.currentAddress++;
         return addr;
+    };
+    StaticDataTable.prototype.findAddr = function (id, scope) {
+        return this.variables[id + ":" + scope].addr;
     };
     return StaticDataTable;
 }());

@@ -44,7 +44,7 @@ export class Generator {
                 break;
             }
             case "VarDecl": {
-                //this.genVarDecl(n);
+                this.genVarDecl(n);
                 break;
             }
             case "Plus": {
@@ -76,6 +76,13 @@ export class Generator {
         this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
         this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
         this.pushCode(ops.sysCall);
+    }
+    genVarDecl(n: Node) {
+        this.emit("Generating code: VarDecl");
+        this.pushCode([ops.loadAccConst, "00"]);
+        let backPatchAddr = this.toHexString(this.staticData.add(n.children[1]));
+        //TM 03
+        this.pushCode([ops.storeAccMem, this.tempb1, backPatchAddr]);
     }
     genPlus(n: Node) {
         this.emit("Generate code: Plus");
@@ -120,21 +127,33 @@ export class Generator {
 
     }
     replaceTemps(len: number) {
+        //Backpatch temporary variables 1, 2
         this.emit("Backpatching temporary storage address");
         this.emit("tmp1 -> " + this.toHexString(len) + "00");
         this.emit("tmp2 -> " + this.toHexString(len+1) + "00");
         let location = len;
-        while(this.mCode.indexOf(this.tempb1) > 0) {
-            let currIndex = this.mCode.indexOf(this.tempb1);
-            let currentByte = this.mCode[currIndex];
-            let nextByte = this.mCode[currIndex+1];
-            if(nextByte == this.temp1b2) {
-                this.mCode[currIndex] = this.toHexString(location);
-                this.mCode[currIndex+1] = "00";
-            } else if (nextByte == this.temp2b2) {
-                this.mCode[currIndex] = this.toHexString(location+1);
-                this.mCode[currIndex+1] = "00";
-            }
+        this.replaceEndian(location, this.temp1b2);
+        location++;
+        this.replaceEndian(location, this.temp2b2);
+        location++;
+
+        //Backpatch identifier variables
+        this.emit("Backpatching static data addresses");
+        for(let id in this.staticData.variables) {
+            let tempNumByte = this.toHexString(this.staticData.variables[id]);
+            this.emit("tm"+tempNumByte+ " -> "+this.toHexString(location)+"00");
+            this.replaceEndian(location, tempNumByte);
+            location++;
+        }
+    }
+    replaceEndian(location:number, search:string) {
+        for(let i = 0; i < this.mCode.length; i++) {
+            let currentByte = this.mCode[i];
+            let nextByte = this.mCode[i+1];
+            if(nextByte == search) {
+                this.mCode[i] = this.toHexString(location);
+                this.mCode[i+1] = "00";
+            } 
 
         }
     }

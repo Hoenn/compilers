@@ -8,10 +8,11 @@ export class StaticDataTable{
         this.currentAddress = 3;
         this.variables = {};
     }
-    add(n: Node) {
+    add(n: Node): number {
+        let addr = this.currentAddress;
+        this.variables[n.name] = this.currentAddress;
         this.currentAddress++;
-        this.variables[n.name];
-
+        return addr;
     }
 
 }

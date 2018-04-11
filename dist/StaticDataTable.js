@@ -7,8 +7,10 @@ var StaticDataTable = /** @class */ (function () {
         this.variables = {};
     }
     StaticDataTable.prototype.add = function (n) {
+        var addr = this.currentAddress;
+        this.variables[n.name] = this.currentAddress;
         this.currentAddress++;
-        this.variables[n.name];
+        return addr;
     };
     return StaticDataTable;
 }());

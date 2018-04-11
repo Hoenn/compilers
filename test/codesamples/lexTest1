@@ -1,17 +1,6 @@
 {
-    int x
-    x = 0
-    {
-        int y
-        y = 2
-        {
-            int f
-        }
-        {
-            int g
-        }
-    }
-    int z
+    int a
+    int b
+    print(1)
 
-    
 }

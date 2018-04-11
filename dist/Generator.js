@@ -36,6 +36,7 @@ var Generator = /** @class */ (function () {
     Generator.prototype.generate = function () {
         this.genNext(this.ast.root);
         this.pushCode(ops.break);
+        console.log(this.mCode);
         //Back patching temp variable locations
         var lengthInBytes = this.mCode.length;
         this.replaceTemps(lengthInBytes);
@@ -51,8 +52,8 @@ var Generator = /** @class */ (function () {
                 this.genPrint(n);
                 break;
             }
-            case "Assignment": {
-                this.genAssignment(n);
+            case "VarDecl": {
+                this.genVarDecl(n);
                 break;
             }
             case "Plus": {
@@ -85,7 +86,12 @@ var Generator = /** @class */ (function () {
         this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
         this.pushCode(ops.sysCall);
     };
-    Generator.prototype.genAssignment = function (n) {
+    Generator.prototype.genVarDecl = function (n) {
+        this.emit("Generating code: VarDecl");
+        this.pushCode([ops.loadAccConst, "00"]);
+        var backPatchAddr = this.toHexString(this.staticData.add(n.children[1]));
+        //TM 03
+        this.pushCode([ops.storeAccMem, this.tempb1, backPatchAddr]);
     };
     Generator.prototype.genPlus = function (n) {
         this.emit("Generate code: Plus");
@@ -132,21 +138,32 @@ var Generator = /** @class */ (function () {
         return s.toUpperCase();
     };
     Generator.prototype.replaceTemps = function (len) {
+        //Backpatch temporary variables 1, 2
         this.emit("Backpatching temporary storage address");
         this.emit("tmp1 -> " + this.toHexString(len) + "00");
         this.emit("tmp2 -> " + this.toHexString(len + 1) + "00");
         var location = len;
-        while (this.mCode.indexOf(this.tempb1) > 0) {
-            var currIndex = this.mCode.indexOf(this.tempb1);
-            var currentByte = this.mCode[currIndex];
-            var nextByte = this.mCode[currIndex + 1];
-            if (nextByte == this.temp1b2) {
-                this.mCode[currIndex] = this.toHexString(location);
-                this.mCode[currIndex + 1] = "00";
-            }
-            else if (nextByte == this.temp2b2) {
-                this.mCode[currIndex] = this.toHexString(location + 1);
-                this.mCode[currIndex + 1] = "00";
+        this.replaceEndian(location, this.temp1b2);
+        location++;
+        this.replaceEndian(location, this.temp2b2);
+        location++;
+        // location = location+2;
+        // //Backpatch identifier variables
+        this.emit("Backpatching static data addresses");
+        for (var id in this.staticData.variables) {
+            var tempNumByte = this.toHexString(this.staticData.variables[id]);
+            this.emit("tm" + tempNumByte + " -> " + this.toHexString(location) + "00");
+            this.replaceEndian(location, tempNumByte);
+            location++;
+        }
+    };
+    Generator.prototype.replaceEndian = function (location, search) {
+        for (var i = 0; i < this.mCode.length; i++) {
+            var currentByte = this.mCode[i];
+            var nextByte = this.mCode[i + 1];
+            if (nextByte == search) {
+                this.mCode[i] = this.toHexString(location);
+                this.mCode[i + 1] = "00";
             }
         }
     };

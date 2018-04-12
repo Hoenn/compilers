@@ -2,8 +2,7 @@ import {Node} from "./SyntaxTree";
 import {SymbolTree, ScopeNode} from "./SymbolTree";
 export class StaticDataTable{
     currentAddress : number; 
-    //id name, scope level, 
-    variables: {[key:string]: {scope:number, addr: number}};
+    variables: {[name:string]: {scope:number, addr: number}};
     constructor() {
         //Current address starts at 3 since there are two temporary variables
         this.currentAddress = 3;

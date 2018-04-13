@@ -39,7 +39,7 @@ var Generator = /** @class */ (function () {
         this.pushCode(ops.break);
         //Back patching temp variable locations
         var lengthInBytes = this.mCode.length;
-        this.replaceTemps(lengthInBytes);
+        this.backPatch(lengthInBytes);
         return { mCode: this.mCode, log: this.log, error: this.error };
     };
     Generator.prototype.genNext = function (n, scope) {
@@ -168,7 +168,7 @@ var Generator = /** @class */ (function () {
         }
         return s.toUpperCase();
     };
-    Generator.prototype.replaceTemps = function (len) {
+    Generator.prototype.backPatch = function (len) {
         //Backpatch temporary variables 1, 2
         this.emit("Backpatching temporary storage address");
         this.emit("tmp1 -> " + this.toHexString(len) + "00");

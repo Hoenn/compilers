@@ -31,7 +31,7 @@ export class Generator {
         this.pushCode(ops.break);
         //Back patching temp variable locations
         let lengthInBytes = this.mCode.length;
-        this.replaceTemps(lengthInBytes);
+        this.backPatch(lengthInBytes);
         
         return {mCode:this.mCode, log: this.log, error: this.error};
     }
@@ -155,7 +155,7 @@ export class Generator {
         return s.toUpperCase();
 
     }
-    replaceTemps(len: number) {
+    backPatch(len: number) {
         //Backpatch temporary variables 1, 2
         this.emit("Backpatching temporary storage address");
         this.emit("tmp1 -> " + this.toHexString(len) + "00");

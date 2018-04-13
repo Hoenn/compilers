@@ -55,6 +55,39 @@ export class SymbolTree {
     clean() {
         this.root = this.root.children[0];
     }
+    findLatestDeclarationScopeId(id: string, scopeId: number): number{
+        function find(searchScope: ScopeNode) : number {
+            if(searchScope.stash[id]){
+                return searchScope.scopeId;
+            } else {
+                if(searchScope.parent)
+                    return find(searchScope.parent);
+                else 
+                    return -1;
+            }
+        }
+        let currentScopeNode = this.getScopeByScopeId(scopeId);
+        if(currentScopeNode)
+            return find(currentScopeNode);
+        else   
+            return -1;
+
+    }
+    getScopeByScopeId(scopeId: number): ScopeNode | undefined {
+        let found : ScopeNode | undefined = undefined;
+        function find(node: ScopeNode, searchScopeId: number) {
+            if(node.scopeId == searchScopeId) {
+                found = node;
+            } 
+            else {
+                for(let i = 0; i < node.children.length; i++) {
+                    find(node.children[i], searchScopeId);
+                }
+            }
+        }
+        find(this.root, scopeId);
+        return found;
+    }
 }
 
 var count = 0;

@@ -1,4 +1,14 @@
 {
     int a
-    print(1+a)
+    int b
+    print(a)
+    {
+        int b
+        {
+            print(a)
+            print(b)
+        }
+    }
+    
+    
 }

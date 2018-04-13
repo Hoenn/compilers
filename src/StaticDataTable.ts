@@ -3,13 +3,15 @@ import {SymbolTree, ScopeNode} from "./SymbolTree";
 export class StaticDataTable{
     currentAddress : number; 
     variables: {[name:string]: {scope:number, addr: number}};
-    constructor() {
+    st: SymbolTree;
+    constructor(st: SymbolTree) {
         //Current address starts at 3 since there are two temporary variables
         this.currentAddress = 3;
         this.variables = {};
+        this.st = st;
     }
     add(n: Node, scope: number): number {
-        let key = n.name+":"+scope;
+        let key = this.getVarKey(n.name, scope);
         this.variables[key] = {scope: 0, addr: 0};
         this.variables[key].scope = scope;
         let addr = this.currentAddress;
@@ -18,7 +20,13 @@ export class StaticDataTable{
         return addr;
     }
     findAddr(id: string, scope: number): number{
-        return this.variables[id+":"+scope].addr;
+        return this.variables[this.getVarKey(id, scope)].addr;
     }
+    getVarKey(id: string, currentScope: number): string {
+        let scope = this.st.findLatestDeclarationScopeId(id, currentScope); 
+        return id+":"+scope;
+        
+    }
+
 
 }

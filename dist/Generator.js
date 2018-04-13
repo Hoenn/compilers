@@ -31,8 +31,8 @@ var Generator = /** @class */ (function () {
         this.mCode = [];
         this.log = [];
         this.error = undefined;
-        this.staticData = new StaticDataTable_1.StaticDataTable();
-        this.currScopeId = -1;
+        this.staticData = new StaticDataTable_1.StaticDataTable(st);
+        this.currScopeId = 0;
     }
     Generator.prototype.generate = function () {
         this.genNext(this.ast.root, 0);
@@ -165,11 +165,12 @@ var Generator = /** @class */ (function () {
         location++;
         this.replaceEndian(location, this.temp2b2);
         location++;
+        console.log(this.staticData.variables);
         //Backpatch identifier variables
         this.emit("Backpatching static data addresses");
         for (var id in this.staticData.variables) {
             var tempNumByte = this.toHexString(this.staticData.variables[id].addr);
-            this.emit("tm" + tempNumByte + " -> " + this.toHexString(location) + "00");
+            this.emit("tm" + tempNumByte + "(" + id + ") -> " + this.toHexString(location) + "00");
             this.replaceEndian(location, tempNumByte);
             location++;
         }

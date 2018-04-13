@@ -1,13 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var StaticDataTable = /** @class */ (function () {
-    function StaticDataTable() {
+    function StaticDataTable(st) {
         //Current address starts at 3 since there are two temporary variables
         this.currentAddress = 3;
         this.variables = {};
+        this.st = st;
     }
     StaticDataTable.prototype.add = function (n, scope) {
-        var key = n.name + ":" + scope;
+        var key = this.getVarKey(n.name, scope);
         this.variables[key] = { scope: 0, addr: 0 };
         this.variables[key].scope = scope;
         var addr = this.currentAddress;
@@ -16,7 +17,11 @@ var StaticDataTable = /** @class */ (function () {
         return addr;
     };
     StaticDataTable.prototype.findAddr = function (id, scope) {
-        return this.variables[id + ":" + scope].addr;
+        return this.variables[this.getVarKey(id, scope)].addr;
+    };
+    StaticDataTable.prototype.getVarKey = function (id, currentScope) {
+        var scope = this.st.findLatestDeclarationScopeId(id, currentScope);
+        return id + ":" + scope;
     };
     return StaticDataTable;
 }());

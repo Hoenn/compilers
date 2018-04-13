@@ -1028,6 +1028,39 @@ var SymbolTree = /** @class */ (function () {
     SymbolTree.prototype.clean = function () {
         this.root = this.root.children[0];
     };
+    SymbolTree.prototype.findLatestDeclarationScopeId = function (id, scopeId) {
+        function find(searchScope) {
+            if (searchScope.stash[id]) {
+                return searchScope.scopeId;
+            }
+            else {
+                if (searchScope.parent)
+                    return find(searchScope.parent);
+                else
+                    return -1;
+            }
+        }
+        var currentScopeNode = this.getScopeByScopeId(scopeId);
+        if (currentScopeNode)
+            return find(currentScopeNode);
+        else
+            return -1;
+    };
+    SymbolTree.prototype.getScopeByScopeId = function (scopeId) {
+        var found = undefined;
+        function find(node, searchScopeId) {
+            if (node.scopeId == searchScopeId) {
+                found = node;
+            }
+            else {
+                for (var i = 0; i < node.children.length; i++) {
+                    find(node.children[i], searchScopeId);
+                }
+            }
+        }
+        find(this.root, scopeId);
+        return found;
+    };
     return SymbolTree;
 }());
 exports.SymbolTree = SymbolTree;

@@ -17,6 +17,7 @@ var StaticDataTable = /** @class */ (function () {
         return addr;
     };
     StaticDataTable.prototype.findAddr = function (id, scope) {
+        console.log(this.variables);
         return this.variables[this.getVarKey(id, scope)].addr;
     };
     StaticDataTable.prototype.getVarKey = function (id, currentScope) {

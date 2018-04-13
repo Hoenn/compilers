@@ -49,6 +49,10 @@ export class Generator {
                 this.genVarDecl(n, scope);
                 break;
             }
+            case "Assignment": {
+                this.genAssignment(n, scope);
+                break;
+            }
             case "Plus": {
                 this.genPlus(n, scope);
                 break;
@@ -57,12 +61,14 @@ export class Generator {
                 //AST leaf nodes
                 if(n.isString){
                     //this.getString(n);
-                } else if(n.name.length == 1){ //identifier
+                } else if(!isNaN(parseInt(n.name))){
+                    this.genInt(n);
+                }else if(n.name.length == 1){ //identifier
                    this.genIdentifier(n, scope);
                 } else if(n.name == "true" || n.name == "false") {
                    //this.getBoolean(n);
                 } else {
-                    this.genInt(n);
+                    console.log("Unimplemented");
                 }
                 break;
             }
@@ -93,6 +99,12 @@ export class Generator {
         this.pushCode([ops.loadAccConst, "00"]);
         let backPatchAddr = this.toHexString(this.staticData.add(n.children[1], scope));
         //TM 03
+        this.pushCode([ops.storeAccMem, this.tempb1, backPatchAddr]);
+    }
+    genAssignment(n: Node, scope: number) {
+        this.emit("Generating code: Assignment");
+        this.genNext(n.children[1], scope);
+        let backPatchAddr = this.toHexString(this.staticData.findAddr(n.children[0].name, scope));
         this.pushCode([ops.storeAccMem, this.tempb1, backPatchAddr]);
     }
     genPlus(n: Node, scope: number) {

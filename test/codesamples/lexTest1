@@ -1,14 +1,8 @@
 {
-    int a
-    int b
-    print(a)
-    {
-        int b
-        {
-            print(a)
-            print(b)
-        }
-    }
-    
-    
+   int a
+   int b
+   b = 2
+   a = 1 + b
+   print(a)
+ 
 }

@@ -56,6 +56,10 @@ var Generator = /** @class */ (function () {
                 this.genVarDecl(n, scope);
                 break;
             }
+            case "Assignment": {
+                this.genAssignment(n, scope);
+                break;
+            }
             case "Plus": {
                 this.genPlus(n, scope);
                 break;
@@ -65,6 +69,9 @@ var Generator = /** @class */ (function () {
                 if (n.isString) {
                     //this.getString(n);
                 }
+                else if (!isNaN(parseInt(n.name))) {
+                    this.genInt(n);
+                }
                 else if (n.name.length == 1) {
                     this.genIdentifier(n, scope);
                 }
@@ -72,7 +79,7 @@ var Generator = /** @class */ (function () {
                     //this.getBoolean(n);
                 }
                 else {
-                    this.genInt(n);
+                    console.log("Unimplemented");
                 }
                 break;
             }
@@ -103,6 +110,12 @@ var Generator = /** @class */ (function () {
         this.pushCode([ops.loadAccConst, "00"]);
         var backPatchAddr = this.toHexString(this.staticData.add(n.children[1], scope));
         //TM 03
+        this.pushCode([ops.storeAccMem, this.tempb1, backPatchAddr]);
+    };
+    Generator.prototype.genAssignment = function (n, scope) {
+        this.emit("Generating code: Assignment");
+        this.genNext(n.children[1], scope);
+        var backPatchAddr = this.toHexString(this.staticData.findAddr(n.children[0].name, scope));
         this.pushCode([ops.storeAccMem, this.tempb1, backPatchAddr]);
     };
     Generator.prototype.genPlus = function (n, scope) {

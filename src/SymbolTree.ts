@@ -67,10 +67,11 @@ export class SymbolTree {
             }
         }
         let currentScopeNode = this.getScopeByScopeId(scopeId);
-        if(currentScopeNode)
+        if(currentScopeNode) {
             return find(currentScopeNode);
-        else   
+        } else {
             return -1;
+        }
 
     }
     getScopeByScopeId(scopeId: number): ScopeNode | undefined {

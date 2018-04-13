@@ -67,10 +67,12 @@ var SymbolTree = /** @class */ (function () {
             }
         }
         var currentScopeNode = this.getScopeByScopeId(scopeId);
-        if (currentScopeNode)
+        if (currentScopeNode) {
             return find(currentScopeNode);
-        else
+        }
+        else {
             return -1;
+        }
     };
     SymbolTree.prototype.getScopeByScopeId = function (scopeId) {
         var found = undefined;

@@ -52,6 +52,7 @@ function main(sourceArg, filePath) {
                     code += result.mCode[i] + " ";
                 }
                 console.log(code);
+                console.log(result.error);
             }
         }
     }

@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var Alert_1 = require("./Alert");
 var StaticDataTable_1 = require("./StaticDataTable");
 var Generator = /** @class */ (function () {
     function Generator(ast, st) {
+        this.currNumBytes = 0;
         this.tempb1 = "tm";
         this.temp1b2 = "p1";
         this.temp2b2 = "p2";
@@ -30,7 +32,6 @@ var Generator = /** @class */ (function () {
         this.st.current = this.st.root;
         this.mCode = [];
         this.log = [];
-        this.error = undefined;
         this.staticData = new StaticDataTable_1.StaticDataTable(st);
         this.currScopeId = 0;
     }
@@ -40,7 +41,8 @@ var Generator = /** @class */ (function () {
         //Back patching temp variable locations
         var lengthInBytes = this.mCode.length;
         this.backPatch(lengthInBytes);
-        return { mCode: this.mCode, log: this.log, error: this.error };
+        var outOfMem = this.checkOutOfMemory();
+        return { mCode: this.mCode, log: this.log, error: outOfMem };
     };
     Generator.prototype.genNext = function (n, scope) {
         switch (n.name) {
@@ -146,8 +148,10 @@ var Generator = /** @class */ (function () {
             else {
                 this.mCode.push(s);
             }
+            this.currNumBytes++;
         }
         else {
+            this.currNumBytes += s.length;
             for (var i = 0; i < s.length; i++) {
                 if (this.op[s[i]]) {
                     this.mCode.push(this.op[s[i]]);
@@ -200,6 +204,15 @@ var Generator = /** @class */ (function () {
     };
     Generator.prototype.emit = function (s) {
         this.log.push(s);
+    };
+    Generator.prototype.checkOutOfMemory = function () {
+        var actual = Object.keys(this.staticData.variables).length + this.currNumBytes;
+        console.log(Object.keys(this.staticData.variables).length);
+        console.log(this.currNumBytes);
+        return actual > 255 ? this.outOfMemory() : undefined;
+    };
+    Generator.prototype.outOfMemory = function () {
+        return Alert_1.error("Out of memory! Executable image exceeds 256 Bytes");
     };
     return Generator;
 }());

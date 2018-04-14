@@ -11,6 +11,7 @@ export class Generator {
     error: Alert | undefined;
     staticData: StaticDataTable;
     currScopeId: number;
+    currNumBytes = 0;
     readonly tempb1 = "tm";
     readonly temp1b2 = "p1";
     readonly temp2b2 = "p2";
@@ -21,7 +22,6 @@ export class Generator {
         this.st.current = this.st.root;
         this.mCode = [];
         this.log = [];
-        this.error = undefined;
         this.staticData = new StaticDataTable(st);
         this.currScopeId = 0;
     }
@@ -32,8 +32,8 @@ export class Generator {
         //Back patching temp variable locations
         let lengthInBytes = this.mCode.length;
         this.backPatch(lengthInBytes);
-        
-        return {mCode:this.mCode, log: this.log, error: this.error};
+        let outOfMem = this.checkOutOfMemory();
+        return {mCode:this.mCode, log: this.log, error: outOfMem};
     }
     genNext(n: Node, scope:number){
         switch(n.name) {
@@ -134,7 +134,9 @@ export class Generator {
             } else {
                 this.mCode.push(s);
             }
+            this.currNumBytes++;
         } else {
+            this.currNumBytes += s.length;
             for(let i = 0; i < s.length; i ++) {
                 if(this.op[s[i]]) {
                     this.mCode.push(this.op[s[i]]);
@@ -165,7 +167,6 @@ export class Generator {
         location++;
         this.replaceEndian(location, this.temp2b2);
         location++;
-        console.log(this.staticData.variables);
         //Backpatch identifier variables
         this.emit("Backpatching static data addresses");
         for(let id in this.staticData.variables) {
@@ -189,8 +190,13 @@ export class Generator {
     emit(s: string) {
         this.log.push(s);
     }
-
-
+    checkOutOfMemory(): Alert | undefined{
+        let actual = Object.keys(this.staticData.variables).length + this.currNumBytes;
+        return actual > 255 ? Generator.outOfMemory() : undefined
+    }
+    static outOfMemory(): Alert {
+        return error("Out of memory! Executable image exceeds 256 Bytes");
+    }
     //name -> opcode
     readonly op: {[key:string]:string} =
     {

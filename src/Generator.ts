@@ -221,6 +221,8 @@ export class Generator {
             this.replaceAllByte(this.tempFalseb1, this.toHexString(fLoc));
             this.insertBytes(location, this.falseBytes);
             location += this.falseBytes.length
+        } else {
+            this.emit("Optimization: Skipping boolean literal string backpatching (11B)");
         }
         this.emit("tmp1 -> " + this.toHexString(location) + "00");
         this.emit("tmp2 -> " + this.toHexString(location+1) + "00");

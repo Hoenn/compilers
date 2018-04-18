@@ -233,6 +233,9 @@ var Generator = /** @class */ (function () {
             this.insertBytes(location, this.falseBytes);
             location += this.falseBytes.length;
         }
+        else {
+            this.emit("Optimization: Skipping boolean literal string backpatching (11B)");
+        }
         this.emit("tmp1 -> " + this.toHexString(location) + "00");
         this.emit("tmp2 -> " + this.toHexString(location + 1) + "00");
         this.replaceEndian(location, this.temp1b2);

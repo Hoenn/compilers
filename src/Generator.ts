@@ -12,6 +12,14 @@ export class Generator {
     staticData: StaticDataTable;
     currScopeId: number;
     currNumBytes = 0;
+
+    loadBooleanStrings = false;
+    readonly falseBytes = ["66", "61", "6C", "73", "65", "00"];
+    readonly trueBytes = ["74", "72", "75", "65", "00"];
+    readonly tempFalseb1 = "fl";
+    readonly tempFalseb2 = "se";
+    readonly tempTrueb1 = "tr";
+    readonly tempTrueb2 = "ue";
     readonly tempb1 = "tm";
     readonly temp1b2 = "p1";
     readonly temp2b2 = "p2";
@@ -66,7 +74,7 @@ export class Generator {
                 }else if(n.name.length == 1){ //identifier
                    this.genIdentifier(n, scope);
                 } else if(n.name == "true" || n.name == "false") {
-                   //this.getBoolean(n);
+                   this.genBoolean(n);
                 } else {
                     console.log("Unimplemented");
                 }
@@ -85,13 +93,22 @@ export class Generator {
         this.emit("Generating code: Print");
         //handle strings
         //handle ids
-        //handle integer|boolean const/expr
-            //By now child[0] can be int/bool const or int/bool expr
         let child = n.children[0];
-        this.genNext(child, scope);
-        this.pushCode([ops.loadXConst, "01"]);
-        this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
-        this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
+        if(child.name == "true" || child.name == "false") {
+            this.loadBooleanStrings = true;
+            this.genNext(child, scope);
+            this.pushCode([ops.loadXConst, "01"]);
+
+            this.pushCode([ops.loadYConst, this.tempFalseb1]);
+            this.pushCode([ops.branchNotEqual, "02"])
+            this.pushCode([ops.loadYConst, this.tempTrueb1])
+            this.pushCode([ops.loadXConst, "02"]);
+        } else { //int
+            this.genNext(child, scope);
+            this.pushCode([ops.loadXConst, "01"]);
+            this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
+            this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
+        }
         this.pushCode(ops.sysCall);
     }
     genVarDecl(n: Node, scope: number) {
@@ -127,6 +144,14 @@ export class Generator {
         this.emit("Generate code: int constant");
         this.pushCode([ops.loadAccConst, this.toHexString(n.name)]);
     }
+    genBoolean(n: Node) {
+        this.emit("Generate code: boolean constant");
+        //boolVal will be 1 or 0 for "true" and "false"
+        let boolVal = n.name == "true" ? "1" : "0";
+        this.pushCode([ops.loadAccConst, this.toHexString(boolVal), ops.storeAccMem, this.tempb1, this.temp1b2]);
+        this.pushCode([ops.loadXConst, "01", ops.compareEq, this.tempb1, this.temp1b2]);
+
+    }
     pushCode(s: string | string[]) {
         if(typeof s == "string") {
             if(this.op[s]){
@@ -160,9 +185,24 @@ export class Generator {
     backPatch(len: number) {
         //Backpatch temporary variables 1, 2
         this.emit("Backpatching temporary storage address");
-        this.emit("tmp1 -> " + this.toHexString(len) + "00");
-        this.emit("tmp2 -> " + this.toHexString(len+1) + "00");
         let location = len;
+        if(this.loadBooleanStrings) {
+            this.emit("Backpatching boolean literal strings");
+            this.emit("tr ue -> " + this.toHexString(location) + "00");
+            let tLoc = location;
+            this.replaceEndian(location, this.tempTrueb2);
+            this.replaceAllByte(this.tempTrueb1, this.toHexString(tLoc));
+            this.insertBytes(location, this.trueBytes);
+            location += this.trueBytes.length;
+            let fLoc = location;
+            this.emit("fl se -> " + this.toHexString(location) + "00");
+            this.replaceEndian(location, this.tempFalseb2);
+            this.replaceAllByte(this.tempFalseb1, this.toHexString(fLoc));
+            this.insertBytes(location, this.falseBytes);
+            location += this.falseBytes.length
+        }
+        this.emit("tmp1 -> " + this.toHexString(location) + "00");
+        this.emit("tmp2 -> " + this.toHexString(location+1) + "00");
         this.replaceEndian(location, this.temp1b2);
         location++;
         this.replaceEndian(location, this.temp2b2);
@@ -175,6 +215,8 @@ export class Generator {
             this.replaceEndian(location, tempNumByte);
             location++;
         }
+
+        //Heap begins here
     }
     replaceEndian(location:number, search:string) {
         for(let i = 0; i < this.mCode.length; i++) {
@@ -185,6 +227,19 @@ export class Generator {
                 this.mCode[i+1] = "00";
             } 
 
+        }
+    }
+    replaceAllByte(searchByte: string, replaceWithByte: string) {
+        for(let i = 0; i < this.mCode.length; i++) {
+            let currentByte = this.mCode[i];
+            if(currentByte == searchByte) {
+                this.mCode[i] = replaceWithByte;
+            }
+        }
+    }
+    insertBytes(location: number, bytes: string[]) {
+        for(let i = 0; i < bytes.length; i++) {
+            this.mCode[location+i] = bytes[i];
         }
     }
     emit(s: string) {
@@ -211,7 +266,7 @@ export class Generator {
         "noOp":         "EA",
         "break":        "00", //End program
         "compareEq":    "EC", //Compare byte in memory to X reg, sets Z flag if equal
-        "branchNotEqual": "EC", //Branches if Z flag is 0 (not set)
+        "branchNotEq": "D0", //Branches if Z flag is 0 (not set)
         "incrementByte": "EE",  
         //01 in X reg -> print integer stores in Y reg
         //02 in X reg -> print 00-terminated string stored in mem addr in Y reg

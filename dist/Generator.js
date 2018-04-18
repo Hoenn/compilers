@@ -5,6 +5,13 @@ var StaticDataTable_1 = require("./StaticDataTable");
 var Generator = /** @class */ (function () {
     function Generator(ast, st) {
         this.currNumBytes = 0;
+        this.loadBooleanStrings = false;
+        this.falseBytes = ["66", "61", "6C", "73", "65", "00"];
+        this.trueBytes = ["74", "72", "75", "65", "00"];
+        this.tempFalseb1 = "fl";
+        this.tempFalseb2 = "se";
+        this.tempTrueb1 = "tr";
+        this.tempTrueb2 = "ue";
         this.tempb1 = "tm";
         this.temp1b2 = "p1";
         this.temp2b2 = "p2";
@@ -21,7 +28,7 @@ var Generator = /** @class */ (function () {
             "noOp": "EA",
             "break": "00",
             "compareEq": "EC",
-            "branchNotEqual": "EC",
+            "branchNotEq": "D0",
             "incrementByte": "EE",
             //01 in X reg -> print integer stores in Y reg
             //02 in X reg -> print 00-terminated string stored in mem addr in Y reg
@@ -78,7 +85,7 @@ var Generator = /** @class */ (function () {
                     this.genIdentifier(n, scope);
                 }
                 else if (n.name == "true" || n.name == "false") {
-                    //this.getBoolean(n);
+                    this.genBoolean(n);
                 }
                 else {
                     console.log("Unimplemented");
@@ -98,13 +105,22 @@ var Generator = /** @class */ (function () {
         this.emit("Generating code: Print");
         //handle strings
         //handle ids
-        //handle integer|boolean const/expr
-        //By now child[0] can be int/bool const or int/bool expr
         var child = n.children[0];
-        this.genNext(child, scope);
-        this.pushCode([ops.loadXConst, "01"]);
-        this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
-        this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
+        if (child.name == "true" || child.name == "false") {
+            this.loadBooleanStrings = true;
+            this.genNext(child, scope);
+            this.pushCode([ops.loadXConst, "01"]);
+            this.pushCode([ops.loadYConst, this.tempFalseb1]);
+            this.pushCode([ops.branchNotEqual, "02"]);
+            this.pushCode([ops.loadYConst, this.tempTrueb1]);
+            this.pushCode([ops.loadXConst, "02"]);
+        }
+        else {
+            this.genNext(child, scope);
+            this.pushCode([ops.loadXConst, "01"]);
+            this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
+            this.pushCode([ops.loadYMem, this.tempb1, this.temp1b2]);
+        }
         this.pushCode(ops.sysCall);
     };
     Generator.prototype.genVarDecl = function (n, scope) {
@@ -139,6 +155,13 @@ var Generator = /** @class */ (function () {
     Generator.prototype.genInt = function (n) {
         this.emit("Generate code: int constant");
         this.pushCode([ops.loadAccConst, this.toHexString(n.name)]);
+    };
+    Generator.prototype.genBoolean = function (n) {
+        this.emit("Generate code: boolean constant");
+        //boolVal will be 1 or 0 for "true" and "false"
+        var boolVal = n.name == "true" ? "1" : "0";
+        this.pushCode([ops.loadAccConst, this.toHexString(boolVal), ops.storeAccMem, this.tempb1, this.temp1b2]);
+        this.pushCode([ops.loadXConst, "01", ops.compareEq, this.tempb1, this.temp1b2]);
     };
     Generator.prototype.pushCode = function (s) {
         if (typeof s == "string") {
@@ -175,14 +198,28 @@ var Generator = /** @class */ (function () {
     Generator.prototype.backPatch = function (len) {
         //Backpatch temporary variables 1, 2
         this.emit("Backpatching temporary storage address");
-        this.emit("tmp1 -> " + this.toHexString(len) + "00");
-        this.emit("tmp2 -> " + this.toHexString(len + 1) + "00");
         var location = len;
+        if (this.loadBooleanStrings) {
+            this.emit("Backpatching boolean literal strings");
+            this.emit("tr ue -> " + this.toHexString(location) + "00");
+            var tLoc = location;
+            this.replaceEndian(location, this.tempTrueb2);
+            this.replaceAllByte(this.tempTrueb1, this.toHexString(tLoc));
+            this.insertBytes(location, this.trueBytes);
+            location += this.trueBytes.length;
+            var fLoc = location;
+            this.emit("fl se -> " + this.toHexString(location) + "00");
+            this.replaceEndian(location, this.tempFalseb2);
+            this.replaceAllByte(this.tempFalseb1, this.toHexString(fLoc));
+            this.insertBytes(location, this.falseBytes);
+            location += this.falseBytes.length;
+        }
+        this.emit("tmp1 -> " + this.toHexString(location) + "00");
+        this.emit("tmp2 -> " + this.toHexString(location + 1) + "00");
         this.replaceEndian(location, this.temp1b2);
         location++;
         this.replaceEndian(location, this.temp2b2);
         location++;
-        console.log(this.staticData.variables);
         //Backpatch identifier variables
         this.emit("Backpatching static data addresses");
         for (var id in this.staticData.variables) {
@@ -191,6 +228,7 @@ var Generator = /** @class */ (function () {
             this.replaceEndian(location, tempNumByte);
             location++;
         }
+        //Heap begins here
     };
     Generator.prototype.replaceEndian = function (location, search) {
         for (var i = 0; i < this.mCode.length; i++) {
@@ -202,16 +240,27 @@ var Generator = /** @class */ (function () {
             }
         }
     };
+    Generator.prototype.replaceAllByte = function (searchByte, replaceWithByte) {
+        for (var i = 0; i < this.mCode.length; i++) {
+            var currentByte = this.mCode[i];
+            if (currentByte == searchByte) {
+                this.mCode[i] = replaceWithByte;
+            }
+        }
+    };
+    Generator.prototype.insertBytes = function (location, bytes) {
+        for (var i = 0; i < bytes.length; i++) {
+            this.mCode[location + i] = bytes[i];
+        }
+    };
     Generator.prototype.emit = function (s) {
         this.log.push(s);
     };
     Generator.prototype.checkOutOfMemory = function () {
         var actual = Object.keys(this.staticData.variables).length + this.currNumBytes;
-        console.log(Object.keys(this.staticData.variables).length);
-        console.log(this.currNumBytes);
-        return actual > 255 ? this.outOfMemory() : undefined;
+        return actual > 255 ? Generator.outOfMemory() : undefined;
     };
-    Generator.prototype.outOfMemory = function () {
+    Generator.outOfMemory = function () {
         return Alert_1.error("Out of memory! Executable image exceeds 256 Bytes");
     };
     return Generator;

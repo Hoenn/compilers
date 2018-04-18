@@ -183,6 +183,7 @@ export class Generator {
 
     }
     backPatch(len: number) {
+        process.stdout.write(this.mCode.toString());
         //Backpatch temporary variables 1, 2
         this.emit("Backpatching temporary storage address");
         let location = len;
@@ -222,7 +223,8 @@ export class Generator {
         for(let i = 0; i < this.mCode.length; i++) {
             let currentByte = this.mCode[i];
             let nextByte = this.mCode[i+1];
-            if(nextByte == search) {
+            if(currentByte == "tm" && nextByte == search) {
+                console.log(search+": "+this.mCode[i] + " -> "+this.toHexString(location));
                 this.mCode[i] = this.toHexString(location);
                 this.mCode[i+1] = "00";
             } 

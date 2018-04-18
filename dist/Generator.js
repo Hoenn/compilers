@@ -196,6 +196,7 @@ var Generator = /** @class */ (function () {
         return s.toUpperCase();
     };
     Generator.prototype.backPatch = function (len) {
+        process.stdout.write(this.mCode.toString());
         //Backpatch temporary variables 1, 2
         this.emit("Backpatching temporary storage address");
         var location = len;
@@ -234,7 +235,8 @@ var Generator = /** @class */ (function () {
         for (var i = 0; i < this.mCode.length; i++) {
             var currentByte = this.mCode[i];
             var nextByte = this.mCode[i + 1];
-            if (nextByte == search) {
+            if (currentByte == "tm" && nextByte == search) {
+                console.log(search + ": " + this.mCode[i] + " -> " + this.toHexString(location));
                 this.mCode[i] = this.toHexString(location);
                 this.mCode[i + 1] = "00";
             }

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Alert_1 = require("./Alert");
 var StaticDataTable_1 = require("./StaticDataTable");
+var Heap_1 = require("./Heap");
 var Generator = /** @class */ (function () {
     function Generator(ast, st) {
         this.currNumBytes = 0;
@@ -41,6 +42,7 @@ var Generator = /** @class */ (function () {
         this.log = [];
         this.staticData = new StaticDataTable_1.StaticDataTable(st);
         this.currScopeId = 0;
+        this.heap = new Heap_1.Heap();
     }
     Generator.prototype.generate = function () {
         this.genNext(this.ast.root, 0);
@@ -76,7 +78,7 @@ var Generator = /** @class */ (function () {
             default: {
                 //AST leaf nodes
                 if (n.isString) {
-                    //this.getString(n);
+                    this.genString(n);
                 }
                 else if (!isNaN(parseInt(n.name))) {
                     this.genInt(n);
@@ -106,7 +108,14 @@ var Generator = /** @class */ (function () {
         //handle strings
         //handle ids
         var child = n.children[0];
-        if (child.name == "true" || child.name == "false") {
+        if (child.isString) {
+            var stringAddr = this.toHexString(this.heap.add(child.name));
+            this.pushCode([ops.loadAccMem, stringAddr, "00"]);
+            this.pushCode([ops.loadYConst, stringAddr]);
+            this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
+            this.pushCode([ops.loadXConst, "02"]);
+        }
+        else if (child.name == "true" || child.name == "false") {
             this.loadBooleanStrings = true;
             this.genNext(child, scope);
             this.pushCode([ops.loadXConst, "01"]);
@@ -146,6 +155,11 @@ var Generator = /** @class */ (function () {
         this.pushCode([ops.loadAccConst, this.toHexString(left.name)]);
         this.pushCode([ops.addWithCarry, this.tempb1, this.temp1b2]);
     };
+    Generator.prototype.genString = function (n) {
+        this.emit("Generate code: string");
+        var stringAddr = this.toHexString(this.heap.add(n.name));
+        this.pushCode([ops.loadAccConst, stringAddr]);
+    };
     Generator.prototype.genIdentifier = function (n, scope) {
         this.emit("Generate code: Identifier (" + n.name + ")");
         var idAddr = this.staticData.findAddr(n.name, scope);
@@ -184,6 +198,10 @@ var Generator = /** @class */ (function () {
                 }
             }
         }
+    };
+    Generator.prototype.insertCode = function (s, loc) {
+        this.currNumBytes++;
+        this.mCode[loc] = s;
     };
     Generator.prototype.toHexString = function (n) {
         if (typeof (n) == "string") {
@@ -229,7 +247,15 @@ var Generator = /** @class */ (function () {
             this.replaceEndian(location, tempNumByte);
             location++;
         }
+        location = 256 - this.heap.data.length;
         //Heap begins here
+        for (var i = 0; i < this.heap.data.length; i++) {
+            this.emit("Inserting " + this.heap.data[i] + " at " + this.toHexString(location));
+            this.insertCode(this.heap.data[i], location);
+            location++;
+        }
+        this.emit("Padding heapspace with zeroes");
+        this.zeroOut();
     };
     Generator.prototype.replaceEndian = function (location, search) {
         for (var i = 0; i < this.mCode.length; i++) {
@@ -253,6 +279,13 @@ var Generator = /** @class */ (function () {
     Generator.prototype.insertBytes = function (location, bytes) {
         for (var i = 0; i < bytes.length; i++) {
             this.mCode[location + i] = bytes[i];
+        }
+    };
+    Generator.prototype.zeroOut = function () {
+        for (var i = 0; i < this.mCode.length; i++) {
+            if (this.mCode[i] == undefined) {
+                this.mCode[i] = "00";
+            }
         }
     };
     Generator.prototype.emit = function (s) {

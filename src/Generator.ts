@@ -2,6 +2,7 @@ import {SyntaxTree, Node} from "./SyntaxTree";
 import {SymbolTree, ScopeNode} from './SymbolTree';
 import {Alert, isAlert, error} from "./Alert";
 import {StaticDataTable} from "./StaticDataTable";
+import {Heap} from "./Heap";
 
 export class Generator {
     ast: SyntaxTree;
@@ -10,6 +11,7 @@ export class Generator {
     log: string[];
     error: Alert | undefined;
     staticData: StaticDataTable;
+    heap: Heap;
     currScopeId: number;
     currNumBytes = 0;
 
@@ -32,6 +34,7 @@ export class Generator {
         this.log = [];
         this.staticData = new StaticDataTable(st);
         this.currScopeId = 0;
+        this.heap = new Heap();
     }
 
     generate(): {mCode: string[], log: string[], error: Alert|undefined} {
@@ -68,7 +71,7 @@ export class Generator {
             default: {
                 //AST leaf nodes
                 if(n.isString){
-                    //this.getString(n);
+                    this.genString(n);
                 } else if(!isNaN(parseInt(n.name))){
                     this.genInt(n);
                 }else if(n.name.length == 1){ //identifier
@@ -94,7 +97,15 @@ export class Generator {
         //handle strings
         //handle ids
         let child = n.children[0];
-        if(child.name == "true" || child.name == "false") {
+        if(child.isString) {
+            let stringAddr = this.toHexString(this.heap.add(child.name));
+            this.pushCode([ops.loadAccMem, stringAddr, "00"]);
+            this.pushCode([ops.loadYConst, stringAddr]);
+            this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
+            this.pushCode([ops.loadXConst, "02"]);
+
+        }
+        else if(child.name == "true" || child.name == "false") {
             this.loadBooleanStrings = true;
             this.genNext(child, scope);
             this.pushCode([ops.loadXConst, "01"]);
@@ -134,6 +145,11 @@ export class Generator {
         this.pushCode([ops.loadAccConst,this.toHexString(left.name)]);
         this.pushCode([ops.addWithCarry, this.tempb1, this.temp1b2]);
     }
+    genString(n: Node) {
+        this.emit("Generate code: string");
+        let stringAddr = this.toHexString(this.heap.add(n.name));
+        this.pushCode([ops.loadAccConst, stringAddr]);
+    }
     genIdentifier(n: Node, scope: number) {
         this.emit("Generate code: Identifier ("+n.name+")");
         let idAddr = this.staticData.findAddr(n.name, scope);
@@ -170,6 +186,10 @@ export class Generator {
                 }
             }
         }
+    }
+    insertCode(s: string, loc: number) {
+        this.currNumBytes++;
+        this.mCode[loc] = s;
     }
     toHexString(n: number| string): string {
         if(typeof(n) == "string") {
@@ -217,7 +237,17 @@ export class Generator {
             location++;
         }
 
+        location = 256-this.heap.data.length;
         //Heap begins here
+        for(let i = 0; i < this.heap.data.length; i++) {
+            this.emit("Inserting "+this.heap.data[i]+" at "+this.toHexString(location));
+            this.insertCode(this.heap.data[i], location);
+            location++;
+        }
+
+        this.emit("Padding heapspace with zeroes");
+        this.zeroOut();
+
     }
     replaceEndian(location:number, search:string) {
         for(let i = 0; i < this.mCode.length; i++) {
@@ -242,6 +272,13 @@ export class Generator {
     insertBytes(location: number, bytes: string[]) {
         for(let i = 0; i < bytes.length; i++) {
             this.mCode[location+i] = bytes[i];
+        }
+    }
+    zeroOut() {
+        for(let i = 0; i < this.mCode.length; i++) {
+            if(this.mCode[i] == undefined) {
+                this.mCode[i] = "00";
+            }
         }
     }
     emit(s: string) {

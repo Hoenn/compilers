@@ -134,6 +134,8 @@ var Generator = /** @class */ (function () {
                     break;
                 }
                 case "string": {
+                    this.emit("Printing variable of type string");
+                    this.pushCode([ops.loadYMem, this.tempb1, addr, ops.loadXConst, "02"]);
                     break;
                 }
                 default: {
@@ -278,11 +280,9 @@ var Generator = /** @class */ (function () {
         }
         location = 256 - this.heap.data.length;
         //Heap begins here
-        for (var i = 0; i < this.heap.data.length; i++) {
-            this.emit("Inserting " + this.heap.data[i] + " at " + this.toHexString(location));
-            this.insertCode(this.heap.data[i], location);
-            location++;
-        }
+        this.emit("Backpatching Heap");
+        this.insertBytes(location, this.heap.data);
+        location++;
         this.emit("Padding heapspace with zeroes");
         this.zeroOut();
     };

@@ -14,12 +14,12 @@ export class Heap {
     }
     convertToNullTerminatedHexString(s: string): string[] {
         let result = [];
-        result.push("00");
         for(let i = 0; i < s.length; i++) {
             result.push(this.strToHex(s.charAt(i)));
         }
+        result.push("00");
         //Null terminate
-        return result;
+        return result.reverse();
     }
     strToHex(s: string): string {
         return s.charCodeAt(0).toString(16);

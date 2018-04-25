@@ -15,12 +15,12 @@ var Heap = /** @class */ (function () {
     };
     Heap.prototype.convertToNullTerminatedHexString = function (s) {
         var result = [];
-        result.push("00");
         for (var i = 0; i < s.length; i++) {
             result.push(this.strToHex(s.charAt(i)));
         }
+        result.push("00");
         //Null terminate
-        return result;
+        return result.reverse();
     };
     Heap.prototype.strToHex = function (s) {
         return s.charCodeAt(0).toString(16);

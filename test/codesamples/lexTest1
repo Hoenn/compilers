@@ -1,6 +1,8 @@
 {
-   boolean a
-   a = false
+   string a
+   boolean b
+   print(b)
+   a = "truett"
 
     print(a)
 }$

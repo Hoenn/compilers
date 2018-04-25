@@ -125,6 +125,12 @@ var Generator = /** @class */ (function () {
                     break;
                 }
                 case "boolean": {
+                    this.emit("Printing variable of type boolean");
+                    this.loadBooleanStrings = true;
+                    this.pushCode([ops.loadXConst, "01", ops.compareEq, this.tempb1, addr]);
+                    this.pushCode([ops.loadYConst, this.tempFalseb1]);
+                    this.pushCode([ops.branchNotEqual, "02", ops.loadYConst, this.tempTrueb1]);
+                    this.pushCode([ops.loadXConst, "02"]);
                     break;
                 }
                 case "string": {

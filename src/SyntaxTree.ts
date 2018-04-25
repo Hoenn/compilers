@@ -54,9 +54,10 @@ export class Node {
     parent: Node | null;
     children: Node[];
     lineNum?: number;
-    isString?:boolean
+    isString?:boolean;
+    type?:string;
 
-    constructor(n:string, line?: number, isString?:boolean) {
+    constructor(n:string, line?: number, isString?:boolean){
         this.name = n;
         this.parent = null;
         this.children = [];

@@ -40,6 +40,7 @@ export function main(sourceArg: string, filePath?: boolean) {
             let s = new SemanticAnalyzer(tree.ast);
             let analysis = s.analyze();
             console.log(analysis.log);
+            console.log(analysis.ast.toString());
             console.log(analysis.st.toString());
             console.log(analysis.warnings);
             console.log(analysis.error);

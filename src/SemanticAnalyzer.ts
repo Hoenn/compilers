@@ -80,6 +80,7 @@ export class SemanticAnalyzer {
         let type = n.children[0].name;
         let id = n.children[1].name;
         let success = this.st.current.addStash(id, type, n.lineNum? n.lineNum: -1);
+        n.children[1].type = type;
         let err;
         if(!success) {
             this.emit("Found redeclared variable in same scope");

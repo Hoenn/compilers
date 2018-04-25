@@ -40,9 +40,11 @@ function main(sourceArg, filePath) {
             var s = new SemanticAnalyzer_1.SemanticAnalyzer(tree.ast);
             var analysis = s.analyze();
             console.log(analysis.log);
+            console.log(analysis.ast.toString());
             console.log(analysis.st.toString());
             console.log(analysis.warnings);
             console.log(analysis.error);
+            console.log("Code Gen");
             if (!analysis.error) {
                 var g = new Generator_1.Generator(analysis.ast, analysis.st);
                 var result = g.generate();

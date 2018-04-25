@@ -32,7 +32,7 @@ var SyntaxTree = /** @class */ (function () {
                 result += "-";
             }
             if (node.children.length === 0) {
-                result += "[" + node.name + "]";
+                result += "[" + node.name + " " + node.type + "]";
                 result += "\n";
             }
             else {

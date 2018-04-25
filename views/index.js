@@ -710,6 +710,7 @@ var SemanticAnalyzer = /** @class */ (function () {
         var type = n.children[0].name;
         var id = n.children[1].name;
         var success = this.st.current.addStash(id, type, n.lineNum ? n.lineNum : -1);
+        n.children[1].type = type;
         var err;
         if (!success) {
             this.emit("Found redeclared variable in same scope");
@@ -1146,7 +1147,7 @@ var SyntaxTree = /** @class */ (function () {
                 result += "-";
             }
             if (node.children.length === 0) {
-                result += "[" + node.name + "]";
+                result += "[" + node.name + " " + node.type + "]";
                 result += "\n";
             }
             else {

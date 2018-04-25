@@ -3,6 +3,7 @@ import {SymbolTree, ScopeNode} from './SymbolTree';
 import {Alert, isAlert, error} from "./Alert";
 import {StaticDataTable} from "./StaticDataTable";
 import {Heap} from "./Heap";
+import {TokenRegex} from "./Token";
 
 export class Generator {
     ast: SyntaxTree;
@@ -94,18 +95,36 @@ export class Generator {
     }
     genPrint(n: Node, scope: number) {
         this.emit("Generating code: Print");
-        //handle strings
-        //handle ids
         let child = n.children[0];
         if(child.isString) {
+            this.emit("Printing string literal");
             let stringAddr = this.toHexString(this.heap.add(child.name));
             this.pushCode([ops.loadAccMem, stringAddr, "00"]);
             this.pushCode([ops.loadYConst, stringAddr]);
             this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
             this.pushCode([ops.loadXConst, "02"]);
-
+        } else if (child.name.match(TokenRegex.Id)) {
+            //Get the scope of this variable and get the address assoc. in the static data table
+            let addr = this.toHexString(this.staticData.findAddr(child.name, scope));
+            switch(this.staticData.getVar(child.name, scope).type) {
+                case "int": {
+                    this.emit("Printing variable of type int");
+                    this.pushCode([ops.loadYMem, this.tempb1, addr, ops.loadXConst, "01"]);
+                    break;   
+                }
+                case "boolean": {
+                    break;
+                }
+                case "string": {
+                    break;
+                }
+                default: {
+                    console.log("Should not get here");
+                }
+            }
         }
-        else if(child.name == "true" || child.name == "false") {
+        else if(child.name.match(TokenRegex.BoolLiteral)) {
+            //Bool Expr
             this.loadBooleanStrings = true;
             this.genNext(child, scope);
             this.pushCode([ops.loadXConst, "01"]);
@@ -125,7 +144,7 @@ export class Generator {
     genVarDecl(n: Node, scope: number) {
         this.emit("Generating code: VarDecl");
         this.pushCode([ops.loadAccConst, "00"]);
-        let backPatchAddr = this.toHexString(this.staticData.add(n.children[1], scope));
+        let backPatchAddr = this.toHexString(this.staticData.add(n.children[1], scope, n.children[1].type));
         //TM 03
         this.pushCode([ops.storeAccMem, this.tempb1, backPatchAddr]);
     }
@@ -203,7 +222,6 @@ export class Generator {
 
     }
     backPatch(len: number) {
-        process.stdout.write(this.mCode.toString());
         //Backpatch temporary variables 1, 2
         this.emit("Backpatching temporary storage address");
         let location = len;
@@ -256,7 +274,6 @@ export class Generator {
             let currentByte = this.mCode[i];
             let nextByte = this.mCode[i+1];
             if(currentByte == "tm" && nextByte == search) {
-                console.log(search+": "+this.mCode[i] + " -> "+this.toHexString(location));
                 this.mCode[i] = this.toHexString(location);
                 this.mCode[i+1] = "00";
             } 
@@ -277,7 +294,7 @@ export class Generator {
         }
     }
     zeroOut() {
-        for(let i = 0; i < this.mCode.length; i++) {
+        for(let i = 0; i < 256; i++) {
             if(this.mCode[i] == undefined) {
                 this.mCode[i] = "00";
             }

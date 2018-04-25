@@ -44,6 +44,7 @@ export function main(sourceArg: string, filePath?: boolean) {
             console.log(analysis.st.toString());
             console.log(analysis.warnings);
             console.log(analysis.error);
+            console.log("Code Gen");
             if(!analysis.error) {
                 let g = new Generator(analysis.ast, analysis.st);
                 let result = g.generate();

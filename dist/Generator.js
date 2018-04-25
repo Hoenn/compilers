@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Alert_1 = require("./Alert");
 var StaticDataTable_1 = require("./StaticDataTable");
 var Heap_1 = require("./Heap");
+var Token_1 = require("./Token");
 var Generator = /** @class */ (function () {
     function Generator(ast, st) {
         this.currNumBytes = 0;
@@ -105,17 +106,37 @@ var Generator = /** @class */ (function () {
     };
     Generator.prototype.genPrint = function (n, scope) {
         this.emit("Generating code: Print");
-        //handle strings
-        //handle ids
         var child = n.children[0];
         if (child.isString) {
+            this.emit("Printing string literal");
             var stringAddr = this.toHexString(this.heap.add(child.name));
             this.pushCode([ops.loadAccMem, stringAddr, "00"]);
             this.pushCode([ops.loadYConst, stringAddr]);
             this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
             this.pushCode([ops.loadXConst, "02"]);
         }
-        else if (child.name == "true" || child.name == "false") {
+        else if (child.name.match(Token_1.TokenRegex.Id)) {
+            //Get the scope of this variable and get the address assoc. in the static data table
+            var addr = this.toHexString(this.staticData.findAddr(child.name, scope));
+            switch (this.staticData.getVar(child.name, scope).type) {
+                case "int": {
+                    this.emit("Printing variable of type int");
+                    this.pushCode([ops.loadYMem, this.tempb1, addr, ops.loadXConst, "01"]);
+                    break;
+                }
+                case "boolean": {
+                    break;
+                }
+                case "string": {
+                    break;
+                }
+                default: {
+                    console.log("Should not get here");
+                }
+            }
+        }
+        else if (child.name.match(Token_1.TokenRegex.BoolLiteral)) {
+            //Bool Expr
             this.loadBooleanStrings = true;
             this.genNext(child, scope);
             this.pushCode([ops.loadXConst, "01"]);
@@ -135,7 +156,7 @@ var Generator = /** @class */ (function () {
     Generator.prototype.genVarDecl = function (n, scope) {
         this.emit("Generating code: VarDecl");
         this.pushCode([ops.loadAccConst, "00"]);
-        var backPatchAddr = this.toHexString(this.staticData.add(n.children[1], scope));
+        var backPatchAddr = this.toHexString(this.staticData.add(n.children[1], scope, n.children[1].type));
         //TM 03
         this.pushCode([ops.storeAccMem, this.tempb1, backPatchAddr]);
     };
@@ -214,7 +235,6 @@ var Generator = /** @class */ (function () {
         return s.toUpperCase();
     };
     Generator.prototype.backPatch = function (len) {
-        process.stdout.write(this.mCode.toString());
         //Backpatch temporary variables 1, 2
         this.emit("Backpatching temporary storage address");
         var location = len;
@@ -265,7 +285,6 @@ var Generator = /** @class */ (function () {
             var currentByte = this.mCode[i];
             var nextByte = this.mCode[i + 1];
             if (currentByte == "tm" && nextByte == search) {
-                console.log(search + ": " + this.mCode[i] + " -> " + this.toHexString(location));
                 this.mCode[i] = this.toHexString(location);
                 this.mCode[i + 1] = "00";
             }
@@ -285,7 +304,7 @@ var Generator = /** @class */ (function () {
         }
     };
     Generator.prototype.zeroOut = function () {
-        for (var i = 0; i < this.mCode.length; i++) {
+        for (var i = 0; i < 256; i++) {
             if (this.mCode[i] == undefined) {
                 this.mCode[i] = "00";
             }

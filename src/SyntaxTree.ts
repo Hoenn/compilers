@@ -32,7 +32,7 @@ export class SyntaxTree {
                 result+="-";
             }
             if(node.children.length === 0){
-                result+= "["+node.name+" "+node.type+"]";
+                result+= "["+node.name+"]";
                 result+="\n";
             } else {
                 result+= "<"+node.name+">\n";

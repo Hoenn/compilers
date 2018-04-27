@@ -10,7 +10,7 @@ const tests = [
     {
         "test": "{}$",
         "describe": "Empty program",
-        "result": "00",
+        "result": zeroOutHelper([]),
         "error": undefined
     },
     {
@@ -25,7 +25,7 @@ const tests = [
                 }
             }$`,
         "describe": "Nearly out of memory",
-        "result": "A9 00 8D D5 00 A9 00 8D D6 00 A9 00 8D D7 00 A9 00 8D D8 00 A9 00 8D D9 00 A9 00 8D DA 00 A9 00 8D DB 00 A9 00 8D DC 00 A9 00 8D DD 00 A9 00 8D DE 00 A9 00 8D DF 00 A9 00 8D E0 00 A9 00 8D E1 00 A9 00 8D E2 00 A9 00 8D E3 00 A9 00 8D E4 00 A9 00 8D E5 00 A9 00 8D E6 00 A9 00 8D E7 00 A9 00 8D E8 00 A9 00 8D E9 00 A9 00 8D EA 00 A9 00 8D EB 00 A9 00 8D EC 00 A9 00 8D ED 00 A9 00 8D EE 00 A9 00 8D EF 00 A9 00 8D F0 00 A9 00 8D F1 00 A9 00 8D F2 00 A9 00 8D F3 00 A9 00 8D F4 00 A9 00 8D F5 00 A9 00 8D F6 00 A9 00 8D F7 00 A9 00 8D F8 00 A9 00 8D F9 00 A9 00 8D FA 00 A9 00 8D FB 00 A9 00 8D FC 00 A9 00 8D FD 00 A9 00 8D FE 00 00",
+        "result": "A9,00,8D,D5,00,A9,00,8D,D6,00,A9,00,8D,D7,00,A9,00,8D,D8,00,A9,00,8D,D9,00,A9,00,8D,DA,00,A9,00,8D,DB,00,A9,00,8D,DC,00,A9,00,8D,DD,00,A9,00,8D,DE,00,A9,00,8D,DF,00,A9,00,8D,E0,00,A9,00,8D,E1,00,A9,00,8D,E2,00,A9,00,8D,E3,00,A9,00,8D,E4,00,A9,00,8D,E5,00,A9,00,8D,E6,00,A9,00,8D,E7,00,A9,00,8D,E8,00,A9,00,8D,E9,00,A9,00,8D,EA,00,A9,00,8D,EB,00,A9,00,8D,EC,00,A9,00,8D,ED,00,A9,00,8D,EE,00,A9,00,8D,EF,00,A9,00,8D,F0,00,A9,00,8D,F1,00,A9,00,8D,F2,00,A9,00,8D,F3,00,A9,00,8D,F4,00,A9,00,8D,F5,00,A9,00,8D,F6,00,A9,00,8D,F7,00,A9,00,8D,F8,00,A9,00,8D,F9,00,A9,00,8D,FA,00,A9,00,8D,FB,00,A9,00,8D,FC,00,A9,00,8D,FD,00,A9,00,8D,FE,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00",
         "error": undefined
     },
     {
@@ -82,3 +82,11 @@ tests.forEach(function(test) {
 
     });
 });
+
+function zeroOutHelper(arr: string[]) {
+    for(let i = 0; i < 256; i++) {
+        if(arr[i] == undefined) {
+            arr[i] = "00";
+        }
+    }
+}

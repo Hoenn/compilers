@@ -1,8 +1,10 @@
 {
-   string a
-   boolean b
-   print(b)
-   a = "truett"
-
+    int a
+    a = 1
+    {
+        a =2
+    }
     print(a)
+
+   
 }$

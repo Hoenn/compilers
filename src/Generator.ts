@@ -185,10 +185,15 @@ export class Generator {
         this.emit("Generate code: If Statement");
         this.genNext(n.children[0], scope);
         let addrAfterCondition = this.currNumBytes+1;
+        //Store the current jump id
         let jumpNum = this.jumps;
+        //Add the start address to jump table and move up to next jumpId
         this.jumpTable['J'+this.jumps++] = ({start: addrAfterCondition});
+        //Push a temporary Jump id which is the key in the jumpTable
         this.pushCode([ops.branchNotEqual, 'J'+jumpNum]);
         this.genNext(n.children[1], scope);
+        //After generating other child we use the difference in bytes
+        //Between start and dest to determine jump distance
         this.jumpTable['J'+jumpNum].dest = this.currNumBytes+1;
     }
     genString(n: Node) {

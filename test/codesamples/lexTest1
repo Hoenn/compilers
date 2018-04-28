@@ -1,10 +1,9 @@
 {
-    int a
-    a = 1
-    {
-        a =2
+    if true {
+        print(1)
+        if false {
+            print(2)
+        }
     }
-    print(a)
-
-   
+    print(3)
 }$

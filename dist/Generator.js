@@ -17,6 +17,8 @@ var Generator = /** @class */ (function () {
         this.tempb1 = "tm";
         this.temp1b2 = "p1";
         this.temp2b2 = "p2";
+        this.jumpb1 = "jp";
+        this.jumps = 1;
         //name -> opcode
         this.op = {
             "loadAccConst": "A9",
@@ -42,6 +44,7 @@ var Generator = /** @class */ (function () {
         this.mCode = [];
         this.log = [];
         this.staticData = new StaticDataTable_1.StaticDataTable(st);
+        this.jumpTable = {};
         this.currScopeId = 0;
         this.heap = new Heap_1.Heap();
     }
@@ -74,6 +77,10 @@ var Generator = /** @class */ (function () {
             }
             case "Plus": {
                 this.genPlus(n, scope);
+                break;
+            }
+            case "If": {
+                this.genIf(n, scope);
                 break;
             }
             default: {
@@ -143,7 +150,7 @@ var Generator = /** @class */ (function () {
                 }
             }
         }
-        else if (child.name.match(Token_1.TokenRegex.BoolLiteral)) {
+        else if (child.name.match(Token_1.TokenRegex.BoolLiteral) || child.name.match(Token_1.TokenRegex.BoolOp)) {
             //Bool Expr
             this.loadBooleanStrings = true;
             this.genNext(child, scope);
@@ -183,6 +190,16 @@ var Generator = /** @class */ (function () {
         this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
         this.pushCode([ops.loadAccConst, this.toHexString(left.name)]);
         this.pushCode([ops.addWithCarry, this.tempb1, this.temp1b2]);
+    };
+    Generator.prototype.genIf = function (n, scope) {
+        this.emit("Generate code: If Statement");
+        this.genNext(n.children[0], scope);
+        var addrAfterCondition = this.currNumBytes + 1;
+        var jumpNum = this.jumps;
+        this.jumpTable['J' + this.jumps++] = ({ start: addrAfterCondition });
+        this.pushCode([ops.branchNotEqual, 'J' + jumpNum]);
+        this.genNext(n.children[1], scope);
+        this.jumpTable['J' + jumpNum].dest = this.currNumBytes + 1;
     };
     Generator.prototype.genString = function (n) {
         this.emit("Generate code: string");
@@ -283,6 +300,20 @@ var Generator = /** @class */ (function () {
         this.emit("Backpatching Heap");
         this.insertBytes(location, this.heap.data);
         location++;
+        this.emit("Backpatching Jump table");
+        for (var j in this.jumpTable) {
+            console.log(j);
+            var dest = this.jumpTable[j].dest;
+            var start = this.jumpTable[j].start;
+            var finalLoc = 0;
+            if (dest && start) {
+                finalLoc = dest - start - 2;
+            }
+            else {
+                console.log("Error backpatching jump table");
+            }
+            this.replaceAllByte(j, this.toHexString(finalLoc));
+        }
         this.emit("Padding heapspace with zeroes");
         this.zeroOut();
     };

@@ -12,6 +12,7 @@ export class Generator {
     log: string[];
     error: Alert | undefined;
     staticData: StaticDataTable;
+    jumpTable: {[addr: string]: {start?: number, dest?: number} };
     heap: Heap;
     currScopeId: number;
     currNumBytes = 0;
@@ -26,6 +27,8 @@ export class Generator {
     readonly tempb1 = "tm";
     readonly temp1b2 = "p1";
     readonly temp2b2 = "p2";
+    readonly jumpb1 = "jp";
+    jumps = 1;
 
     constructor(ast: SyntaxTree, st: SymbolTree) {
         this.ast = ast;
@@ -34,6 +37,7 @@ export class Generator {
         this.mCode = [];
         this.log = [];
         this.staticData = new StaticDataTable(st);
+        this.jumpTable =  {};
         this.currScopeId = 0;
         this.heap = new Heap();
     }
@@ -67,6 +71,10 @@ export class Generator {
             }
             case "Plus": {
                 this.genPlus(n, scope);
+                break;
+            }
+            case "If": {
+                this.genIf(n, scope);
                 break;
             }
             default: {
@@ -132,7 +140,7 @@ export class Generator {
                 }
             }
         }
-        else if(child.name.match(TokenRegex.BoolLiteral)) {
+        else if(child.name.match(TokenRegex.BoolLiteral) || child.name.match(TokenRegex.BoolOp)) {
             //Bool Expr
             this.loadBooleanStrings = true;
             this.genNext(child, scope);
@@ -142,7 +150,7 @@ export class Generator {
             this.pushCode([ops.branchNotEqual, "02"])
             this.pushCode([ops.loadYConst, this.tempTrueb1])
             this.pushCode([ops.loadXConst, "02"]);
-        } else { //int
+        } else { //int and plusexpr
             this.genNext(child, scope);
             this.pushCode([ops.loadXConst, "01"]);
             this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
@@ -172,6 +180,16 @@ export class Generator {
         this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
         this.pushCode([ops.loadAccConst,this.toHexString(left.name)]);
         this.pushCode([ops.addWithCarry, this.tempb1, this.temp1b2]);
+    }
+    genIf(n: Node, scope:number) {
+        this.emit("Generate code: If Statement");
+        this.genNext(n.children[0], scope);
+        let addrAfterCondition = this.currNumBytes+1;
+        let jumpNum = this.jumps;
+        this.jumpTable['J'+this.jumps++] = ({start: addrAfterCondition});
+        this.pushCode([ops.branchNotEqual, 'J'+jumpNum]);
+        this.genNext(n.children[1], scope);
+        this.jumpTable['J'+jumpNum].dest = this.currNumBytes+1;
     }
     genString(n: Node) {
         this.emit("Generate code: string");
@@ -271,6 +289,21 @@ export class Generator {
         this.emit("Backpatching Heap");
         this.insertBytes(location, this.heap.data);
         location++;
+
+        this.emit("Backpatching Jump table");
+        for(let j in this.jumpTable) {
+            console.log(j);
+            let dest = this.jumpTable[j].dest;
+            let start = this.jumpTable[j].start;
+            let finalLoc = 0;
+            if(dest && start) {
+                finalLoc = dest - start - 2;
+            } else {
+                console.log("Error backpatching jump table");
+            }
+            this.replaceAllByte(j, this.toHexString(finalLoc));
+
+        }
 
         this.emit("Padding heapspace with zeroes");
         this.zeroOut();

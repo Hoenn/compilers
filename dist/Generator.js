@@ -18,7 +18,7 @@ var Generator = /** @class */ (function () {
         this.temp1b2 = "p1";
         this.temp2b2 = "p2";
         this.jumpb1 = "jp";
-        this.jumps = 1;
+        this.jumps = 0;
         //name -> opcode
         this.op = {
             "loadAccConst": "A9",

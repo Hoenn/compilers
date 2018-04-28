@@ -28,7 +28,7 @@ export class Generator {
     readonly temp1b2 = "p1";
     readonly temp2b2 = "p2";
     readonly jumpb1 = "jp";
-    jumps = 1;
+    jumps = 0;
 
     constructor(ast: SyntaxTree, st: SymbolTree) {
         this.ast = ast;

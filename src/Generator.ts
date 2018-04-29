@@ -27,7 +27,6 @@ export class Generator {
     readonly tempb1 = "tm";
     readonly temp1b2 = "p1";
     readonly temp2b2 = "p2";
-    readonly jumpb1 = "jp";
     jumps = 0;
 
     constructor(ast: SyntaxTree, st: SymbolTree) {
@@ -318,7 +317,7 @@ export class Generator {
         for(let i = 0; i < this.mCode.length; i++) {
             let currentByte = this.mCode[i];
             let nextByte = this.mCode[i+1];
-            if(currentByte == "tm" && nextByte == search) {
+            if(currentByte == this.tempb1 && nextByte == search) {
                 this.mCode[i] = this.toHexString(location);
                 this.mCode[i+1] = "00";
             } 

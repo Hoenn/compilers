@@ -17,7 +17,6 @@ var Generator = /** @class */ (function () {
         this.tempb1 = "tm";
         this.temp1b2 = "p1";
         this.temp2b2 = "p2";
-        this.jumpb1 = "jp";
         this.jumps = 0;
         //name -> opcode
         this.op = {
@@ -195,10 +194,15 @@ var Generator = /** @class */ (function () {
         this.emit("Generate code: If Statement");
         this.genNext(n.children[0], scope);
         var addrAfterCondition = this.currNumBytes + 1;
+        //Store the current jump id
         var jumpNum = this.jumps;
+        //Add the start address to jump table and move up to next jumpId
         this.jumpTable['J' + this.jumps++] = ({ start: addrAfterCondition });
+        //Push a temporary Jump id which is the key in the jumpTable
         this.pushCode([ops.branchNotEqual, 'J' + jumpNum]);
         this.genNext(n.children[1], scope);
+        //After generating other child we use the difference in bytes
+        //Between start and dest to determine jump distance
         this.jumpTable['J' + jumpNum].dest = this.currNumBytes + 1;
     };
     Generator.prototype.genString = function (n) {
@@ -321,7 +325,7 @@ var Generator = /** @class */ (function () {
         for (var i = 0; i < this.mCode.length; i++) {
             var currentByte = this.mCode[i];
             var nextByte = this.mCode[i + 1];
-            if (currentByte == "tm" && nextByte == search) {
+            if (currentByte == this.tempb1 && nextByte == search) {
                 this.mCode[i] = this.toHexString(location);
                 this.mCode[i + 1] = "00";
             }

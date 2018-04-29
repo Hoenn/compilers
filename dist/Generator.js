@@ -82,6 +82,10 @@ var Generator = /** @class */ (function () {
                 this.genIf(n, scope);
                 break;
             }
+            case "While": {
+                this.genWhile(n, scope);
+                break;
+            }
             default: {
                 //AST leaf nodes
                 if (n.isString) {
@@ -203,6 +207,27 @@ var Generator = /** @class */ (function () {
         this.genNext(n.children[1], scope);
         //After generating other child we use the difference in bytes
         //Between start and dest to determine jump distance
+        this.jumpTable['J' + jumpNum].dest = this.currNumBytes + 1;
+    };
+    Generator.prototype.genWhile = function (n, scope) {
+        this.emit("Generate code: While Loop");
+        //Store the current address since we'll need to loop back to this point on true
+        var conditionAddress = this.currNumBytes;
+        //Gen the condition 
+        this.genNext(n.children[0], scope);
+        //Set the start point for jumping over the body
+        var bodyAddr = this.currNumBytes;
+        var jumpNum = this.jumps;
+        this.jumpTable['J' + this.jumps++] = ({ start: bodyAddr });
+        this.pushCode([ops.branchNotEqual, 'J' + jumpNum]);
+        //Gen the body, this.currNumBytes will be used to figure out how long the body is
+        this.genNext(n.children[1], scope);
+        this.pushCode([ops.loadAccConst, "00", ops.storeAccMem, this.toHexString(bodyAddr)]);
+        this.pushCode([ops.loadXConst, "01", ops.compareEq, this.toHexString(bodyAddr)]);
+        //Can only jump forward so we'll need to loop around to the start of the pgm
+        var loopingJump = this.toHexString(256 - (bodyAddr + conditionAddress) - 2);
+        this.pushCode([ops.branchNotEqual, loopingJump]);
+        //We now know the end point of the loop so set the dest in the jumpTable
         this.jumpTable['J' + jumpNum].dest = this.currNumBytes + 1;
     };
     Generator.prototype.genString = function (n) {

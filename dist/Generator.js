@@ -224,8 +224,8 @@ var Generator = /** @class */ (function () {
         //Gen the body, this.currNumBytes will be used to figure out how long the body is
         this.genNext(n.children[1], scope);
         console.log(this.toHexString(bodyAddr));
-        this.pushCode([ops.loadAccConst, "00", ops.storeAccMem, 'J' + jumpNum, "00"]);
-        this.pushCode([ops.loadXConst, "01", ops.compareEq, 'J' + jumpNum, "00"]);
+        this.pushCode([ops.loadAccConst, "00", ops.storeAccMem, this.tempb1, this.temp1b2]);
+        this.pushCode([ops.loadXConst, "01", ops.compareEq, this.tempb1, this.temp1b2]);
         //Can only jump forward so we'll need to loop around to the start of the pgm
         var loopingJump = this.toHexString(256 - (this.currNumBytes + conditionAddress) - 2);
         this.pushCode([ops.branchNotEqual, loopingJump]);

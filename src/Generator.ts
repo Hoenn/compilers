@@ -202,7 +202,6 @@ export class Generator {
     genWhile(n: Node, scope: number) {
         this.emit("Generate code: While Loop");
         //Store the current address since we'll need to loop back to this point on true
-        console.log(this.toHexString(this.currNumBytes));
         let conditionAddress = this.currNumBytes;
         //Gen the condition 
         this.genNext(n.children[0], scope);
@@ -213,16 +212,15 @@ export class Generator {
         this.pushCode([ops.branchNotEqual, 'J'+jumpNum]);
         //Gen the body, this.currNumBytes will be used to figure out how long the body is
         this.genNext(n.children[1], scope);
-        console.log(this.toHexString(bodyAddr));
-        this.pushCode([ops.loadAccConst, "00", ops.storeAccMem, 'J'+jumpNum, "00"]);
-        this.pushCode([ops.loadXConst, "01", ops.compareEq, 'J'+jumpNum, "00"]);
+        //Store 00 in memory so we can compare it to X to force flag set false
+        this.pushCode([ops.loadAccConst, "00", ops.storeAccMem, this.tempb1, this.temp1b2]);
+        this.pushCode([ops.loadXConst, "01", ops.compareEq, this.tempb1, this.temp1b2]);
 
         //Can only jump forward so we'll need to loop around to the start of the pgm
         let loopingJump = this.toHexString(256 - (this.currNumBytes + conditionAddress)-2);
         this.pushCode([ops.branchNotEqual, loopingJump]);        
         //We now know the end point of the loop so set the dest in the jumpTable
         this.jumpTable['J'+jumpNum].dest = this.currNumBytes;
-        console.log(this.jumpTable);
 
     }
     genString(n: Node) {

@@ -254,6 +254,8 @@ export class Generator {
             //Now load X with TMP1, and compare with Temp2 in memory
             this.pushCode([ops.loadXMem, this.tempb1, this.temp1b2]);
             this.pushCode([ops.compareEq, this.tempb1, this.temp2b2]);
+            //Leave the result in the accumulator
+            //On equal Acc: 01
             this.pushCode([ops.loadAccConst, "00", ops.branchNotEqual, "02", ops.loadAccConst, "01"]);
         }
     }

@@ -2,4 +2,6 @@
 int a
 print((a == 1))
   print(a)
+  print(true)
+  print(("a"=="a"))
 }$

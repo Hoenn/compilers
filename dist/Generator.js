@@ -161,7 +161,8 @@ var Generator = /** @class */ (function () {
                 }
             }
         }
-        else if (child.name.match(Token_1.TokenRegex.BoolLiteral) || child.name.match(Token_1.TokenRegex.BoolOp)) {
+        else if (child.name == "EqualTo" || child.name == "NotEqualTo" || child.name.match(Token_1.TokenRegex.BoolLiteral)) {
+            console.log("Hello");
             //Bool Expr
             this.loadBooleanStrings = true;
             this.genNext(child, scope);
@@ -241,9 +242,31 @@ var Generator = /** @class */ (function () {
     };
     Generator.prototype.genEqualTo = function (n, scope) {
         this.emit("Generate code: EqualTo");
-        //Variable to variable
+        var left = n.children[0];
+        var right = n.children[1];
         //String to String
-        //Anything else
+        if (left.isString && right.isString) {
+            //Just precompute result based on node value, set the Z flag with result
+            if (left.name == right.name) {
+                this.pushCode([ops.loadAccConst, "01", ops.loadXConst, "01"]);
+            }
+            else {
+                this.pushCode([ops.loadAccConst, "00", ops.loadXConst, "01"]);
+            }
+            this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2, ops.compareEq, this.tempb1, this.temp1b2]);
+        }
+        else {
+            //Compute left expr and store result in TMP1
+            this.genNext(left, scope);
+            this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
+            //Compute right expr and store result in TMP2
+            this.genNext(right, scope);
+            this.pushCode([ops.storeAccMem, this.tempb1, this.temp2b2]);
+            //Now load X with TMP1, and compare with Temp2 in memory
+            this.pushCode([ops.loadXMem, this.tempb1, this.temp1b2]);
+            this.pushCode([ops.compareEq, this.tempb1, this.temp2b2]);
+            this.pushCode([ops.loadAccConst, "00", ops.branchNotEqual, "02", ops.loadAccConst, "01"]);
+        }
     };
     Generator.prototype.genNotEqualTo = function (n, scope) {
         this.emit("Not supported yet");
@@ -416,6 +439,7 @@ var ops;
     ops["loadXConst"] = "loadXConst";
     ops["loadYConst"] = "loadYConst";
     ops["loadYMem"] = "loadYMem";
+    ops["loadXMem"] = "loadXMem";
     ops["noOp"] = "noOp";
     ops["break"] = "break";
     ops["compareEq"] = "compareEq";

@@ -80,6 +80,14 @@ export class Generator {
                 this.genWhile(n, scope);
                 break;
             }
+            case "EqualTo": {
+                this.genEqualTo(n, scope);
+                break;
+            }
+            case "NotEqualTo": {
+                this.genNotEqualTo(n, scope);
+                break;
+            }
             default: {
                 //AST leaf nodes
                 if(n.isString){
@@ -221,7 +229,15 @@ export class Generator {
         this.pushCode([ops.branchNotEqual, loopingJump]);        
         //We now know the end point of the loop so set the dest in the jumpTable
         this.jumpTable['J'+jumpNum].dest = this.currNumBytes;
-
+    }
+    genEqualTo(n: Node, scope: number) {
+        this.emit("Generate code: EqualTo");
+        //Variable to variable
+        //String to String
+        //Anything else
+    }
+    genNotEqualTo(n: Node, scope: number) {
+        this.emit("Not supported yet");
     }
     genString(n: Node) {
         this.emit("Generate code: string");

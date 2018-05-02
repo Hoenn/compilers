@@ -86,6 +86,14 @@ var Generator = /** @class */ (function () {
                 this.genWhile(n, scope);
                 break;
             }
+            case "EqualTo": {
+                this.genEqualTo(n, scope);
+                break;
+            }
+            case "NotEqualTo": {
+                this.genNotEqualTo(n, scope);
+                break;
+            }
             default: {
                 //AST leaf nodes
                 if (n.isString) {
@@ -212,7 +220,6 @@ var Generator = /** @class */ (function () {
     Generator.prototype.genWhile = function (n, scope) {
         this.emit("Generate code: While Loop");
         //Store the current address since we'll need to loop back to this point on true
-        console.log(this.toHexString(this.currNumBytes));
         var conditionAddress = this.currNumBytes;
         //Gen the condition 
         this.genNext(n.children[0], scope);
@@ -223,7 +230,7 @@ var Generator = /** @class */ (function () {
         this.pushCode([ops.branchNotEqual, 'J' + jumpNum]);
         //Gen the body, this.currNumBytes will be used to figure out how long the body is
         this.genNext(n.children[1], scope);
-        console.log(this.toHexString(bodyAddr));
+        //Store 00 in memory so we can compare it to X to force flag set false
         this.pushCode([ops.loadAccConst, "00", ops.storeAccMem, this.tempb1, this.temp1b2]);
         this.pushCode([ops.loadXConst, "01", ops.compareEq, this.tempb1, this.temp1b2]);
         //Can only jump forward so we'll need to loop around to the start of the pgm
@@ -231,7 +238,15 @@ var Generator = /** @class */ (function () {
         this.pushCode([ops.branchNotEqual, loopingJump]);
         //We now know the end point of the loop so set the dest in the jumpTable
         this.jumpTable['J' + jumpNum].dest = this.currNumBytes;
-        console.log(this.jumpTable);
+    };
+    Generator.prototype.genEqualTo = function (n, scope) {
+        this.emit("Generate code: EqualTo");
+        //Variable to variable
+        //String to String
+        //Anything else
+    };
+    Generator.prototype.genNotEqualTo = function (n, scope) {
+        this.emit("Not supported yet");
     };
     Generator.prototype.genString = function (n) {
         this.emit("Generate code: string");

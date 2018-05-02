@@ -3,6 +3,7 @@ const programs = example.programs;
 const LexerModule = require('../dist/Lexer.js');
 const ParserModule = require('../dist/Parser.js');
 const SemanticAnalysisModule = require('../dist/SemanticAnalyzer.js');
+const GenModule = require('../dist/Generator.js');
 var editor;
 window.onload = function() {
     setupAceEditor();
@@ -114,7 +115,6 @@ compileCode = function() {
 
     //Semantic Analysis
     let analysedPgms = [];
-    console.log(parsedPgms);
     $("#log-text").append("\nStarting Semantic Analysis...\n");
     start = window.performance.now();
     for(let currPgm = 0; currPgm < parsedPgms.length; currPgm++) {
@@ -174,6 +174,50 @@ compileCode = function() {
     }
     time = window.performance.now()-start;
     logOutput("semantic", "[SEMANTIC] => Completed in: "+time.toFixed(2)+" ms\n");
+
+    let genPgms = [];
+    $("#log-text").append("\nStarting Code Generation...\n");
+    start = window.performance.now();
+    for(let currPgm = 0; currPgm < analysedPgms.length; currPgm++) {
+        $('#generate-text').append("<i>Generating Program "+(currPgm+1)+"\n</i>");
+        if(analysedPgms[currPgm] == "parse" || analysedPgms[currPgm] == "lexical" || analysedPgms[currPgm] == "semantic") {
+            $('#generate-text').append("<i>Skipping Program "+ (currPgm+1) +
+                " with "+analysedPgms[currPgm]+" error <br/></i>");
+            genPgms.push(analysedPgms[currPgm]);
+            continue;
+        }
+        let generator = new GenModule.Generator(analysedPgms[currPgm].ast, analysedPgms[currPgm].st);
+        result = generator.generate();
+        //result:: {mCode: string[], log: string[], error: Alert|undefined}
+        let log = result.log;
+        for(let i = 0; i < log.length; i++) {
+            let text = "[GENERATE] => "+log[i]+"\n";
+            tabOutput("generate", text);
+        }
+        let err = result.error;
+        if(err) {
+            let errorMsg = errorSpan("GENERATE", err);
+            logError("generate", errorMsg);
+            $("#tab-head-five").addClass(statusColor("error"));
+            genPgms.push("generate");
+            continue;
+        } else {
+            applyFilter($("#compile-img"), 'default');
+            genPgms.push(result);
+        }
+        let code = result.mCode;
+        tabOutput("generate", "\n[GENERATE] => 6502a Machine Code\n");
+        for(let i = 0; i < code.length; i++) {
+            tabOutput("generate", code[i]+" ");
+            if((i+1) % 16 == 0) {
+                tabOutput("generate", "\n");
+            }
+        }
+        tabOutput("generate", "\n");
+    }
+    time = window.performance.now() - start;
+    logOutput('generate', "[GENERATE] => Completed in: "+time.toFixed(2)+" ms\n");
+
     //Go back to editor when complete
     editor.focus();
 }
@@ -276,6 +320,12 @@ clearTabsAndErrors = function(){
     $("#tab-head-four").removeClass(function(index, className) {
         return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
     });
+    //Generate
+    $("#generate-text").html("");
+    $("#tab-head-five").removeClass(function(index, className) {
+        return (className.match(/(compile-error|compile-warning)/g)||[]).join(' ');
+    });
+ 
 }
 
 loadProgram = function(index) {

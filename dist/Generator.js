@@ -162,7 +162,6 @@ var Generator = /** @class */ (function () {
             }
         }
         else if (child.name == "EqualTo" || child.name == "NotEqualTo" || child.name.match(Token_1.TokenRegex.BoolLiteral)) {
-            console.log("Hello");
             //Bool Expr
             this.loadBooleanStrings = true;
             this.genNext(child, scope);
@@ -265,6 +264,8 @@ var Generator = /** @class */ (function () {
             //Now load X with TMP1, and compare with Temp2 in memory
             this.pushCode([ops.loadXMem, this.tempb1, this.temp1b2]);
             this.pushCode([ops.compareEq, this.tempb1, this.temp2b2]);
+            //Leave the result in the accumulator
+            //On equal Acc: 01
             this.pushCode([ops.loadAccConst, "00", ops.branchNotEqual, "02", ops.loadAccConst, "01"]);
         }
     };
@@ -331,7 +332,7 @@ var Generator = /** @class */ (function () {
     };
     Generator.prototype.backPatch = function (len) {
         //Backpatch temporary variables 1, 2
-        this.emit("Backpatching temporary storage address");
+        this.emit("Backpatching temporary addresses");
         var location = len;
         if (this.loadBooleanStrings) {
             this.emit("Backpatching boolean literal strings");
@@ -351,6 +352,7 @@ var Generator = /** @class */ (function () {
         else {
             this.emit("Optimization: Skipping boolean literal string backpatching (11B)");
         }
+        this.emit("Backpatching temporary storage");
         this.emit("tmp1 -> " + this.toHexString(location) + "00");
         this.emit("tmp2 -> " + this.toHexString(location + 1) + "00");
         this.replaceEndian(location, this.temp1b2);

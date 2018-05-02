@@ -321,7 +321,7 @@ export class Generator {
     }
     backPatch(len: number) {
         //Backpatch temporary variables 1, 2
-        this.emit("Backpatching temporary storage address");
+        this.emit("Backpatching temporary addresses");
         let location = len;
         if(this.loadBooleanStrings) {
             this.emit("Backpatching boolean literal strings");
@@ -340,6 +340,7 @@ export class Generator {
         } else {
             this.emit("Optimization: Skipping boolean literal string backpatching (11B)");
         }
+        this.emit("Backpatching temporary storage");
         this.emit("tmp1 -> " + this.toHexString(location) + "00");
         this.emit("tmp2 -> " + this.toHexString(location+1) + "00");
         this.replaceEndian(location, this.temp1b2);

@@ -270,7 +270,10 @@ var Generator = /** @class */ (function () {
         }
     };
     Generator.prototype.genNotEqualTo = function (n, scope) {
-        this.emit("Not supported yet");
+        this.emit("Generate code: NotEqualTo");
+        this.genEqualTo(n, scope);
+        this.pushCode([ops.loadAccConst, "00", ops.branchNotEqual, "02", ops.loadAccConst, "01", ops.loadXConst, "00"]);
+        this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2, ops.compareEq, this.tempb1, this.temp1b2]);
     };
     Generator.prototype.genString = function (n) {
         this.emit("Generate code: string");

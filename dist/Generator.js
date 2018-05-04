@@ -255,15 +255,15 @@ var Generator = /** @class */ (function () {
             this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2, ops.compareEq, this.tempb1, this.temp1b2]);
         }
         else {
-            //Compute left expr and store result in TMP1
+            //Compute left expr and store result in TMP2
             this.genNext(left, scope);
-            this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
-            //Compute right expr and store result in TMP2
-            this.genNext(right, scope);
             this.pushCode([ops.storeAccMem, this.tempb1, this.temp2b2]);
+            //Compute right expr and store result in TMP1
+            this.genNext(right, scope);
+            this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2]);
             //Now load X with TMP1, and compare with Temp2 in memory
-            this.pushCode([ops.loadXMem, this.tempb1, this.temp1b2]);
-            this.pushCode([ops.compareEq, this.tempb1, this.temp2b2]);
+            this.pushCode([ops.loadXMem, this.tempb1, this.temp2b2]);
+            this.pushCode([ops.compareEq, this.tempb1, this.temp1b2]);
             //Leave the result in the accumulator
             //On equal Acc: 01
             this.pushCode([ops.loadAccConst, "00", ops.branchNotEqual, "02", ops.loadAccConst, "01"]);

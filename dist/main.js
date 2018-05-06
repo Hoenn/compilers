@@ -51,10 +51,7 @@ function main(sourceArg, filePath) {
                 console.log(result.log);
                 var code = "";
                 for (var i = 0; i < result.mCode.length; i++) {
-                    process.stdout.write(result.mCode[i] + " ");
-                    if ((i + 1) % 16 == 0) {
-                        console.log("\n");
-                    }
+                    process.stdout.write(result.mCode[i] + ",");
                 }
                 if (result.error)
                     console.log(result.error);

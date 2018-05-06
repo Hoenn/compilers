@@ -51,10 +51,7 @@ export function main(sourceArg: string, filePath?: boolean) {
                 console.log(result.log);
                 let code = "";
                 for(let i = 0; i < result.mCode.length; i++) {
-                    process.stdout.write(result.mCode[i]+" ");
-                    if((i+1) %16 == 0) {
-                        console.log("\n");
-                    }
+                    process.stdout.write(result.mCode[i]+",");
                 }
                 if(result.error)
                     console.log(result.error);

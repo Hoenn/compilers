@@ -225,7 +225,8 @@ export class Generator {
         this.pushCode([ops.loadXConst, "01", ops.compareEq, this.tempb1, this.temp1b2]);
 
         //Can only jump forward so we'll need to loop around to the start of the pgm
-        let loopingJump = this.toHexString(256 - (this.currNumBytes + conditionAddress)-2);
+        console.log(this.currNumBytes);
+        let loopingJump = this.toHexString(256 - this.currNumBytes + conditionAddress -2);
         this.pushCode([ops.branchNotEqual, loopingJump]);        
         //We now know the end point of the loop so set the dest in the jumpTable
         this.jumpTable['J'+jumpNum].dest = this.currNumBytes;
@@ -405,7 +406,7 @@ export class Generator {
     }
     insertBytes(location: number, bytes: string[]) {
         for(let i = 0; i < bytes.length; i++) {
-            this.mCode[location+i] = bytes[i];
+            this.mCode[location+i] = bytes[i].toUpperCase();
         }
     }
     zeroOut() {

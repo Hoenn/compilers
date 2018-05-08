@@ -277,6 +277,11 @@ var Generator = /** @class */ (function () {
             }
             this.pushCode([ops.storeAccMem, this.tempb1, this.temp1b2, ops.compareEq, this.tempb1, this.temp1b2]);
         }
+        else if ((left.isString && !right.isString) || (!left.isString && right.isString)) {
+            this.emit("Found unsupported operation: String to Variable comparison");
+            this.error = Alert_1.error("String to Variable comparison are currently unimplemented");
+            return;
+        }
         else {
             //Compute left expr and store result in TMP2
             this.genNext(left, scope);

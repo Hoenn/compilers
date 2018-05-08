@@ -1,9 +1,5 @@
 {
-    int a
-    a = 1
-    while (true == ( a==1)) {
-
-        print("true")
-        a = 0
-    }
+    string a
+    a = "abc"
+    print(("abc" == "abc"))
 }

@@ -54,7 +54,7 @@ var Generator = /** @class */ (function () {
         var lengthInBytes = this.mCode.length;
         this.backPatch(lengthInBytes);
         var outOfMem = this.checkOutOfMemory();
-        return { mCode: this.mCode, log: this.log, error: outOfMem };
+        return { mCode: this.mCode, log: this.log, error: outOfMem || this.error };
     };
     Generator.prototype.genNext = function (n, scope) {
         switch (n.name) {
@@ -234,7 +234,6 @@ var Generator = /** @class */ (function () {
         this.pushCode([ops.loadAccConst, "00", ops.storeAccMem, this.tempb1, this.temp1b2]);
         this.pushCode([ops.loadXConst, "01", ops.compareEq, this.tempb1, this.temp1b2]);
         //Can only jump forward so we'll need to loop around to the start of the pgm
-        console.log(this.currNumBytes);
         var loopingJump = this.toHexString(256 - this.currNumBytes + conditionAddress - 2);
         this.pushCode([ops.branchNotEqual, loopingJump]);
         //We now know the end point of the loop so set the dest in the jumpTable
@@ -244,6 +243,12 @@ var Generator = /** @class */ (function () {
         this.emit("Generate code: EqualTo");
         var left = n.children[0];
         var right = n.children[1];
+        //Nested booleans don't work consistently so just throw an unsupported error
+        if (left.name.indexOf("EqualTo") >= 0 || right.name.indexOf("EqualTo") >= 0) {
+            this.emit("Found unsupported operation: Nested Boolean Expression");
+            this.error = Alert_1.error("Nested booleans are currently unimplemented");
+            return;
+        }
         //String to String
         if (left.isString && right.isString) {
             //Just precompute result based on node value, set the Z flag with result
@@ -378,7 +383,6 @@ var Generator = /** @class */ (function () {
         location++;
         this.emit("Backpatching Jump table");
         for (var j in this.jumpTable) {
-            console.log(j);
             var dest = this.jumpTable[j].dest;
             var start = this.jumpTable[j].start;
             var finalLoc = 0;

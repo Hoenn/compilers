@@ -1,15 +1,9 @@
 {
     int a
     a = 1
-    {
-        int a
-        a = 2
-        {
-            int a
-            a = 3
-            print(a)
-        }
-        print(a)
+    while (true == ( a==1)) {
+
+        print("true")
+        a = 0
     }
-    print(a)
 }

@@ -48,7 +48,7 @@ export class Generator {
         let lengthInBytes = this.mCode.length;
         this.backPatch(lengthInBytes);
         let outOfMem = this.checkOutOfMemory();
-        return {mCode:this.mCode, log: this.log, error: outOfMem};
+        return {mCode:this.mCode, log: this.log, error: outOfMem || this.error};
     }
     genNext(n: Node, scope:number){
         switch(n.name) {
@@ -234,6 +234,13 @@ export class Generator {
         this.emit("Generate code: EqualTo");
         let left = n.children[0];
         let right = n.children[1];
+        //Nested booleans don't work consistently so just throw an unsupported error
+        if(left.name.indexOf("EqualTo") >= 0 || right.name.indexOf("EqualTo") >= 0) {
+            this.emit("Found unsupported operation: Nested Boolean Expression");
+            this.error = error("Nested booleans are currently unimplemented");
+            return;
+        }
+
         //String to String
         if(left.isString && right.isString) {
             //Just precompute result based on node value, set the Z flag with result
@@ -367,7 +374,6 @@ export class Generator {
 
         this.emit("Backpatching Jump table");
         for(let j in this.jumpTable) {
-            console.log(j);
             let dest = this.jumpTable[j].dest;
             let start = this.jumpTable[j].start;
             let finalLoc = 0;

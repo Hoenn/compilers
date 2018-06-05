@@ -1,19 +1,11 @@
-# CMPT 432 - Compilers - Evan Mena
-
-## Tools
-[TypeScript](https://www.typescriptlang.org/)
-
-[nodejs](https://nodejs.org/en/)
-
-[browserify](http://browserify.org/)
-
-[ace](https://ace.c9.io/)
+# A Compiler
+Compiles [a++](http://labouseur.com/courses/compilers/grammar.pdf) into a 6502 Machine Language subset called [6502a](http://labouseur.com/commondocs/6502alan-instruction-set.pdf)
 
 ## Building
 
 `$ npm install`
 
-Compile TypeScript in `src/` to JavaScript in `dist/` and `browserify views/script.js` to `views/index.js` for front-end
+Compile TypeScript in `src/` to JavaScript in `dist/` and `browserify views/script.js` to `views/index.js` for front-end using
 
 `$ npm run build`
 
@@ -21,7 +13,7 @@ Compile TypeScript in `src/` to JavaScript in `dist/` and `browserify views/scri
 
 ### Automated Tests
 
-There is a suite of automated tests built using `mocha` and `chai` you can run them using
+There is a suite of automated tests built using `mocha` and `chai`, you can run them using
 
 `$ npm run test`
 
